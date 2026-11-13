@@ -12,9 +12,11 @@ import kotlinx.coroutines.flow.StateFlow
 /** Unknown platform state hides sensitive content and setup. DO never overrides platform flags. */
 data class DrivingState(val known: Boolean = false, val driving: Boolean = true, val flags: Int = 0) {
     val canShowTranscript: Boolean
-        get() = known && !driving && flags and (
-            CarUxRestrictions.UX_RESTRICTIONS_LIMIT_CONTENT or CarUxRestrictions.UX_RESTRICTIONS_LIMIT_STRING_LENGTH
-        ) == 0
+        get() = known &&
+            !driving &&
+            flags and (
+                CarUxRestrictions.UX_RESTRICTIONS_LIMIT_CONTENT or CarUxRestrictions.UX_RESTRICTIONS_LIMIT_STRING_LENGTH
+                ) == 0
     val canSetup: Boolean
         get() = canShowTranscript && flags and CarUxRestrictions.UX_RESTRICTIONS_NO_SETUP == 0
 }

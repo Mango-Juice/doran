@@ -81,3 +81,5 @@ python3 scripts/verify_vehicle.py \
 ```
 
 스크립트는 실제 에뮬레이터만 허용하며 연결 세션 heartbeat, Park→Drive 20km/h→Park 전환, 플랫폼 UXR, 앱 생존과 화면을 검사한다. 시험 종료 시 Park 복구와 heartbeat 종료를 시도한다. 마이크·AI·모바일 연동 시험을 대신하지 않는다. 결과 디렉터리는 새 경로를 지정하여 이전 실패 증거를 보존한다.
+
+`ui_wait_seconds`에는 UIAutomator의 idle 대기와 ADB 통신 시간이 포함되므로 조작 피드백 시간으로 사용하지 않는다. Android `am start -W`의 완료 시간도 사용자가 실제 내용을 본 시각과 다를 수 있다. 앱 첫 내용 draw 로그와 시각이 기록된 화면 샘플을 함께 비교한다.

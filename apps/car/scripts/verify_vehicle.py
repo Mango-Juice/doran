@@ -77,11 +77,20 @@ def main() -> None:
         if not any(PACKAGE in line for line in activity.splitlines() if "topResumedActivity" in line or "mResumedActivity" in line):
             raise RuntimeError("Doran is not the resumed activity")
         started = time.monotonic()
+        attempt = 0
         while True:
-            adb("shell", "uiautomator", "dump", "/sdcard/doran-verification.xml")
-            xml = adb("exec-out", "cat", "/sdcard/doran-verification.xml").stdout.decode()
+            # A unique path prevents a failed dump from reusing a prior screen's XML.
+            remote_xml = f"/sdcard/doran-verification-{client}-{name}-{attempt}.xml"
+            try:
+                adb("shell", "uiautomator", "dump", remote_xml)
+                xml = adb("exec-out", "cat", remote_xml).stdout.decode()
+                if "<hierarchy" not in xml:
+                    raise RuntimeError("UIAutomator did not produce a new hierarchy")
+            finally:
+                adb("shell", "rm", "-f", remote_xml, check=False)
             if expected_text in xml or time.monotonic() - started > 30:
                 break
+            attempt += 1
             time.sleep(1)
         (args.output / f"{name}-ui.xml").write_text(xml)
         (args.output / f"{name}.png").write_bytes(adb("exec-out", "screencap", "-p").stdout)
@@ -121,8 +130,12 @@ def main() -> None:
         launch = adb("shell", "am", "start", "-W", "-n", f"{PACKAGE}/.MainActivity")
         (args.output / "launch.txt").write_bytes(launch.stdout + launch.stderr)
         time.sleep(4)
-        driving, flags, park_xml = capture("park")
+        driving, flags, park_xml = capture("park", "차량 연결 코드" if args.expect_unpaired else "도란")
         assert not driving and flags == 0, "Expected parked UX state"
+        codes = re.findall(r'text="(\d{3}\s+\d{3})"', park_xml)
+        if args.expect_unpaired:
+            assert "연결 코드 받기" in park_xml, "Expected parked pairing control"
+            assert codes, "Expected a real pairing code before testing its concealment"
         results["checks"].append({"name": "park", "passed": True})
         request("/vehicle/gear?gear=Drive", "PUT")
         request("/vehicle/controls?speed=20&accelerator=0&brake=0&steering=0", "PUT")
@@ -132,14 +145,19 @@ def main() -> None:
         if args.expect_unpaired:
             assert "정차 후 휴대폰을" in drive_xml, "Expected parked-only pairing notice"
             assert "연결 코드 받기" not in drive_xml, "Pairing setup must be hidden while driving"
-            for code in re.findall(r'text="(\d{3}\s+\d{3})"', park_xml):
+            assert "차량 연결 코드" not in drive_xml, "Pairing code must be absent from accessibility semantics"
+            for code in codes:
                 assert code not in drive_xml, "Pairing code must be hidden while driving"
         results["checks"].append({"name": "drive20", "passed": True, "active_restrictions": flags})
         request("/vehicle/controls?speed=0&accelerator=0&brake=0&steering=0", "PUT")
         request("/vehicle/gear?gear=Park", "PUT")
         time.sleep(1)
-        driving, flags, _ = capture("park-restored")
+        driving, flags, restored_xml = capture("park-restored", "차량 연결 코드" if args.expect_unpaired else "도란")
         assert not driving and flags == 0, "Expected parked UX restoration"
+        if args.expect_unpaired:
+            assert "연결 코드 받기" in restored_xml, "Expected pairing control to return when parked"
+            assert re.findall(r'text="(\d{3}\s+\d{3})"', restored_xml), "Expected pairing code to return when parked"
+            assert "정차 후 휴대폰을" not in restored_xml, "Driving-only notice must disappear when parked"
         results["checks"].append({"name": "park_restored", "passed": True})
         results["passed"] = True
         print("Park → Drive 20 km/h → Park verified", flush=True)

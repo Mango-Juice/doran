@@ -83,10 +83,18 @@ for (
       return Promise.resolve();
     }, AbortSignal.timeout(60000));
     actualConservativeUsd += (usage.input_tokens * 2 + usage.output_tokens * 5) / 1e6;
-    results.push({ ...item, answer, usage, elapsed_ms: Date.now() - started, status: "completed" });
+    results.push({
+      ...item,
+      input,
+      answer,
+      usage,
+      elapsed_ms: Date.now() - started,
+      status: "completed",
+    });
   } catch (error) {
     results.push({
       ...item,
+      input,
       answer: "",
       elapsed_ms: Date.now() - started,
       status: "failed",
@@ -99,6 +107,7 @@ for (
       {
         model: MODEL,
         prompt_sha256: promptSha,
+        conversation_instructions: conversationInstructions,
         runner_sha256: runnerSha,
         created_at: new Date().toISOString(),
         reservation_usd: reservedUsd,
@@ -111,7 +120,7 @@ for (
       },
       null,
       2,
-    ),
+    ) + "\n",
   );
   console.log(`${item.id}: ${results.at(-1)?.status}`);
   if (results.at(-1)?.status !== "completed") break;

@@ -51,7 +51,14 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
         }
         viewModelScope.launch {
             restrictions.state.collect { driving ->
-                mutable.update { it.copy(uxKnown = driving.known, driving = driving.driving, canSetup = driving.canSetup, canShowTranscript = driving.canShowTranscript) }
+                mutable.update {
+                    it.copy(
+                        uxKnown = driving.known,
+                        driving = driving.driving,
+                        canSetup = driving.canSetup,
+                        canShowTranscript = driving.canShowTranscript
+                    )
+                }
                 if (!driving.known && isTalking()) pause("차량 상태를 확인한 뒤 다시 시작해 주세요")
                 if (driving.canSetup && foreground && !state.value.paired && state.value.code.isEmpty()) connect()
             }

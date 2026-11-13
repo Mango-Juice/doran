@@ -19,8 +19,8 @@ Google OAuth 설정과 실제 사용자 계정이 준비되어야 회원 로그�
 ## 2026-11-14 확인 결과
 
 - Flutter 3.50.0 / Dart 3.14.0, 공식 Flutter commit `ab2912035e160d9cad6306df307576da6128ebdb`.
-- Android release APK 빌드 성공. `app.doran.mobile`, versionName `1.0.0`, versionCode `1`, minSdk 26, targetSdk 36. 별도 보관한 release 키로 APK Signature Scheme v2 검증 통과.
-- Xcode 27.0의 iOS 27.0 simulator 대상 빌드 성공. 프로젝트 빌드 스크립트로 Xcode 선택 문제를 해결했고 전역 `xcode-select`는 변경하지 않음. 아래 계정·갱신 경계 수정 후 최종 Android·iOS 재빌드 예정.
+- 계정·갱신 경계 수정 후 Android release APK 최종 빌드 성공. `app.doran.mobile`, versionName `1.0.0`, versionCode `1`, minSdk 26, targetSdk 36. 별도 보관한 release 키로 APK Signature Scheme v2 검증 통과. 중립 경로에서 난독화 빌드해 개인 홈 경로를 제거했으며 공개 검사에서 APK 발견 항목 없음.
+- Xcode 27.0의 iOS 27.0 simulator 대상 최종 소스·Keychain entitlement 빌드 성공. 프로젝트 빌드 스크립트로 Xcode 선택 문제를 해결했고 전역 `xcode-select`는 변경하지 않음. Android에서 iOS로 전환할 때 플러그인 연결을 재생성하도록 기본 pub 단계를 유지함.
 - 정적 검사 문제 없음. 전체 49개 및 추가 자동 갱신 3개 단위·위젯 시험 통과. 계정 변경 시 Navigator 경로 폐기와 소유자에 고정된 저장소의 지연 저장 차단, 선택 날짜·이력 페이지 유지, 인증 만료 시 이전 내용 제거를 포함함.
 - iPhone 17 Pro simulator의 최초 OS 마이그레이션·앱 기동이 지연됨. 설치와 launch PID 반환은 확인했으나 앱 화면이 실제로 표시된 것을 확인하지 못했으므로 iOS 실행·화면 검증은 완료로 판정하지 않음. 자원 경합을 분리하기 위해 simulator를 종료함.
 - Android 설치·실제 화면, 실제 Google 로그인 및 계정 간 동기화는 통합 검증 단계에 남음.

@@ -22,14 +22,14 @@ Supabase redirect allowlist: `app.doran.mobile://auth-callback`. 시스템 브�
 
 ```sh
 DORAN_SIGNING_PROPERTIES=/absolute/private/release-signing.properties \
-  flutter build apk --release --obfuscate \
-  --split-debug-info=/absolute/private/mobile-debug-symbols/VERSION
+  DORAN_DEBUG_SYMBOLS=/absolute/private/mobile-debug-symbols/VERSION \
+  FLUTTER_BIN=/absolute/flutter/bin/flutter scripts/build-android-release.sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer FLUTTER_BIN=/absolute/flutter/bin/flutter scripts/build-ios.sh
 ```
 
 서명 설정 파일은 `DORAN_KEYSTORE_PATH`, `DORAN_KEYSTORE_PASSWORD`, `DORAN_KEY_ALIAS`, `DORAN_KEY_PASSWORD` 항목을 포함합니다. 파일은 저장소 밖에 보관합니다. 설정이 없을 때 debug 키로 release를 대체하지 않습니다.
 
-제출용 Android 빌드는 난독화하고 디버그 심볼을 저장소 밖에 보관합니다. 오류를 추적할 때 해당 APK 버전의 심볼이 필요하므로 APK와 심볼을 함께 보존하세요. 배포 전 APK 내부에 개발 환경의 개인 경로가 남지 않았는지도 검사합니다.
+제출용 Android 빌드 스크립트는 Git의 공개 대상 소스를 `/tmp`의 중립 경로에 복사하고 난독화하며, 디버그 심볼을 저장소 밖에 보관합니다. Flutter의 생성 플러그인 URI는 난독화만으로 지워지지 않으므로 중립 경로를 사용합니다. 오류를 추적할 때 해당 APK 버전의 심볼이 필요하므로 APK와 심볼을 함께 보존하세요. 출력은 원래 프로젝트의 `build/app/outputs/flutter-apk/app-release.apk`이며 배포 전 APK 내부의 개인 경로·비밀값을 다시 검사합니다.
 
 iOS 빌드 스크립트는 Dart native asset hook이 `DEVELOPER_DIR`를 전달하지 않는 환경에서도 선택한 Xcode를 사용하도록 프로젝트 캐시에 `xcrun` 래퍼를 만듭니다. 시스템 Xcode 선택을 변경하지 않습니다. Debug·Profile·Release 설정은 Keychain 저장소용 `Runner.entitlements`를 공통으로 사용합니다.
 

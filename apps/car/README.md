@@ -22,6 +22,8 @@ DORAN_KEY_PASSWORD=local-only
 
 서명 설정이 없으면 release 빌드는 unsigned APK를 생성합니다. 제출 전 `apksigner verify`를 사용해 서명을 확인해야 합니다.
 
+debug 패키지는 `app.doran.car.debug`로 분리되어 release 설치와 차량 연결을 덮어쓰지 않습니다. SDK 계측 시험은 `androidTest` APK에만 포함되며 release APK에는 포함되지 않습니다. Gradle 의존성은 `app/gradle.lockfile`로 고정합니다.
+
 ## 사용
 
 1. 주차 상태에서 차량 앱을 엽니다.

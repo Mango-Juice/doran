@@ -6,6 +6,8 @@ Supabase 프로젝트는 서울 리전의 `lokvjxxtnnzxnkjiehja`이다. 실제 A
 
 모바일은 Google OAuth/PKCE로 로그인한다. 차량은 별도 Supabase 익명 사용자이며, 5분짜리 일회용 코드로 모바일의 주장과 차량의 최종 확인을 모두 거쳐 연결한다. 차량에 모바일의 계정 토큰을 복사하지 않는다. DB의 사용자 식별자는 요청 본문에서 받지 않고 인증 서버가 확인한 JWT 사용자에서 가져온다.
 
+운영 프로젝트에서 이메일·비밀번호 로그인은 비활성화했다. 실제 HTTP 통합 시험에 사용한 임시 비밀번호 계정과 익명 차량 계정은 시험 뒤 삭제했다. 이 시험의 재실행은 별도 시험 프로젝트에서 준비한 계정으로 수행하며, 운영 Google 로그인 검증과 구분한다.
+
 Edge Functions는 플랫폼 JWT 자동검사를 끄고 함수 내부에서 Supabase Auth `/user`로 토큰을 확인한다. 이는 새 publishable key와 익명 차량 인증을 일관되게 처리하기 위한 것으로, 인증 생략이 아니다. 고정 텍스트 `/about`, `/privacy`만 공개다. 함수의 서비스 키는 Supabase 런타임 환경 변수만 사용한다.
 
 공개 스키마 테이블의 RLS는 모바일 사용자의 소유 데이터 SELECT만 허용한다. 쓰기와 작업 함수는 service_role만 실행할 수 있다. 차량은 직접 전체 기록을 읽지 못한다. 계정 삭제의 앱 데이터 제거와 Auth 삭제 사이 실패는 삭제 표식과 재시도로 처리한다.
@@ -32,6 +34,12 @@ AI는 Responses API의 `gpt-6.1-terra`를 사용하며 `store:false`, 제한된 
 
 사용자별 요청 제한과 전역 예산 한도는 DB에서 적용한다. 예산이 부족하면 AI 호출은 거절하지만 기록 열람은 유지한다. 비공개 예산 테이블, 큐, 워커 인증 토큰에는 앱 사용자가 접근할 수 없다.
 
+현재 프로젝트의 29USD 운영 한도는 관리자 배포 설정이다. 새 프로젝트에서 외부 평가비 1USD를 함께 유보하려면 아래 설정을 적용한다. 마이그레이션의 기본 30USD를 그대로 둔 채 외부 평가비를 추가로 쓰지 않는다.
+
+```sql
+update private.budget set limit_usd = 29 where id = 1;
+```
+
 ## 검증
 
 ```sh
@@ -40,4 +48,4 @@ deno task --config supabase/deno.json test
 deno lint --config supabase/deno.json supabase/functions supabase/tests
 ```
 
-`supabase/tests/sql`은 별도 Supabase PostgreSQL에서 migration 적용 후 실행하는 트랜잭션 rollback 시험이다. 로컬 Auth 호환성 shim은 호스팅된 DB에 적용하지 않는다. SQL 테스트와 모의 provider의 HTTP 시험은 실제 OpenAI 품질 검증이 아니다. 한국어30개 평가 시나리오와 실제API 실행기는 `supabase/tests/evals`에 별도로 있다.
+`supabase/tests/sql`은 별도 Supabase PostgreSQL에서 migration 적용 후 실행하는 트랜잭션 rollback 시험이다. 로컬 Auth 호환성 shim은 호스팅된 DB에 적용하지 않는다. SQL 테스트와 모의 provider의 HTTP 시험은 실제 OpenAI 품질 검증이 아니다. 한국어 기본 30개 및 시각 회귀 2개 시나리오와 실제 API 실행기는 `supabase/tests/evals`에 별도로 있다. 실제 모델 평가, 클라우드 HTTP·큐 시험, SDK와 사람 발화 시험은 [검증 기록](verification.md)에서 구분한다.

@@ -8,7 +8,7 @@ output = pathlib.Path(__file__).with_name('cloud-privacy-20261114-results.json')
 report = {'scope':'Real deployed HTTP, Supabase password QA owner and anonymous vehicle, OpenAI text API and pgmq worker; NOT Google UI, microphone or TTS', 'checks':[], 'script_sha256':hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest()}
 def record(name, value):
     report['checks'].append({'name':name,'value':value,'at':datetime.datetime.now(datetime.timezone.utc).isoformat()})
-    output.write_text(json.dumps(report,ensure_ascii=False,indent=2)); print(name,flush=True)
+    output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n'); print(name,flush=True)
 def call(who, route, method='GET', body=None, sse=False):
     token=qa[who+'_auth']['access_token']
     req=urllib.request.Request(base+route,data=json.dumps(body).encode() if body is not None else None,method=method,headers={'apikey':key,'Authorization':'Bearer '+token,'Content-Type':'application/json','Accept':'text/event-stream' if sse else 'application/json'})
@@ -65,6 +65,6 @@ try:
         assert not any(word in response['assistant_text'] for word in ['이직','면접','가족'])
         record('no_sensitive_topic_in_'+occupancy,{'assistant_text':response['assistant_text']})
     call('owner','account','DELETE',{'confirmation':'DELETE'})
-    report['status']='passed';output.write_text(json.dumps(report,ensure_ascii=False,indent=2))
+    report['status']='passed';output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
 except Exception as e:
-    report['status']='failed';report['error']=str(e);output.write_text(json.dumps(report,ensure_ascii=False,indent=2));print('FAILED:',str(e),flush=True);raise
+    report['status']='failed';report['error']=str(e);output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n');print('FAILED:',str(e),flush=True);raise
