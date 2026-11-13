@@ -23,7 +23,7 @@
 
 [검증 기록](docs/verification.md)은 단위·계약 시험, 실제 클라우드 호출, SDK 실행, 사람 발화를 구분합니다. APK 파일명·영상 구성·버전 고정 절차는 [제출 안내](docs/submission.md)를 따릅니다. 미확인 동작은 완료로 표시하지 않습니다.
 
-실제 설치 앱의 로그인 전 화면: [Android](docs/images/android-login.png) · [iOS 시뮬레이터](docs/images/ios-login.png). 이 캡처 자체가 Google 로그인 완료를 뜻하지는 않습니다.
+실제 설치 앱의 인증 전 화면: [차량 연결 확인 중](docs/images/car-connecting.png) · [Android](docs/images/android-login.png) · [iOS 시뮬레이터](docs/images/ios-login.png). 이 캡처 자체가 Google 로그인 완료나 음성 대화 성공을 뜻하지는 않습니다.
 
 ## 개인정보
 

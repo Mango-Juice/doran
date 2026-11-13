@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "stage": "pre-authentication verification",
+  "submission_ready": false,
+  "source_commit": "b25e910b4a9ddab6c046314e159f4190427021aa",
+  "app_version": "1.0.0(1)",
+  "ci": {
+    "url": "https://github.com/Mango-Juice/doran/actions/runs/43513334336",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "server",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "car",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "mobile",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "car": {
+    "release_sha256": "d81d030d70e97408fda02f3f9f7c0d80352e1f205a6b5752bea0384e7fda4e18",
+    "installed_sha256_matches": true,
+    "clean_install_success": true,
+    "app_pid_alive": true,
+    "connection_code_visible": true,
+    "launch_started_utc": "2026-11-13T21:42:55.110989+00:00",
+    "content_observed_utc": "2026-11-13T21:42:59.718578+00:00",
+    "debuggable": false,
+    "navi_search_permission_declared": false,
+    "requested_permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "pleos.car.permission.STT_SERVICE",
+      "pleos.car.permission.TTS_SERVICE",
+      "pleos.car.permission.FUSED_LOCATION",
+      "pleos.car.permission.CAR_DRIVE",
+      "pleos.car.permission.CAR_SEATS",
+      "pleos.car.permission.NAVI_ROUTE"
+    ],
+    "scope": "One clean install and first UI only; no repeated Drive, SDK, Navi or window test",
+    "code_and_device_id_omitted": true,
+    "screen_visually_checked": true,
+    "emulator_exit_code": 0,
+    "emulator_process_absent": true,
+    "shutdown_observed_utc": "2026-11-13T21:45:01.936333+00:00",
+    "launch_to_content_observation_ms": 4607.589
+  },
+  "mobile_android": {
+    "checked_at_kst": "2026-11-14T06:49:51.199049+09:00",
+    "package": "app.doran.mobile",
+    "before_state": "Actual login screen observed; no completed authentication or user journal data",
+    "uninstall": "Success; only app.doran.mobile",
+    "install": "Success; same signed release APK",
+    "installed_apk_sha256": "59a4282955e53e8a959ce60f69be94246464687f92e1d11e7f0acb1828baf4dd",
+    "activity_cold_start_ms": 1927,
+    "measurement_limit": "am start -W Activity startup; not full Flutter content ready time",
+    "actual_login_screen": "Verified by screenshot; Google G, white button, Doran headline visible",
+    "preserved": "AVD userdata, Chrome state, other applications",
+    "authentication": "Not attempted; terms and Google authentication await user"
+  },
+  "mobile_build_source_verification": {
+    "checked_files": 24,
+    "all_match_current_source": true,
+    "sha256": {
+      "assets/google/GoogleSans.ttf": "d0a87d835a944b8b40d0e82a5651bb59ab97b936a2aeed5946eb57e7b2a3a90a",
+      "assets/google/OFL.txt": "2b75ef20f13d83a7514aee452c4782c20cdc9ff2dee17600f44d37a06d4fb958",
+      "assets/google/README.md": "7743821b1dd7e040c97574e7a02dbae164b632a2295b2118f352fb6ac86399eb",
+      "assets/google/TRADEMARKS.md": "215bc8c1ce46d1b81531f33ebb5af201e7a5da76b8f3ae4c705336fd70fc89e1",
+      "assets/google/g-logo.png": "d1ce9c2af0b10a7333abc99bc706f9a6a199e5b65bf3e3009624f076b8638e6a",
+      "ios/Runner/AppDelegate.swift": "8b6725d708861a5d9c077a8bb317e11f6479a0725aa67211ea9e8665f552fbfa",
+      "ios/Runner/Runner.entitlements": "0672f83103b450e4e0b5b86e42238d9b9ba39af727de43d185f22ec56143cda5",
+      "ios/Runner/SceneDelegate.swift": "add68b905971dedfcc0d0b5b7118030de5925ba8c081ad9815463699e3a444ad",
+      "ios/Runner.xcodeproj/project.pbxproj": "b49f1daf2e56ef15b5128861ab7213ce59def8db90cf8d10cdc1fa6cf03ca8d6",
+      "lib/data/repository.dart": "6a9b4d13d41e23aa3d793b5b39ab4841cc83cb25158a9333143691d9df8ca564",
+      "lib/data/secure_store.dart": "8fcf2a405a65665d759cd9f6f98bdf96d69fde1ea1f937ebcde590468b217585",
+      "lib/domain/models.dart": "35424bb7e71708181bd8a63ae7bfe82c738873f8f78ee58c2b8a346be6e1ae77",
+      "lib/main.dart": "c84a1d7294798eb7ee8fdba7eb18433b069898fa1df27c67dc405fc77bc52994",
+      "lib/startup.dart": "8ead0dc9053c9079a9dcda8d8c5888536233ff23623031046ca7ce9dd6ee8a64",
+      "lib/startup_trace.dart": "8fa31f556005666cece1e700e58f21f80d852c096d9e90b915734a51d34cbd65",
+      "lib/ui/editors.dart": "cbcece85a417e85c90ba86757603a8e3e7de117ad6e0af0c50a8ce107835a4dc",
+      "lib/ui/journal.dart": "1966aa6504a4b4bced58fcaf8abe79b647cbb7b6f7f56ae117f5d2fbc25b339d",
+      "lib/ui/login.dart": "f55d511fcdfc21a01e1209963d730f05f0e27a013e7e9b847766507c945379b9",
+      "lib/ui/pairing.dart": "81f8636f1642e2494a30150de8d3b57e1723f6ae73694f0bcbbfb7f46e6fd51b",
+      "lib/ui/privacy.dart": "65eb1ae80f71535292ea49145845b6b2b9e68e269156bbe17e59a7216a594535",
+      "lib/ui/settings.dart": "03c84700cf46f6d6d244000a16f87d065ed45559310add38a94aed36345ed3ef",
+      "lib/ui/theme.dart": "fa782797497dd457fa5dd34d73176b44424004fd2d2ff19553318ae1f550d8d3",
+      "pubspec.lock": "d828d9ff0e041144a1b922a57c26fa9efb957e5a6ae86e7ad81d64eb85d916b7",
+      "pubspec.yaml": "fe517d5fb03ff6339ca4ee9f5a462852f4b27e79ea902390a768a06679c19a70"
+    }
+  },
+  "limitations": [
+    "Clean installation and initial unauthenticated UI only; not a complete account or conversation test.",
+    "Car elapsed launch-to-observation includes screenshot polling; mobile Activity startup is not Flutter content-ready latency.",
+    "Actual Google authentication on Android and iOS, paired app data flow, human voice and listening, and the final demonstration video remain unfinished.",
+    "Screenshots containing connection codes and private local file paths are excluded from this public report."
+  ]
+}

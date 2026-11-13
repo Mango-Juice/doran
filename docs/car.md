@@ -34,7 +34,7 @@ Kotlin·Jetpack Compose 차량 앱은 실서버 설정을 사용하며, AI나 SD
 
 - 버전: `1.0.0` / versionCode `1`, 패키지 `app.doran.car`
 - 산출물: `apps/car/app/build/outputs/apk/release/app-release.apk`, 17,220,506 bytes
-- SHA-256: `d81d030d70e97408fda02f3f9f7c0d80352e1f205a6b5752bea0384e7fda4e18`
+- SHA-256: `1271d0d1d7b358dfea23d947c42dff48dacf238c8be64b7d23a6d1221c4f3fc2`
 - `ktlintCheck`, JVM 단위 시험 44개, `lintRelease`, release 빌드가 통과했다. 시험에는 요청 세대·음성 종료 문구, 계정/세션 작업 소유권, 개별 UX 제한, 차량 정보 유효성, 반복 방문·도착 기준값 정책과 Navi 상태 회귀 8개가 포함된다. Navi 회귀는 기록한 실제 콜백의 재생 및 정책 경계 시험이며 실제 목적지 도착 검증이 아니다.
 - APK v2 서명을 검증했다. release는 디버그 가능하지 않으며, `assets/licenses.txt`는 배포 고지 원문과 일치한다.
 - `SdkVerificationActivity`, `SDKSmokeTest`와 합성 PCM 시험 자료는 release APK에 포함되지 않는다. 계측 시험용 debug는 `app.doran.car.debug`로 설치해 release의 차량 연결 상태를 보존한다.
@@ -55,6 +55,20 @@ Navi 상태 수정 전 `cdfc0e8c` release는 서버에서 미연결·사용자 �
 물리 디스플레이는 1920×1080이고 처음 관측된 도란 앱 영역은 1256×850이었다. 실제 화면의 OEM 윈도 바를 한 번 드래그한 뒤 앱 영역이 628×850으로 바뀐 것을 task bounds와 화면에서 확인했다. 연결 화면의 제목·코드·버튼·안내 문장은 두 영역에서 잘리지 않았다. 드래그 방향을 공식 제스처 계약으로 일반화하지 않으며, 이미지 크기 변경이나 물리 DPI 조작으로 화면을 흉내 내지 않았다. 연결 이후 대화 화면의 두 영역 대응은 아직 별도 확인해야 한다.
 
 원본 화면·task bounds·설치 결과는 로컬 `apps/car/app/build/verification/cdfc0e8c-clean-install/`에 보존한다. 실제 내비 callback 관측과 이후 JVM 회귀는 [SDK 검증 문서](car-sdk.md)에 별도로 기록한다.
+
+Navi 수정 뒤 `d81d030d` release도 미연결·사용자 기록 없음이 확인된 시험 기기에서 깨끗하게 설치했다. 실제 연결 첫 화면, 설치 해시 일치와 앱 생존을 확인했으며 시작부터 내용 관측까지 약 4.61초였다. 이 값에는 화면 폴링 시간이 포함된다. 원본은 로컬 `app/build/verification/d81d030d-clean-install/`에 보존한다. 최신 `1271d0d1`은 기본 저장소·키 이름을 유지하는 계측 주입점 추가 후 **업데이트 설치**로 확인했다. 이를 최신 해시의 깨끗한 설치로 표현하지 않는다.
+
+## 로그인 없이 수행한 추가 계측
+
+단독 Pleos Connect 2.1.0·RAM 4096MB·CPU 2개에서 세 가지 계측을 수행했다. release는 `1271d0d1`, 별도 debug 앱은 `0bfdc9c7` 해시의 APK를 사용했다. 원본·APK 사본은 로컬 `app/build/verification/1271d0d1-focus-outbox-feedback/` 및 `1271d0d1-feedback-retry/`에 보존한다.
+
+- **Room·Keystore:** UUID로 분리한 시험용 DB·설정·키에서 실제 AES-GCM 암호화, 같은 request의 중복 저장 방지, DB/키 핸들 재열기, 특정 세션만 삭제하는 영속성 및 다른 시험 키의 보존을 확인했다. 실제 프로세스 종료·서버 재전송 시험은 아니다. 제품의 기본 `doran_secure`·`doran.v1` 값은 유지한다.
+- **오디오 포커스:** 서로 다른 listener를 사용하는 같은 UID의 실제 요청으로 확인했다. NAVIGATION 요청은 플랫폼에서 거절됐고 대화 TTS는 중단 없이 끝났다. VOICE_COMMUNICATION 요청은 허용됐으며 production `PleosSpeech`의 중단 콜백 1회와 취소, 로컬 자원 해제, 정확히 식별한 현재 AAOS 포커스 항목 1→0을 관측했다. 이후 새 TTS 중 이전 listener의 `onDone`을 합성으로 한 번 전달했으나 수락되지 않았고, 새 SDK의 실제 완료만 수락됐다. 실제 통화·내비 음성 재생·사람의 청취·마이크 검증은 아니다.
+- **조작 피드백:** 실제 release 연결 화면에 합성 탭을 한 번 주입했다. 수동으로 확인한 첫 일치 프레임은 연결 확인 문구와 회색 비활성 표시를 함께 담았고, 캡처 반환 시각은 DOWN 이후 185ms, UP 이후 100ms였다. 이번 단일 guest 화면 관측의 상한이 250ms 목표 이내였다는 의미이며, 물리 디스플레이 표시 시각이나 일반적인 백분위 성능을 보장하지 않는다.
+
+처음 Feedback 실행은 하네스의 APK 해시 조회에서 중단돼 탭 0회·프레임 0개였다. 해당 실패를 보존하고 명령 인용부호만 수정한 뒤 Feedback만 한 번 다시 수행했다. 앞의 두 계측은 instrumentation `ca95abc1` APK, 성공한 Feedback은 `8498741f` APK로 실행했다. 생산 APK는 동일하다. 테스트·디버그 패키지를 제거하고 에뮬레이터를 정상 종료했으며 release 데이터는 보존했다.
+
+NAVIGATION 거절은 [Pleos의 오디오 포커스 정책](https://document.pleos.ai/docs/pleos-only/vehicle-app-developer-guide/audio-focus-development-guide/audio-focus-development)에서 현재 VOICE_COMMAND에 대한 incoming NAVIGATION 상호작용과 일치한다. 이를 내비 안내에 성공적으로 양보한 결과라고 해석하지 않는다. 앱의 사용 목적에 맞는 `USAGE_ASSISTANT` 속성을 유지하며 정책을 우회하지 않는다.
 
 ## 플랫폼 UX 제한과 화면 대응
 
