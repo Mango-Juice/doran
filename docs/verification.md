@@ -1,23 +1,23 @@
 # 도란 검증 기록
 
-작성 기준: 2026-11-14 KST. 구현 중간의 코드 검사와 실제 실행 결과를 구분한다. 이 문서의 미검증 항목은 통과로 간주하지 않는다. 최신 공개 검사 당시 HEAD `8251e6ab1d14a6075a4296377c327191ce208075`와 커밋 전 후속 변경을 포함한 작업 소스와 아래에 기록한 최종 차량·모바일 APK를 대상으로 했다. 최종 제출 커밋은 별도로 고정해야 한다.
+작성 기준: 2026-11-14 KST. 구현 중간의 코드 검사와 실제 실행 결과를 구분한다. 이 문서의 미검증 항목은 통과로 간주하지 않는다. 최신 공개 검사는 HEAD `dc6ea451c6b12fce21cf1a836ab95a48e394aea3`와 아직 커밋하지 않은 Navi 상태 수정 등을 포함한 작업 소스 및 최신 차량 APK를 대상으로 했다. 모바일 APK의 확인된 해시는 별도 행에 기록했다. 최종 제출 커밋은 별도로 고정해야 한다.
 
 ## 확인된 결과
 
 | 검사 | 관측 결과 | 증거 |
 |---|---|---|
-| 공개 후보 소스 검사 | 개인 홈 경로 하드코딩 1건을 환경 변수로 교체한 후 후속 변경을 포함한 공개 관측 요약 2개 추가 후 209개 후보 파일 검사 통과 | `python3 scripts/verify-publication.py --apk apps/car/app/build/outputs/apk/release/app-release.apk --apk apps/mobile/build/app/outputs/flutter-apk/app-release.apk --json`: 두 APK 동시 검사와 소스 검사에서 발견 0 |
+| 공개 후보 소스 검사 | Navi 수정과 공개 관측 요약을 포함한 213개 후보 파일 검사 통과 | `python3 scripts/verify-publication.py --apk apps/car/app/build/outputs/apk/release/app-release.apk --json`: 소스와 최신 차량 APK에서 발견 0 |
 | 공개 검사기 동작 | 기본 규칙 6개, 개인 홈 경로 5개, 정확한 vendor 바이너리 예외 7개 검사 통과 | 합성 입력·임시 Git 및 실제 바이너리로 검사기 동작 확인. 앱 기능 시험에 합산하지 않음 |
 | 기존 Git 이력 공개 점검 | `8251e6ab`까지 3개 커밋의 고유 blob 226개에서 검사 규칙에 해당하는 비밀값·개인 경로·검토 필요 이메일·내부 원본 발견 0 | 기존 검사기의 바이트 규칙을 각 Git blob에 별도로 적용하고 파일명·commit 이메일도 점검. author/committer는 GitHub noreply 주소. 이후 추가 커밋과 이미지·영상 수동 검토는 별도 |
-| 패키징 복구 | 기존 manifest 거부, 부분 게시 실패 rollback, 성공 시 해시·소스 커밋 일치의 3개 검사 통과 | 격리된 임시 Git 저장소에서 검사. APK 검사와 영상 길이 판독은 스텁이므로 앱·영상 검증에 합산하지 않음 |
+| 패키징 복구·배포 메타 | 원자적 게시·복구 3개 검사 및 정식 팀명/미정 이름 2개 격리 fixture 통과 | source_commit·파일 SHA·영상 release_asset/asset_name·영상 Git 제외·APK 비제외 확인. scanner·ffprobe 스텁을 사용했으므로 앱·영상 기능 검증에 합산하지 않음 |
 | 로컬 DB 권한 | public 테이블 8개 RLS 활성, 클라이언트 쓰기·내부 RPC 실행·private schema 접근 차단 확인 | 로컬 PostgreSQL 읽기 전용 ACL 검사. 클라우드 배포 상태와 별도 |
 | SQL 동작 | 로컬 assertion 75개와 동시성 시험 3개 통과, 원본 검색 추가 assertion 8개는 실제 호스팅 DB에서 rollback 시험 통과 | `supabase/tests/sql`. 서버 구현 담당 실행 결과이며 앱 UI·실제 Google 로그인 시험은 아님 |
 | 서버 단위·HTTP | 최종 `deno task verify` 통과: 시험 27개·0개 실패, 타입·lint·formatter 통과 | `supabase/deno.json`의 verify task. 최신 예산 결과 파일 추가 후 formatter 재검사 통과 |
 | 서버 배포 | API v7·worker v5 ACTIVE 확인 | 최신 프롬프트 배포 상태. 앞선 실제 HTTP 흐름·개인정보 관측 결과 및 최신 직접 모델 평가와 구분 |
-| 기존 CI | 서버·차량·모바일 GitHub Actions 검사 통과 | 후속 미커밋 변경 이전 실행 결과. 최종 소스 커밋의 CI 결과는 별도로 고정 |
+| 기존 CI | `dc6ea45`의 서버·차량·모바일 3개 job 모두 통과 | [실행 43508456280](https://github.com/Mango-Juice/doran/actions/runs/43508456280). Navi 수정 전 소스 기준이며, 후속 커밋의 CI는 별도 |
 | 모바일 정적·단위·위젯 | 최신 정적 검사 문제 없음, 전체 62개 시험 통과 | [모바일 구현 기록](mobile.md). 계정 경계·자동 갱신과 초기화 Future 재사용·cleanup 후 재시도·늦은 응답 차단 포함 |
-| 차량 Android 품질·빌드 | 최종 ktlintCheck·JVM 시험 36개·lintRelease·release 빌드·v2 서명 검증 통과 | `app.doran.car`, 1.0.0(1). 라이선스 원문 일치, debug Activity·테스트 클래스·합성 PCM의 release 미포함도 차량 담당이 확인 |
-| 차량 APK 공개 검사 | 17,220,506 bytes, 비밀키·미승인 개인 경로·debug/testOnly/cleartext manifest 발견 0 | SHA-256 `cdfc0e8c5fcd1d29bf908bb19941723e080451404fb280bce8fcd070e906e2ea`. 검토한 vendor native 바이너리 7개 SHA도 일치 |
+| 차량 Android 품질·빌드 | 최종 ktlintCheck·JVM 시험 44개·lintRelease·release 빌드·v2 서명 검증 통과 | `app.doran.car`, 1.0.0(1). 라이선스 원문 일치, debug Activity·테스트 클래스·합성 PCM의 release 미포함도 차량 담당이 확인 |
+| 차량 APK 공개 검사 | 17,220,506 bytes, 비밀키·미승인 개인 경로·debug/testOnly/cleartext manifest 발견 0 | SHA-256 `d81d030d70e97408fda02f3f9f7c0d80352e1f205a6b5752bea0384e7fda4e18`. 검토한 vendor native 바이너리 7개 SHA도 일치 |
 | B4 실제 연결 복원 | 앱 재시작 시 기존 연결 코드를 복원하고, 명시적 새 코드 요청에만 새 연결 요청 생성 | 차량 에뮬레이터·서버 확인: 재시작 시 기존 12행 유지, 새 코드 요청 후 13행. 모바일 Google 승인 전체 흐름과는 별도 |
 | 모바일 Android 빌드 | 초기 준비·재시도 화면과 Google 브랜딩을 포함한 release APK 빌드·v2 서명 검증 통과 | `app.doran.mobile`, 1.0.0(1), minSdk26·targetSdk36. 개인 이름 없는 임시 소스 경로에서 난독화·분리 심볼로 빌드 |
 | 모바일 APK 공개 검사 | 55,317,408 bytes, 개인 홈 경로·비밀키 패턴·debug/testOnly/cleartext manifest 발견 0 | SHA-256 `59a4282955e53e8a959ce60f69be94246464687f92e1d11e7f0acb1828baf4dd`. 최신 APK 독립 검사. 인증 이후 앱 흐름은 별도 |
@@ -27,13 +27,15 @@
 | 최초 Pleos SDK 계측 | 별도 debug 앱에서 합성 PCM 1회의 STT 최종 문구 수신·TTS onDone, 위치 권한 거부/허용, 좌석 점유 값 수신 확인 | [SDK 관측 요약](../apps/car/verification/sdk-91390127.json). 첫 실행 STT 20.505초·TTS 28.569초. 사람 마이크·실제 청취·첫 음절·연속 20턴 미확인. Odometer 오류, 내비 활성 경로·도착 미관측 |
 | 후속 Pleos SDK 계측 | B4 참조의 별도 debug 앱에서 합성 PCM 3회 모두 FINAL 일치·SDK onDone 확인 | [SDK 기록](car-sdk.md). STT 2.323/1.524/1.402초, TTS 4.869/3.233/3.412초. 최초 실행과 통제된 비교시험이 아니며 사람 음성·청취·연속 20턴은 미확인 |
 | 좌석 신호 의미 | Console 조수석 Empty/Occupied 토글의 원시 이벤트와 SDK Boolean 변환 사이 불일치 관측 | 이전 debug 계측 근거. 현재 최종 코드에는 검증된 신뢰 조합이 없어 자동 동승자 판단을 `unknown`·`UNAVAILABLE`로 처리하고 좌석 측정 시각을 서버로 보내지 않음 |
+| 실제 Navi 관측 | cdfc 참조의 별도 debug 앱에서 경로 요청 1회, 실제 GUIDING/false·목적지 ETA 60초/거리 50m, 취소·FREE 수신 | [비식별 관측 요약](../apps/car/verification/navigation-cdfc0e8c.json). 실제 도착·방문·반복 기준값은 관측하지 못함. 수정한 release의 연동 시험과 구분 |
+| Navi 상태 회귀 | 실제 콜백 10개 재생과 초기화·취소·FREE·검색 완료·시뮬레이션·도착 보존의 JVM 8개 시험 통과 | 전체 JVM 44개에 포함. 취소 후 과거 안내·도착 차단과 초기 복원 상태의 INITIALIZING 처리를 확인. 같은 SDK의 새 경로 시작 이후 과거 payload를 완전히 구분할 route ID는 없음 |
 | Google OAuth 설정 | 공급자 설정 및 Production 상태 전환 확인 | 관리 화면 설정 확인. 실제 모바일 Google 로그인 성공은 미확인 |
 | 실제 클라우드 HTTP 흐름 | 폐기용 Auth 계정·차량 익명 계정으로 양쪽 연결, AI 2개 턴, 원문 보관, 큐 기록·일기 생성, 수동 일기 보호, 제외·삭제·계정 삭제 확인 | `supabase/tests/evals/cloud-20261114-results.json`: passed. 비밀번호 QA 계정을 사용했으며 Google UI·마이크·TTS·앱 화면 시험은 아님 |
 | 실제 클라우드 개인정보 시나리오 | 민감한 합성 원문과 파생 기억을 실제 저장한 뒤 occupied·unknown 각각 한 응답에서 선제 노출 없음 | `supabase/tests/evals/cloud-privacy-20261114-results.json`: passed. 관측한 두 응답의 결과이며 모든 발화의 비노출을 보장하는 시험은 아님 |
 
-최종 차량 `cdfc0e8c…` APK에는 UX 제한 보강과 진행 중 연결 코드의 암호화 캐시·서버 재검증 복원이 포함된다. 코드가 숨겨진 오류 상태에서는 기존 캐시를 재검증하고, 명시적으로 새 코드를 요청할 때만 폐기한다. 연결 확인 중에는 새 polling을 시작하지 않는다. 캐시 파싱, 기기·소유자 범위, 만료 경계, 동일 요청 상태 확인과 만료 연장 방지를 확인하는 새 JVM 시험 6개가 전체 36개에 포함된다. B4의 실제 앱 재시작 복원과 명시적 새 코드 발급은 단독 AVD·서버에서 확인했다. 직전 `dcd467b52dfe2379e1362732c93a6a60810d08ed026497a49c343211fb35362a`의 UI·영상 자료와 `91390127bd0bc8a39308ed9db662dfe992371f1a2efe2cde630e683fc286a1d8`에 대응하는 debug SDK 계측은 해당 버전의 증거로 보존하며, 새 APK의 실행 결과로 합산하지 않는다.
+최종 차량 `d81d030d…` APK에는 UX 제한 보강과 진행 중 연결 코드의 암호화 캐시·서버 재검증 복원이 포함된다. 코드가 숨겨진 오류 상태에서는 기존 캐시를 재검증하고, 명시적으로 새 코드를 요청할 때만 폐기한다. 연결 확인 중에는 새 polling을 시작하지 않는다. 캐시 파싱, 기기·소유자 범위, 만료 경계, 동일 요청 상태 확인과 만료 연장 방지를 확인하는 새 JVM 시험 6개가 전체 44개에 포함된다. B4의 실제 앱 재시작 복원과 명시적 새 코드 발급은 단독 AVD·서버에서 확인했다. 직전 `dcd467b52dfe2379e1362732c93a6a60810d08ed026497a49c343211fb35362a`의 UI·영상 자료와 `91390127bd0bc8a39308ed9db662dfe992371f1a2efe2cde630e683fc286a1d8`에 대응하는 debug SDK 계측은 해당 버전의 증거로 보존하며, 새 APK의 실행 결과로 합산하지 않는다.
 
-최종 `cdfc0e8c…` APK에는 실제 SDK 준비 콜백 이후 듣기 상태 표시와 좌석 신뢰 정책이 포함됐다. 늦은·중복 준비 콜백의 세대 검사 및 준비 중 일시정지·종료 경계는 독립 소스 검토를 거쳤고 최종 빌드가 통과했다. B4의 서버 연결 복원, 이전 debug SDK와 좌석 토글 관측은 각각 해당 버전의 증거이며, 최종 APK의 깨끗한 설치·음성 실행 결과는 별도로 확인해야 한다.
+최종 `d81d030d…` APK에는 SDK 준비 이후 듣기 상태 표시, 좌석 신뢰 정책, Navi 안내 모드 기반 상태 처리가 포함됐다. 실제 관측한 `ROUTE_GUIDING / isRouting=false`를 안내로 유지하고, 취소·FREE 뒤 늦은 상태·도착의 재생성을 막는다. 수정 범위는 독립 소스 검토와 JVM 시험·최종 빌드를 통과했다. B4 복원, 이전 debug 음성·좌석 및 cdfc 내비 관측은 각 버전의 증거다. 최종 APK의 깨끗한 설치·연결된 사용자 맥락·사람 음성 실행 결과는 별도로 확인해야 한다.
 
 직전 모바일 `b7277a22279c2aa2b55012033b69b3a646852152cffc1e8cd0153747b8ae1c50`도 위 최신 `59a42829…`로 대체했다. 구 모바일 APK SHA-256 `36411eec9200a4ee53894e23ff0090ccf3a0e1d8d1e7eac8291cdcad35b21fb4`는 계정 경계 수정 전 파일이며, 생성된 Dart 파일의 개인 홈 경로도 포함했다. 위 최종 APK로 대체했으므로 제출·녹화에는 구 파일을 사용하지 않는다.
 

@@ -4,6 +4,7 @@ import ai.pleos.playground.location.fused.FusedLocation
 import ai.pleos.playground.location.fused.listener.FusedLocationListener
 import ai.pleos.playground.location.fused.model.LocationData
 import ai.pleos.playground.navi.constants.NaviErrorCode
+import ai.pleos.playground.navi.constants.NavigationStatus
 import ai.pleos.playground.navi.data.DestinationArrivedInfo
 import ai.pleos.playground.navi.data.DestinationInfo
 import ai.pleos.playground.navi.data.DrivingInfo
@@ -76,6 +77,10 @@ data class VehicleContext(
         tripBaseline = VehicleSignal(source = "local_confirmed_arrivals", status = SignalStatus.UNAVAILABLE)
     )
 
+    internal fun withoutNavigationRoute(): VehicleContext = withoutActiveRoute().copy(
+        arrival = VehicleSignal(source = "pleos_navi_arrived", status = SignalStatus.UNAVAILABLE)
+    )
+
     /** API v1 context. Locations/addresses are never sent to the server. */
     fun toJson(nowMillis: Long = System.currentTimeMillis()): JSONObject {
         val out = JSONObject().put("source", "pleos")
@@ -121,7 +126,8 @@ class PleosVehicleContext(context: Context) {
     val state: StateFlow<VehicleContext> = mutableState.asStateFlow()
     private var generation = 0L
     private var active = false
-    private var routeActive = false
+    private val navigationLifecycle = NavigationLifecycleGuard()
+    private val routeActive: Boolean get() = navigationLifecycle.isGuiding
     private val secure = SecureStorage(this.context)
     private var placeMemory = LocalPlaceMemory()
     private var placeOwner: String? = null
@@ -132,6 +138,7 @@ class PleosVehicleContext(context: Context) {
     private var pendingLabel: String? = null
     private var pendingArrival: Long? = null
     private var pendingArrivalDuration: Int? = null
+    private var pendingArrivalTarget: VehicleCoordinate? = null
     private var currentTripBaseline: TripBaseline? = null
     private var confirmedArrival: VehicleCoordinate? = null
     private var confirmedArrivalAt: Long? = null
@@ -260,19 +267,15 @@ class PleosVehicleContext(context: Context) {
                     if (routeActive) setRemaining(drivingInfo.destination.duration)
                 }
                 override fun onRouteStarted(routeStartInfo: RouteStartInfo) = dispatch(token) {
-                    if (!routeActive) {
-                        clearRoute()
-                        tripId = UUID.randomUUID().toString()
-                    }
-                    routeActive = true
-                    mutableState.value = mutableState.value.copy(tripKey = tripId)
-                    runCatching { sdk.getDestinationInfo() }.onFailure { navigationUnavailable() }
+                    applyNavigationTransition(navigationLifecycle.onRouteStarted(), sdk)
+                    runCatching { sdk.getRouteStateInfo() }.onFailure { navigationUnavailable() }
                 }
                 override fun onDestinationArrived(destinationArrivedInfo: DestinationArrivedInfo) = dispatch(token) {
+                    if (!navigationLifecycle.onDestinationArrived()) return@dispatch
                     val info = destinationArrivedInfo
-                    routeActive = false
                     pendingArrival = System.currentTimeMillis().takeIf { info.duration >= 0 && info.distance >= 0 }
                     pendingArrivalDuration = info.duration.takeIf { it >= 0 }
+                    pendingArrivalTarget = destination.takeIf { pendingArrival != null }
                     confirmPendingArrival()
                     refreshPlaceLabel()
                     mutableState.value = mutableState.value.copy(
@@ -291,29 +294,33 @@ class PleosVehicleContext(context: Context) {
                     )
                 }
                 override fun onDestinationChanged() = dispatch(token) {
-                    clearRoute()
-                    runCatching { sdk.getRouteStateInfo() }.onFailure { navigationUnavailable() }
+                    applyNavigationTransition(navigationLifecycle.onDestinationChanged(), sdk)
+                    if (navigationLifecycle.acceptsGuidanceState) {
+                        runCatching { sdk.getRouteStateInfo() }.onFailure { navigationUnavailable() }
+                    }
                 }
-                override fun onRouteCancelled() = dispatch(token) { clearRoute() }
+                override fun onRouteCancelled() = dispatch(token) {
+                    applyNavigationTransition(navigationLifecycle.onRouteCancelled(), sdk)
+                }
+
+                // Both callbacks describe completion of route search, not arrival or guidance termination.
                 override fun onRouteEnded() = dispatch(token) {
-                    routeActive = false
-                    mutableState.value = mutableState.value.withoutActiveRoute()
-                    refreshPlaceLabel()
+                    applyNavigationTransition(navigationLifecycle.onRouteSearchCompleted(), sdk)
+                    if (navigationLifecycle.acceptsGuidanceState) {
+                        runCatching { sdk.getRouteStateInfo() }.onFailure { navigationUnavailable() }
+                    }
+                }
+                override fun onRoutingCompleted() = dispatch(token) {
+                    applyNavigationTransition(navigationLifecycle.onRouteSearchCompleted(), sdk)
+                    if (navigationLifecycle.acceptsGuidanceState) {
+                        runCatching { sdk.getRouteStateInfo() }.onFailure { navigationUnavailable() }
+                    }
                 }
                 override fun onRouteStateInfo(routeStateInfo: RouteStateInfo) = dispatch(token) {
-                    if (routeStateInfo.isRouting && !routeActive) {
-                        clearRoute()
-                        tripId = UUID.randomUUID().toString()
-                    }
-                    routeActive = routeStateInfo.isRouting
-                    mutableState.value = mutableState.value.copy(tripKey = tripId.takeIf { routeActive })
-                    if (!routeActive) {
-                        // Preserve a just-observed arrival when the route closes normally.
-                        mutableState.value = mutableState.value.withoutActiveRoute()
-                        refreshPlaceLabel()
-                    } else {
-                        runCatching { sdk.getDestinationInfo() }.onFailure { navigationUnavailable() }
-                    }
+                    applyNavigationTransition(navigationLifecycle.onRouteState(routeStateInfo), sdk)
+                }
+                override fun onNavigationStatus(status: NavigationStatus) = dispatch(token) {
+                    applyNavigationTransition(navigationLifecycle.onNavigationStatus(status), sdk)
                 }
                 override fun onError(errorCode: NaviErrorCode) = dispatch(token) { navigationUnavailable() }
             }
@@ -334,6 +341,30 @@ class PleosVehicleContext(context: Context) {
         }
     }
 
+    private fun applyNavigationTransition(transition: NavigationTransition, sdk: NaviHelper) {
+        when (transition) {
+            NavigationTransition.ACTIVATE -> {
+                clearRouteData()
+                tripId = UUID.randomUUID().toString()
+                mutableState.value = mutableState.value.copy(tripKey = tripId)
+                runCatching { sdk.getDestinationInfo() }.onFailure { navigationUnavailable() }
+            }
+            NavigationTransition.RETAIN -> {
+                runCatching { sdk.getDestinationInfo() }.onFailure { navigationUnavailable() }
+            }
+            NavigationTransition.CLEAR -> clearRouteData()
+            NavigationTransition.CLEAR_ACTIVE -> {
+                destination = null
+                destinationObservedAt = null
+                // A previously accepted arrival may still await a fresh local GPS observation.
+                // Its bounded pending evidence is separate from the now-cleared active destination.
+                mutableState.value = mutableState.value.withoutActiveRoute()
+                refreshPlaceLabel()
+            }
+            NavigationTransition.IGNORE -> Unit
+        }
+    }
+
     private fun setRemaining(seconds: Int) {
         mutableState.value = mutableState.value.copy(
             navigationStatus = SignalStatus.AVAILABLE,
@@ -347,22 +378,21 @@ class PleosVehicleContext(context: Context) {
     }
 
     private fun clearRoute() {
-        routeActive = false
+        navigationLifecycle.onRouteCancelled()
+        clearRouteData()
+    }
+
+    private fun clearRouteData() {
         destination = null
         destinationObservedAt = null
         pendingLabel = null
         pendingArrival = null
         pendingArrivalDuration = null
+        pendingArrivalTarget = null
         currentTripBaseline = null
         confirmedArrival = null
         confirmedArrivalAt = null
-        mutableState.value = mutableState.value.copy(
-            tripKey = null,
-            remainingSeconds = VehicleSignal(source = "pleos_navi_destination", status = SignalStatus.UNAVAILABLE),
-            arrival = VehicleSignal(source = "pleos_navi_arrived", status = SignalStatus.UNAVAILABLE),
-            placeLabel = VehicleSignal(source = "pleos_user_labeled_place", status = SignalStatus.UNAVAILABLE),
-            tripBaseline = VehicleSignal(source = "local_confirmed_arrivals", status = SignalStatus.UNAVAILABLE)
-        )
+        mutableState.value = mutableState.value.withoutNavigationRoute()
     }
 
     private fun navigationUnavailable() {
@@ -576,6 +606,7 @@ class PleosVehicleContext(context: Context) {
         pendingLabel = null
         pendingArrival = null
         pendingArrivalDuration = null
+        pendingArrivalTarget = null
         currentTripBaseline = null
         confirmedArrival = null
         confirmedArrivalAt = null
@@ -616,7 +647,7 @@ class PleosVehicleContext(context: Context) {
 
     private fun confirmPendingArrival() {
         val at = pendingArrival ?: return
-        val target = destination ?: return
+        val target = pendingArrivalTarget ?: return
         val now = System.currentTimeMillis()
         val location = state.value.location
         val point = location.freshValue(now, 30_000) ?: return
@@ -632,11 +663,13 @@ class PleosVehicleContext(context: Context) {
             confirmedArrivalAt = at
             pendingArrival = null
             pendingArrivalDuration = null
+            pendingArrivalTarget = null
             pendingLabel = null
             persistPlaces()
         } else if (now - at > 120_000) {
             pendingArrival = null
             pendingArrivalDuration = null
+            pendingArrivalTarget = null
             pendingLabel = null
         }
     }
@@ -675,12 +708,13 @@ class PleosVehicleContext(context: Context) {
     fun stop() {
         check(Looper.myLooper() == Looper.getMainLooper()) { "Call stop on the main thread" }
         active = false
-        routeActive = false
+        navigationLifecycle.resetForSdkGeneration()
         destination = null
         destinationObservedAt = null
         pendingLabel = null
         pendingArrival = null
         pendingArrivalDuration = null
+        pendingArrivalTarget = null
         currentTripBaseline = null
         confirmedArrival = null
         confirmedArrivalAt = null

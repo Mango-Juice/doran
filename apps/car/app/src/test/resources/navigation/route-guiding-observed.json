@@ -1,0 +1,17 @@
+{
+  "source": "cdfc0e8c-clean-install/navigation/navigation-probe.json",
+  "observed_at": "2026-11-13T21:15:52Z",
+  "scope": "Selected real callback order and reported fields; no arrival event was observed",
+  "events": [
+    {"event":"onRouteStateInfo","navi_mode":"SAFE_GUIDING","is_routing":false,"elapsed_ms":392},
+    {"event":"onRouteStarted","elapsed_ms":9788},
+    {"event":"onNavigationStatus","status":"ROUTE_DRIVE","elapsed_ms":9793},
+    {"event":"onRouteStateInfo","navi_mode":"ROUTE_GUIDING","is_routing":false,"elapsed_ms":9852},
+    {"event":"onRouteStateInfo","navi_mode":"ROUTE_GUIDING","is_routing":false,"elapsed_ms":11603},
+    {"event":"onDestinationInfo","remaining_seconds":60,"remaining_meters":50,"elapsed_ms":12615},
+    {"event":"onRouteStateInfo","navi_mode":"ROUTE_GUIDING","is_routing":false,"elapsed_ms":14604},
+    {"event":"onDestinationInfo","remaining_seconds":60,"remaining_meters":50,"elapsed_ms":15599},
+    {"event":"onRouteCancelled","elapsed_ms":33828},
+    {"event":"onNavigationStatus","status":"FREE_DRIVE","elapsed_ms":33836}
+  ]
+}

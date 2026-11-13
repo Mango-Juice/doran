@@ -16,7 +16,7 @@ FusedLocation 권한은 런타임 허용이 필요하다. 권한 요청 화면�
 - `Odometer.getTripCurrentDrivingDistance()`의 단위는 **미터**다. 누적 주행거리 API의 km 단위와 혼동하지 않는다.
 - NaviHelper `DestinationInfo.remainTime`, `DrivingState.duration`, `DestinationArrivedInfo.duration`은 **초**다. 목적지 도착의 이동거리는 **미터**다.
 - 현재 값은 수신 시각과 출처를 가진다. 위치는 SDK의 원래 측정 시각을 보존한다. 서버에 보내는 신호는 수신 후 60초를 넘었거나 미래 시각이면 제외한다. on-change 구독 값이 갱신되지 않으면 오래된 값으로 질문하지 않는다.
-- 경로가 활성화된 경우에만 남은 시간을 사용한다. 경로 취소·종료·오류는 남은 시간을 지우며, 새 도착 이벤트는 별도로 보존한다.
+- 명시적인 `ROUTE_GUIDING` 모드에서만 목적지·남은 시간을 사용한다. `isRouting`만으로 안내 여부를 판정하지 않으며 `ROUTE_DRIVE` 단독이나 경로 검색 완료도 실제 안내 시작으로 해석하지 않는다. 명시 취소·FREE/비안내 상태·오류는 활성 경로를 지운다. 정상적으로 수락한 도착 직후 FREE 전환에서는 도착 사실을 60초간 보존하지만, 취소된 경로의 늦은 도착은 수락하지 않는다. 시뮬레이션 안내는 실제 이동 맥락에서 제외한다.
 
 ## 동승자 정보의 보수적 처리
 
@@ -138,9 +138,21 @@ STT 입력은 16 kHz·16-bit·mono PCM 31,168바이트였다. [공식 PCM 전송
 
 Odometer 현재 운행 시간·거리 capability는 이 실행에서도 예외 `a`로 실패했다. Console의 누적 주행거리(km)를 현재 운행거리(m)로 대체하지 않는다. Navi 연결은 확인됐지만 이 합성 음성 시험에서 활성 경로·도착은 관측하지 않았다.
 
+## 실제 내비 경로 관측과 상태 처리 수정: 2026-11-14 06:15 KST
+
+단독 4096MB·CPU 2개 환경에서 별도 debug 계측 앱으로 공식 샘플의 공개 목적지에 `requestRoute`를 한 번 호출했다. 설치된 Navigation 앱과 Navi 서비스, 필요한 권한, 정차 상태 및 기존 경로가 없음을 먼저 확인했다. [비식별 관측 요약](../apps/car/verification/navigation-cdfc0e8c.json)에 실제 debug·instrumentation APK 해시와 콜백 순서를 남겼다. `cdfc0e8c`는 이때 함께 만든 release의 참조 해시이며, 이후 상태 처리 수정본을 뜻하지 않는다.
+
+실제 SDK는 `onRouteStarted` → `ROUTE_DRIVE` → `ROUTE_GUIDING / isRouting=false` 순서를 보냈고, 같은 안내 모드에서 목적지의 남은 시간 60초·거리 50m를 제공했다. 종료 시 시험 목적지임을 다시 확인한 뒤 취소했으며 `onRouteCancelled`와 `FREE_DRIVE`를 받았다. 실제 도착 및 `onRoutingCompleted`는 관측하지 못했다. 원본은 로컬 `app/build/verification/cdfc0e8c-clean-install/navigation/`에 보존한다.
+
+이 관측으로 기존 생산 어댑터가 `isRouting=false`만 보고 유효한 안내 맥락을 지우는 결함을 발견했다. 수정한 `NavigationLifecycleGuard`는 명시적인 안내 모드를 사용하며, 실제 콜백 10개를 담은 fixture와 취소·FREE·검색 완료·시뮬레이션·정상 도착 보존 경계를 JVM 시험으로 확인한다. [공식 목적지 안내](https://document.pleos.ai/docs/pleos-only/connect-sdk-pleos/NaviHelper/destinations)에서 경로 탐색 시작·완료와 목적지 설정을 구분하며, 배포된 NaviHelper 3.0.5의 `NaviHelperEventListener`에서도 `onRouteEnded`는 `onRoutingCompleted`로 대체된 검색 완료 콜백이다. 이는 기록된 실제 콜백을 정책 코드에 재생하는 시험이며, 수정한 release에서 연결된 사용자의 맥락·AI 대화가 실제로 동작했다는 증거는 아니다.
+
+취소나 FREE 이후에는 같은 SDK 세대의 늦은 안내 상태·목적지·도착이 경로를 다시 만들 수 없다. 새 경로 시작은 별도 상태로 전환하며, 새 SDK 세대는 현재 안내 상태를 다시 조회할 수 있다. 최초 복원 상태의 `INITIALIZING`은 경로 종료로 확정하지 않고 다음 안내 상태를 기다린다. 이 초기화 순서는 실제 관측 사례가 아닌 별도 정책 회귀 범위이며, 이미 취소된 경로의 재개는 허용하지 않는다. SDK 콜백에 경로 식별자가 없어 새로운 안내가 시작된 뒤 이전 경로의 payload가 도착하는 경우를 완전히 구분할 수는 없다. 정상 도착 뒤 늦게 도착한 GPS 확인용 목표는 기기 내에만 잠시 보존하고, 기존 120초·GPS 신선도·200m 조건을 적용한다. 취소·새 경로·동의 철회·중지 시에는 함께 지운다.
+
+`NAVI_ROUTE_SEARCH` 권한과 경로 요청 시험은 debug/instrumentation에만 있으며 release에는 없다. 실제 목적지 도착, 반복 방문, 이동시간 기준값 및 사람의 연결 후 대화는 아직 별도 검증이 필요하다.
+
 ## 에뮬레이터 실행 및 Virtual Console 활성화
 
-검증용 `Doran_Verification` AVD는 공식 Pleos Connect 2.1.0 arm64, 전체 디스플레이 1920×1080이다. 최초 시험은 RAM 3072MB·CPU 2개였으며, 현재 검증 명령은 `-memory 4096 -cores 2`로 지정한다. 디스플레이 전체 크기와 OEM이 배치하는 앱 영역(관측된 1256×850)은 구분한다. 기존 PoC AVD와 원본 시스템 이미지는 보존했다. 메모리가 작은 개발 Mac에서는 release 축소 빌드(R8)와 에뮬레이터의 동시 실행을 피한다. 실제로 QEMU main loop와 CPU thread의 15초 무응답 뒤 HangDetector 종료가 관측됐다. 이 현상을 앱 크래시와 구분한다.
+검증용 `Doran_Verification` AVD는 공식 Pleos Connect 2.1.0 arm64, 전체 디스플레이 1920×1080이다. 최초 시험은 RAM 3072MB·CPU 2개였으며, 현재 검증 명령은 `-memory 4096 -cores 2`로 지정한다. 디스플레이 전체 크기와 OEM이 배치하는 앱 영역(관측된 1256×850 및 실제 바 조작 후 628×850)은 구분한다. 기존 PoC AVD와 원본 시스템 이미지는 보존했다. 메모리가 작은 개발 Mac에서는 release 축소 빌드(R8)와 에뮬레이터의 동시 실행을 피한다. 실제로 QEMU main loop와 CPU thread의 15초 무응답 뒤 HangDetector 종료가 관측됐다. 이 현상을 앱 크래시와 구분한다.
 
 기본 이미지 시간대는 `America/Los_Angeles`였으며, UTC를 비교했을 때 호스트와 에뮬레이터는 초 단위 측정의 1초 범위 안에서 일치했다. 한국 시나리오의 화면 표시를 위해 새 검증 AVD에만 `settings put global auto_time_zone 0`과 `cmd alarm set-timezone Asia/Seoul`을 적용했다. 자동 시각 동기화(`auto_time=1`)와 실제 epoch는 유지했다. 기존 AVD나 시스템 이미지의 시간은 변경하지 않았다.
 

@@ -24,6 +24,8 @@ node_modules/
 **/GeneratedPluginRegistrant.*
 **/__pycache__/
 artifacts/private/
+# Publish the reviewed demo through GitHub Releases, outside Git's file limit.
+/demo/*.mp4
 supabase/.temp/
 supabase/.branches/
 

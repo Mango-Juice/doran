@@ -34,8 +34,8 @@ Kotlin·Jetpack Compose 차량 앱은 실서버 설정을 사용하며, AI나 SD
 
 - 버전: `1.0.0` / versionCode `1`, 패키지 `app.doran.car`
 - 산출물: `apps/car/app/build/outputs/apk/release/app-release.apk`, 17,220,506 bytes
-- SHA-256: `cdfc0e8c5fcd1d29bf908bb19941723e080451404fb280bce8fcd070e906e2ea`
-- `ktlintCheck`, JVM 단위 시험 36개, `lintRelease`, release 빌드가 통과했다. 시험에는 요청 세대·음성 종료 문구, 계정/세션 작업 소유권, 개별 UX 제한, 차량 정보 유효성, 반복 방문·도착 기준값 정책이 포함된다.
+- SHA-256: `d81d030d70e97408fda02f3f9f7c0d80352e1f205a6b5752bea0384e7fda4e18`
+- `ktlintCheck`, JVM 단위 시험 44개, `lintRelease`, release 빌드가 통과했다. 시험에는 요청 세대·음성 종료 문구, 계정/세션 작업 소유권, 개별 UX 제한, 차량 정보 유효성, 반복 방문·도착 기준값 정책과 Navi 상태 회귀 8개가 포함된다. Navi 회귀는 기록한 실제 콜백의 재생 및 정책 경계 시험이며 실제 목적지 도착 검증이 아니다.
 - APK v2 서명을 검증했다. release는 디버그 가능하지 않으며, `assets/licenses.txt`는 배포 고지 원문과 일치한다.
 - `SdkVerificationActivity`, `SDKSmokeTest`와 합성 PCM 시험 자료는 release APK에 포함되지 않는다. 계측 시험용 debug는 `app.doran.car.debug`로 설치해 release의 차량 연결 상태를 보존한다.
 - Gradle 의존성 잠금 파일과 배포판 SHA-256을 고정했다. formatter 실행과 검사·빌드는 순차 수행한다.
@@ -47,6 +47,14 @@ Kotlin·Jetpack Compose 차량 앱은 실서버 설정을 사용하며, AI나 SD
 [B4 release의 복원 결과](../apps/car/verification/pairing-b4fdac87.json)는 앱 프로세스를 완전히 종료한 뒤 새 프로세스에서 같은 연결 코드를 복원한 관측이다. 서버에서도 같은 challenge id·생성/만료 시각·waiting 상태를 확인했고 새 행은 생성되지 않았다. 명시적 새 코드 버튼은 별도로 신규 요청을 한 개 생성했다. 과거 요청의 expired 상태는 원래 만료 시각 이후에 조회했으므로 발급 즉시의 상태를 직접 관측했다고 해석하지 않는다.
 
 이 시험은 모바일 계정이 아직 승인하지 않은 요청의 복원이다. 실제 Google 로그인과 양쪽 승인 연결은 별도 확인해야 한다. B4는 위 최신 APK의 마이크 준비·좌석 신뢰 정책 보완 이전 빌드이며, 해당 정책과 최신 APK의 설치 검증을 대체하지 않는다.
+
+## 깨끗한 설치와 OEM 창 크기 관측
+
+Navi 상태 수정 전 `cdfc0e8c` release는 서버에서 미연결·사용자 기록 없음이 확인된 시험 기기에서 차량 앱 패키지만 제거한 뒤 다시 설치했다. 기존 AVD 데이터와 다른 앱은 유지했다. 실제 Park→Drive 20km/h→Park 전환에서 코드·설정 숨김과 정차 후 복귀를 확인했다. 이 결과는 해당 해시의 관측이며 후속 APK의 설치 결과와 구분한다.
+
+물리 디스플레이는 1920×1080이고 처음 관측된 도란 앱 영역은 1256×850이었다. 실제 화면의 OEM 윈도 바를 한 번 드래그한 뒤 앱 영역이 628×850으로 바뀐 것을 task bounds와 화면에서 확인했다. 연결 화면의 제목·코드·버튼·안내 문장은 두 영역에서 잘리지 않았다. 드래그 방향을 공식 제스처 계약으로 일반화하지 않으며, 이미지 크기 변경이나 물리 DPI 조작으로 화면을 흉내 내지 않았다. 연결 이후 대화 화면의 두 영역 대응은 아직 별도 확인해야 한다.
+
+원본 화면·task bounds·설치 결과는 로컬 `apps/car/app/build/verification/cdfc0e8c-clean-install/`에 보존한다. 실제 내비 callback 관측과 이후 JVM 회귀는 [SDK 검증 문서](car-sdk.md)에 별도로 기록한다.
 
 ## 플랫폼 UX 제한과 화면 대응
 

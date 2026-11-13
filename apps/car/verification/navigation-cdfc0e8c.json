@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "started_at": "2026-11-13T21:15:52.078680Z",
+  "finished_at": "2026-11-13T21:16:26.715557Z",
+  "scope": "Actual NaviHelper callbacks from the separate debug instrumentation app before the navigation lifecycle fix; not the corrected release runtime or a real journey.",
+  "environment": {
+    "image": "Pleos Connect 2.1.0 / AAOS 14 / API 34 / arm64",
+    "emulator_version": "37.2.13",
+    "requested_memory_mb": 4096,
+    "cores": 2,
+    "instances": "one visible car emulator",
+    "navigation_app_installed": true,
+    "navi_service_installed": true
+  },
+  "artifacts": {
+    "release": {
+      "sha256": "cdfc0e8c5fcd1d29bf908bb19941723e080451404fb280bce8fcd070e906e2ea",
+      "bytes": 17220506
+    },
+    "debug": {
+      "sha256": "0ed6868c19890c49df64be82a9be946d2bb01d133439a1052eb68194fac34138",
+      "bytes": 46898689
+    },
+    "androidTest": {
+      "sha256": "b9c204ecddfcce085757fd7316a9f4a35a40a0178affcb6646d04a75901d5227",
+      "bytes": 1080413
+    }
+  },
+  "input": {
+    "kind": "one official SDK requestRoute call to the public destination from the Pleos navigation sample",
+    "synthetic_arrival_event": false,
+    "request_count": 1
+  },
+  "observations": {
+    "route_started_observed": true,
+    "routing_completed_observed": false,
+    "test_destination_matched": true,
+    "destination_eta_seconds": 60,
+    "real_arrival_observed": false,
+    "request_error_observed": false,
+    "test_destination_arrival_confirmed": false
+  },
+  "selected_callback_sequence": [
+    {
+      "event": "onRouteStateInfo",
+      "navi_mode": "SAFE_GUIDING",
+      "is_routing": false,
+      "elapsed_ms": 392
+    },
+    {
+      "event": "onRouteStarted",
+      "elapsed_ms": 9788
+    },
+    {
+      "event": "onNavigationStatus",
+      "status": "ROUTE_DRIVE",
+      "elapsed_ms": 9793
+    },
+    {
+      "event": "onRouteStateInfo",
+      "navi_mode": "ROUTE_GUIDING",
+      "is_routing": false,
+      "elapsed_ms": 9852
+    },
+    {
+      "event": "onRouteStateInfo",
+      "navi_mode": "ROUTE_GUIDING",
+      "is_routing": false,
+      "elapsed_ms": 11603
+    },
+    {
+      "event": "onDestinationInfo",
+      "remaining_seconds": 60,
+      "remaining_meters": 50,
+      "elapsed_ms": 12615
+    },
+    {
+      "event": "onRouteStateInfo",
+      "navi_mode": "ROUTE_GUIDING",
+      "is_routing": false,
+      "elapsed_ms": 14604
+    },
+    {
+      "event": "onDestinationInfo",
+      "remaining_seconds": 60,
+      "remaining_meters": 50,
+      "elapsed_ms": 15599
+    },
+    {
+      "event": "onRouteCancelled",
+      "elapsed_ms": 33828
+    },
+    {
+      "event": "onNavigationStatus",
+      "status": "FREE_DRIVE",
+      "elapsed_ms": 33836
+    }
+  ],
+  "cleanup": "CANCEL_CALLBACK_RECEIVED",
+  "finding": "ROUTE_GUIDING and ROUTE_DRIVE were observed with isRouting=false and a valid 60-second/50-meter destination. The old production adapter used only isRouting and discarded this guidance context.",
+  "follow_up": "The corrected NavigationLifecycleGuard is checked by replaying this selected callback sequence in JVM tests. Its actual connected production context and human conversation have not yet been verified.",
+  "limitations": [
+    "No actual destination arrival was observed.",
+    "No actual place visit or baseline was confirmed.",
+    "The SDK provides no route identifier, so an old payload delivered after a new guidance start cannot be perfectly correlated to its original route.",
+    "The route-search permission and NavigationProbeTest are debug/test only and absent from release."
+  ]
+}

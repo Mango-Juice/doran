@@ -60,8 +60,11 @@ def main():
             shutil.copy2(source, target)
             with target.open('rb') as stream:
                 digest = hashlib.file_digest(stream, 'sha256').hexdigest()
-            manifest['artifacts'].append({'path': relative, 'bytes': target.stat().st_size,
-                                          'sha256': digest})
+            artifact = {'path': relative, 'bytes': target.stat().st_size,
+                        'sha256': digest, 'distribution': 'git'}
+            if relative.startswith('demo/'):
+                artifact.update(distribution='release_asset', asset_name=target.name)
+            manifest['artifacts'].append(artifact)
         (stage/'release-manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+'\n')
         created = []
         try:
@@ -75,7 +78,7 @@ def main():
             for target in reversed(created):
                 target.unlink()
             raise
-    print('패키징 완료. APK·영상과 manifest만 추가 커밋해 제출 커밋을 고정하세요.')
+    print('패키징 완료. APK와 manifest를 커밋하고 영상은 GitHub Release asset으로 업로드하세요.')
 
 
 if __name__ == '__main__':

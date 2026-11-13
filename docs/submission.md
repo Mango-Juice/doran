@@ -14,9 +14,11 @@
 
 공식 제출 안내는 release APK와 소스, 최종 커밋 번호, Pleos Connect 에뮬레이터 버전·화면 규격을 요구한다. APK·영상이 저장소 업로드 한도를 넘으면 GitHub Releases 경로를 사용한다. [공식 제출 안내](https://appdevchallenge.auto-hmg.io/guide/submission)
 
+현재 크기의 APK는 공식 안내의 `apk/` 폴더에 넣는다. 시연 영상은 GitHub Release의 첨부 파일로 제공하고 README에 내려받기 링크를 적는다. GitHub는 일반 Git 파일이 100MiB를 넘으면 차단하므로 `demo/*.mp4`는 Git에서 제외한다. 포장된 영상 파일은 로컬 `demo/`에 보관한다. [GitHub 파일 크기 제한과 Releases](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github)
+
 팀명 확정 전 빌드 보관 이름은 `doran-car-release.apk`, `doran-mobile-release.apk`를 사용한다. 실제 제출 시 차량 APK를 공식 형식인 `팀명_도란_release.apk`로 정리한다. 파일명만 변경해도 SHA-256은 동일하지만 최종 목록의 경로는 다시 확인한다.
 
-현재 차량·모바일의 수정된 release APK 빌드와 독립 공개 검사를 마쳤다. 모델 직접 평가와 별도 debug 앱의 최초 합성 PCM 1회와 후속 3회 SDK 관측도 기록했다. 이 계측은 제출 release의 사람 음성 시연을 대신하지 않는다. Android·iOS의 로그인 전 실제 화면과 B4 차량의 코드 재시작 복원은 확인했다. Google 인증 완료부터 기록 삭제까지의 앱 통합 검증, 사람 발화, 제출 영상은 별도로 완료해야 한다. 최신 해시와 관측 범위는 [검증 기록](verification.md)을 확인한다. APK가 생성됐다는 사실만으로 제출 패키지가 완료된 것은 아니다. 연결 코드 복원이 추가된 최신 차량 APK와 이전 UI·SDK 시험 파일의 버전을 구분하며, 최종 녹화에는 고정한 제출 APK를 사용한다.
+현재 차량·모바일의 수정된 release APK 빌드와 독립 공개 검사를 마쳤다. 모델 직접 평가, 별도 debug 앱의 최초 합성 PCM 1회·후속 3회 및 내비 경로 1회 관측을 기록했다. 최신 차량 APK는 이 관측에서 발견한 Navi 상태 처리 결함을 수정하고 JVM 44개 시험을 통과했다. 이 계측은 제출 release의 사람 음성 시연을 대신하지 않는다. Android·iOS의 로그인 전 실제 화면과 B4 차량의 코드 재시작 복원은 확인했다. Google 인증 완료부터 기록 삭제까지의 앱 통합 검증, 사람 발화, 제출 영상은 별도로 완료해야 한다. 최신 해시와 관측 범위는 [검증 기록](verification.md)을 확인한다. APK가 생성됐다는 사실만으로 제출 패키지가 완료된 것은 아니다. 연결 코드 복원이 추가된 최신 차량 APK와 이전 UI·SDK 시험 파일의 버전을 구분하며, 최종 녹화에는 고정한 제출 APK를 사용한다.
 
 ## 약 3분 시연 구성
 
@@ -48,7 +50,7 @@ python3 scripts/package-release.py \
   --version 1.0.0
 ```
 
-도구는 소스 작업 폴더의 변경 여부, 기존 출력 충돌, APK 공개 검사, 영상 길이를 확인한 뒤 `apk/`, `demo/`, `release-manifest.json`을 생성한다. manifest에는 `release_version`과 파일 해시가 들어간다. `source_commit`은 포장 시 소스 커밋이므로, 해당 커밋으로 빌드·시연했다는 별도 검증을 완료해야 한다. 새 산출물과 manifest를 추가 커밋하여 최종 제출 커밋을 기록한다. 영상 내용·개인정보·실제 앱 흐름의 수동 검토와 APK 서명 검사는 이 명령이 대신하지 않는다.
+도구는 소스 작업 폴더의 변경 여부, 기존 출력 충돌, APK 공개 검사, 영상 길이를 확인한 뒤 `apk/`, `demo/`, `release-manifest.json`을 생성한다. manifest에는 `release_version`과 파일 해시가 들어가며, 영상에는 `distribution=release_asset`과 업로드할 `asset_name`을 기록한다. `source_commit`은 포장 시 소스 커밋이므로, 해당 커밋으로 빌드·시연했다는 별도 검증을 완료해야 한다. APK와 manifest를 추가 커밋하여 최종 제출 커밋을 고정하고, 이 커밋을 가리키는 GitHub Release에 `demo/doran-demo.mp4`를 첨부한다. 업로드 파일을 다시 내려받아 manifest의 SHA-256과 일치하는지 확인하고 Release 링크를 제출 자료에 넣는다. 영상 내용·개인정보·실제 앱 흐름의 수동 검토와 APK 서명 검사는 이 명령이 대신하지 않는다.
 
 팀명이 미정이면 `--team 확정팀명` 대신 `--provisional-team`을 사용한다. 이 경우 APK 이름은 `doran-car-release.apk`, `doran-mobile-release.apk`이며 manifest의 `team_name`은 null, `naming_status`는 `provisional`로 남긴다. 실제 접수 전 팀명이 정해지면 공식 파일명으로 변경하고 manifest의 경로·팀명을 갱신한다. 파일 내용이 같으면 SHA-256은 유지된다.
 
