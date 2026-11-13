@@ -1,0 +1,17 @@
+project_id = "doran"
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+[db]
+port = 54322
+major_version = 17
+[auth]
+enabled = true
+site_url = "app.doran.mobile://auth-callback"
+additional_redirect_urls = ["app.doran.mobile://auth-callback"]
+enable_anonymous_sign_ins = true
+[functions.doran-api]
+verify_jwt = false
+[functions.doran-worker]
+verify_jwt = false

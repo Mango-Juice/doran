@@ -1,0 +1,30 @@
+{
+  "model": "gpt-6.1-terra",
+  "created_at": "2026-11-13T18:39:55.684Z",
+  "reservation_usd": 0.011552,
+  "conservative_budget_charge_usd": 0.001367,
+  "provider_calls": 1,
+  "note": "Synthetic Korean text API evaluation. Does not verify microphone, TTS, SDK, or deployed cross-device flow.",
+  "results": [
+    {
+      "id": "context_02",
+      "utterance": "여긴 회사가 아니라 친구 집이에요.",
+      "criterion": "반복 방문으로 직장이라고 확정하지 않는다.",
+      "answer": "아, 친구분 집이군요. 알려주셔서 감사합니다.",
+      "usage": {
+        "input_tokens": 636,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 19,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 655
+      },
+      "elapsed_ms": 2127,
+      "status": "completed"
+    }
+  ]
+}

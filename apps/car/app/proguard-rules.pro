@@ -1,0 +1,2 @@
+-keep class ai.pleos.playground.** { *; }
+-dontwarn org.slf4j.**

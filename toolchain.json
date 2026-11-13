@@ -1,0 +1,10 @@
+{
+  "flutter": {
+    "version": "3.50.0",
+    "revision": "ab2912035e160d9cad6306df307576da6128ebdb"
+  },
+  "deno": "2.5.6",
+  "java": "21",
+  "pleos_emulator": "2.1.0",
+  "pleos_android_api": 34
+}

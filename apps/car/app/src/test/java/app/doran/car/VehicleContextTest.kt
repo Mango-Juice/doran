@@ -1,0 +1,62 @@
+package app.doran.car
+
+import app.doran.car.vehicle.SignalStatus
+import app.doran.car.vehicle.VehicleArrival
+import app.doran.car.vehicle.VehicleContext
+import app.doran.car.vehicle.VehicleCoordinate
+import app.doran.car.vehicle.VehicleSignal
+import org.junit.Assert.*
+import org.junit.Test
+
+class VehicleContextTest {
+    private val now = 1_800_000_000_000L
+    private fun <T> sample(value: T, at: Long = now) = VehicleSignal(value, "test", at, SignalStatus.AVAILABLE)
+
+    @Test fun `stale or future samples are not uploaded`() {
+        val context = VehicleContext(
+            consented = true,
+            remainingSeconds = sample(90, now - 60_001),
+            currentDrivingMeters = sample(1200.0, now + 1),
+            currentDrivingSeconds = sample(600L, now - 59_000)
+        )
+        val json = context.toJson(now)
+        assertFalse(json.has("destination_eta_seconds"))
+        assertFalse(json.has("trip_distance_m"))
+        assertEquals(600L, json.getLong("trip_duration_seconds"))
+        assertEquals("2027-01-15T07:59:01Z", json.getString("observed_at"))
+    }
+
+    @Test fun `revoked consent prevents every optional value from upload`() {
+        val context = VehicleContext(
+            consented = false,
+            remainingSeconds = sample(90),
+            currentDrivingMeters = sample(2000.0),
+            currentDrivingSeconds = sample(600L),
+            occupiedPassengerSeat = sample(true),
+            arrival = sample(VehicleArrival(600, 2000, "private place"))
+        )
+        val json = context.toJson(now)
+        assertEquals(setOf("source", "passenger_state", "observed_at"), json.keys().asSequence().toSet())
+        assertEquals("unknown", json.getString("passenger_state"))
+    }
+
+    @Test fun `empty supported sensors never prove a private cabin`() {
+        assertEquals("unknown", VehicleContext(consented = true, occupiedPassengerSeat = sample(false)).passengerState(now))
+        assertEquals("occupied", VehicleContext(consented = true, occupiedPassengerSeat = sample(true)).passengerState(now))
+        assertEquals("unknown", VehicleContext(consented = true, occupiedPassengerSeat = sample(true, now - 60_001)).passengerState(now))
+    }
+
+    @Test fun `precise coordinates and destination details remain off the wire`() {
+        val context = VehicleContext(
+            consented = true,
+            location = sample(VehicleCoordinate(37.285123, 127.045123)),
+            arrival = sample(VehicleArrival(1200, 3500, "private place"))
+        )
+        val json = context.toJson(now)
+        assertTrue(json.getBoolean("arrived"))
+        assertEquals("pleos", json.getString("source"))
+        assertFalse(json.toString().contains("37.285123"))
+        assertFalse(json.toString().contains("private place"))
+        assertFalse(json.has("evidence"))
+    }
+}

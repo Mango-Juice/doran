@@ -1,0 +1,4 @@
+# Replace SDK path for your machine. Do not commit local.properties.
+sdk.dir=/path/to/Android/sdk
+SUPABASE_URL=https://lokvjxxtnnzxnkjiehja.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_5QiXYbosgqwkhzKXPfarDQ_eS3y_-2L
