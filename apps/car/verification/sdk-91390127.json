@@ -130,7 +130,8 @@
     "Odometer capability requests failed; trip time/distance not available",
     "One speech round only; warm latency and 20 continuous turns unverified",
     "Vehicle signals are emulator data, not a physical vehicle",
-    "SDK instrumentation ran on the debug build from the same source build as the referenced release, not inside the release APK"
+    "SDK instrumentation ran on the debug build from the same source build as the referenced release, not inside the release APK",
+    "Earlier VirtualConsole state showed four seats unoccupied, while this later SDK snapshot returned true for five areas; the time and area differences mean Console-to-SDK occupancy mapping remains unverified"
   ],
   "source_build_release_apk_sha256": "91390127bd0bc8a39308ed9db662dfe992371f1a2efe2cde630e683fc286a1d8",
   "tested_debug_apk_sha256": "aa1934cd3c766ba2276dec1986ca91bf0e9cbb125cf3a95447adc47d1b668007",

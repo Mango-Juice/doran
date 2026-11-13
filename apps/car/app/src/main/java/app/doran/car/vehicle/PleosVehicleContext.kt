@@ -65,9 +65,9 @@ data class VehicleContext(
     val tripBaseline: VehicleSignal<TripBaseline> = VehicleSignal(source = "local_confirmed_arrivals"),
     val navigationStatus: SignalStatus = SignalStatus.DISABLED
 ) {
-    // Absence of an occupied sensor is not proof that every passenger seat is empty.
+    // Raw SDK readability does not establish trustworthy occupancy semantics.
     fun passengerState(nowMillis: Long = System.currentTimeMillis()): String =
-        if (consented && occupiedPassengerSeat.freshValue(nowMillis) == true) "occupied" else "unknown"
+        if (consented && SeatOccupancyTrust.isConfirmedOccupied(occupiedPassengerSeat, nowMillis)) "occupied" else "unknown"
 
     fun withoutActiveRoute(): VehicleContext = copy(
         tripKey = null,
@@ -106,7 +106,7 @@ data class VehicleContext(
                 arrival.measuredAtMillis?.let(observationTimes::add)
             }
         }
-        if (consented && occupiedPassengerSeat.freshValue(nowMillis) == true) {
+        if (passengerState(nowMillis) == "occupied") {
             occupiedPassengerSeat.measuredAtMillis?.let(observationTimes::add)
         }
         return out.put("observed_at", Instant.ofEpochMilli(observationTimes.maxOrNull() ?: nowMillis).toString())
@@ -167,7 +167,10 @@ class PleosVehicleContext(context: Context) {
             currentDrivingSeconds = VehicleSignal(source = "pleos_vehicle_odometer", status = SignalStatus.WAITING),
             currentDrivingMeters = VehicleSignal(source = "pleos_vehicle_odometer", status = SignalStatus.WAITING),
             arrival = VehicleSignal(source = "pleos_navi_arrived", status = SignalStatus.WAITING),
-            occupiedPassengerSeat = VehicleSignal(source = "pleos_vehicle_seat", status = SignalStatus.WAITING),
+            occupiedPassengerSeat = VehicleSignal(
+                source = "pleos_vehicle_seat",
+                status = if (SeatOccupancyTrust.automaticInferenceEnabled) SignalStatus.WAITING else SignalStatus.UNAVAILABLE
+            ),
             navigationStatus = SignalStatus.WAITING
         )
         initializeLocation(token)
@@ -382,6 +385,10 @@ class PleosVehicleContext(context: Context) {
                     dispatch(token) {
                         if (!readable(config)) {
                             seatUnavailable(SignalStatus.UNSUPPORTED)
+                        } else if (!SeatOccupancyTrust.automaticInferenceEnabled) {
+                            // Preserve the SDK's actual capability result; exclude its unverified
+                            // Boolean interpretation from production context and subscriptions.
+                            seatUnavailable(SignalStatus.UNAVAILABLE)
                         } else {
                             // Korean emulator configuration is left-hand drive. Combined driver areas
                             // are excluded because their occupancy cannot identify a passenger.
@@ -508,6 +515,10 @@ class PleosVehicleContext(context: Context) {
     }
 
     private fun updateSeat(area: SeatArea, occupied: Boolean?) {
+        if (!SeatOccupancyTrust.automaticInferenceEnabled) {
+            seatUnavailable(SignalStatus.UNAVAILABLE)
+            return
+        }
         occupiedSeats[area] = occupied
         mutableState.value = mutableState.value.copy(
             occupiedPassengerSeat = VehicleSignal(

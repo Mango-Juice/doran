@@ -11,6 +11,8 @@ import 'ui/journal.dart';
 import 'ui/login.dart';
 import 'ui/settings.dart';
 import 'ui/theme.dart';
+import 'startup.dart';
+import 'startup_trace.dart';
 
 const supabaseUrl = String.fromEnvironment(
   'SUPABASE_URL',
@@ -53,13 +55,13 @@ final repositoryProvider = Provider<DoranRepository>((ref) {
     publishableKey: publishableKey,
   );
 });
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  LicenseRegistry.addLicense(() async* {
-    yield LicenseEntryWithLineBreaks(const [
-      'Google Sans',
-    ], await rootBundle.loadString('assets/google/OFL.txt'));
-  });
+final appInitialization = AppInitialization(
+  initialize: _initializeSupabase,
+  cleanupAfterFailure: _disposeSupabaseAfterFailure,
+);
+
+Future<void> _initializeSupabase() async {
+  traceStartup(StartupStage.supabaseBegin);
   try {
     await Supabase.initialize(
       url: supabaseUrl,
@@ -71,21 +73,49 @@ Future<void> main() async {
         pkceAsyncStorage: SecurePkceStorage(secureStore),
       ),
     );
-    runApp(const ProviderScope(child: DoranApp()));
+    traceStartup(StartupStage.supabaseComplete);
   } catch (_) {
-    runApp(
-      MaterialApp(
-        theme: doranTheme(),
-        home: const Scaffold(
-          body: SafeArea(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('앱을 준비하지 못했어요. 앱을 다시 열어 주세요.'),
-              ),
-            ),
-          ),
-        ),
+    traceStartup(StartupStage.supabaseFailure);
+    rethrow;
+  }
+}
+
+Future<void> _disposeSupabaseAfterFailure() async {
+  traceStartup(StartupStage.cleanupBegin);
+  try {
+    Supabase? instance;
+    try {
+      instance = Supabase.instance;
+    } on AssertionError {
+      // In debug mode the SDK rejects the getter if initialization failed
+      // before constructing its client. There is no initialized client to reset.
+    }
+    if (instance?.isInitialized == true) await instance!.dispose();
+    traceStartup(StartupStage.cleanupComplete);
+  } catch (_) {
+    traceStartup(StartupStage.cleanupFailure);
+    rethrow;
+  }
+}
+
+void main() {
+  traceStartup(StartupStage.dartMain);
+  WidgetsFlutterBinding.ensureInitialized();
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks(const [
+      'Google Sans',
+    ], await rootBundle.loadString('assets/google/OFL.txt'));
+  });
+  runApp(
+    AppBootstrap(
+      initialization: appInitialization,
+      child: const ProviderScope(child: DoranApp()),
+    ),
+  );
+  if (kDebugMode) {
+    unawaited(
+      WidgetsBinding.instance.waitUntilFirstFrameRasterized.then(
+        (_) => traceStartup(StartupStage.firstFrameRasterized),
       ),
     );
   }

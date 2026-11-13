@@ -23,6 +23,8 @@
 
 [검증 기록](docs/verification.md)은 단위·계약 시험, 실제 클라우드 호출, SDK 실행, 사람 발화를 구분합니다. APK 파일명·영상 구성·버전 고정 절차는 [제출 안내](docs/submission.md)를 따릅니다. 미확인 동작은 완료로 표시하지 않습니다.
 
+실제 설치 앱의 로그인 전 화면: [Android](docs/images/android-login.png) · [iOS 시뮬레이터](docs/images/ios-login.png). 이 캡처 자체가 Google 로그인 완료를 뜻하지는 않습니다.
+
 ## 개인정보
 
 차량 음성 인식과 출력에는 Pleos SDK를 사용합니다. 음성 원본을 외부 AI로 전송하지 않습니다. 대화 텍스트와 사용자가 허용한 맥락은 서버와 AI에서 처리합니다. 계정·키·서명 정보, 참가신청서와 팀 내부 자료는 이 저장소에 포함하지 않습니다.
@@ -56,6 +58,7 @@ deno task --config supabase/deno.json verify
 - [모바일 구현](docs/mobile.md) · [모바일 시험 범위](docs/mobile-test-plan.md)
 - [개인정보 처리](docs/privacy.md) · [의존성 라이선스](docs/dependencies.md)
 - [1차 평가항목과 구현 근거](docs/evaluation.md)
+- [실제 발화 20턴과 영상 리허설](docs/demo-rehearsal.md)
 
 ## 공개 범위
 

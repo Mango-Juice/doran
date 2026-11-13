@@ -39,7 +39,7 @@ fun CarScreen(
     onSoloChange: (Boolean) -> Unit
 ) {
     val parked = state.canSetup
-    val showTranscript = state.canShowTranscript
+    val showTranscript = state.canShowTranscript && state.phase != Phase.CONNECTING
     val setupTitle = when {
         !state.uxKnown -> "차량 상태를 확인하고 있어요"
         state.driving -> "정차 후 휴대폰을\n연결해 주세요"
@@ -107,7 +107,7 @@ fun CarScreen(
                                     }
                                 )
                                 Spacer(Modifier.height(12.dp))
-                                CarText("5분 동안 사용할 수 있는 일회용 코드", color = Quiet, style = MaterialTheme.typography.bodyMedium)
+                                CarText("발급 후 5분 동안 유효한 일회용 코드", color = Quiet, style = MaterialTheme.typography.bodyMedium)
                             }
                             if (parked && state.claimant != null) {
                                 Spacer(Modifier.height(24.dp))
@@ -209,7 +209,7 @@ fun CarScreen(
                         if (state.paired && state.sessionId != null) {
                             OutlinedButton(
                                 onClick = onFinish,
-                                enabled = !busy,
+                                enabled = state.phase !in setOf(Phase.CONNECTING, Phase.SAVING),
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.weight(1f).heightIn(min = 80.dp)
                             ) {

@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'repository.dart';
+import '../startup_trace.dart';
 
 class SecureStore implements CacheStore {
   final FlutterSecureStorage storage;
@@ -35,7 +36,13 @@ class SecureSessionStorage extends LocalStorage {
   @override
   Future<void> initialize() async {}
   @override
-  Future<bool> hasAccessToken() async => await store.read(key) != null;
+  Future<bool> hasAccessToken() async {
+    traceStartup(StartupStage.sessionReadBegin);
+    final present = await store.read(key) != null;
+    traceStartup(StartupStage.sessionReadComplete);
+    return present;
+  }
+
   @override
   Future<String?> accessToken() => store.read(key);
   @override

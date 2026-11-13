@@ -1,0 +1,3 @@
+# Preserve upstream license bytes, including CRLF and original trailing spaces,
+# so the published provenance hash stays valid. This exception is vendor-only.
+apps/mobile/assets/google/OFL.txt -text -whitespace

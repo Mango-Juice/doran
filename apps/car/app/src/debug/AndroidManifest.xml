@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE_SEARCH" />
     <application>
         <activity android:name="app.doran.car.SdkVerificationActivity" android:exported="false">
             <meta-data android:name="distractionOptimized" android:value="true" />

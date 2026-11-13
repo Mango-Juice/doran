@@ -61,5 +61,7 @@
   "runtime_committed_conservative_usd": 0.016761,
   "runtime_reservations": 11,
   "runtime_unsettled_reservations": 0,
-  "note": "Usage-based conservative accounting (input $2/MTok, output $5/MTok), not provider billing. All direct evaluation calls completed with usage, so their reservations were settled. Runtime $29 and external $1 ceilings together remain $30."
+  "note": "Usage-based conservative accounting (input $2/MTok, output $5/MTok), not provider billing. All 100 direct Terra evaluation calls completed with usage, so their reservations were settled. One separate official setup verification call used gpt-6-luna and retains a $0.10 reservation inside the external $1 budget. Runtime $29 and external $1 ceilings together remain $30.",
+  "onboarding_provider_calls": 1,
+  "onboarding_model": "gpt-6-luna"
 }

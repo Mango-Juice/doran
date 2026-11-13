@@ -42,7 +42,9 @@ class MainActivity : ComponentActivity() {
                 ) {
                     CarScreen(state, model::start, {
                         model.pause()
-                    }, model::finish, model::connect, model::confirmPairing, ::requestVehiclePermission, model::setSoloAsserted)
+                    }, model::finish, {
+                        if (model.state.value.code.isEmpty()) model.connect() else model.requestNewPairing()
+                    }, model::confirmPairing, ::requestVehiclePermission, model::setSoloAsserted)
                 }
             }
         }

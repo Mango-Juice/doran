@@ -98,7 +98,7 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
         runCatching { old?.release() }
     }
 
-    suspend fun listen(onPartial: (String) -> Unit): String = withContext(Dispatchers.Main.immediate) {
+    suspend fun listen(onReady: () -> Unit = {}, onPartial: (String) -> Unit): String = withContext(Dispatchers.Main.immediate) {
         withTimeout(45_000) {
             val id = generation.advance()
             val startedAt = SystemClock.elapsedRealtime()
@@ -106,6 +106,15 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
             acquireFocus(id)
             try {
                 suspendCancellableCoroutine { continuation ->
+                    var readyDelivered = false
+                    fun notifyReady() {
+                        main.post {
+                            if (!generation.accepts(id) || !continuation.isActive || readyDelivered) return@post
+                            readyDelivered = true
+                            trace("stt", id, "accepted_ready", startedAt)
+                            onReady()
+                        }
+                    }
                     fun fail(code: String) {
                         if (!generation.accepts(id) || !continuation.isActive) return
                         generation.advance()
@@ -127,8 +136,14 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                         stt = sdk
                         sttOwner = id
                         val listener = object : ResultListener {
-                            override fun onReady() = trace("stt", id, "callback_ready", startedAt)
-                            override fun onStartedRecognition() = trace("stt", id, "callback_started", startedAt)
+                            override fun onReady() {
+                                trace("stt", id, "callback_ready", startedAt)
+                                notifyReady()
+                            }
+                            override fun onStartedRecognition() {
+                                trace("stt", id, "callback_started", startedAt)
+                                notifyReady()
+                            }
                             override fun onEndedRecognition() = trace("stt", id, "callback_ended", startedAt)
                             override fun onUpdated(text: String, completed: Boolean) {
                                 if (completed) trace("stt", id, "callback_final", startedAt)

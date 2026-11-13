@@ -12,7 +12,7 @@
 
 ## 차량 앱
 
-선언 기준은 [Gradle 설정](../apps/car/app/build.gradle.kts)이다. Kotlin 2.0.0, AGP 8.8.2, Compose BOM 2024.04.01을 사용한다. 라이브러리가 요청한 버전은 Gradle 해석에서 상향될 수 있으므로 아래 펼침 목록은 실제 release의 `sdkDependencies.txt`를 기준으로 작성했다. Gradle dependency lock 파일은 현재 없으며, 선언된 고정 버전과 실제 해석 결과를 구별한다.
+선언 기준은 [Gradle 설정](../apps/car/app/build.gradle.kts)이다. Kotlin 2.0.0, AGP 8.8.2, Compose BOM 2024.04.01을 사용한다. 라이브러리가 요청한 버전은 Gradle 해석에서 상향될 수 있으므로 아래 펼침 목록은 실제 release의 `sdkDependencies.txt`를 기준으로 작성했다. [Gradle dependency lock 파일](../apps/car/app/gradle.lockfile)을 포함하며, `apps/car/app/build.gradle.kts`의 `dependencyLocking { lockAllConfigurations() }`로 해석된 버전을 고정한다. 선언 버전과 실제 해석 결과는 구별한다.
 
 | 주요 직접 구성 | 선언 버전 | 라이선스 근거 |
 |---|---|---|

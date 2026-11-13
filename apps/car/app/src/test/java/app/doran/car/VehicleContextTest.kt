@@ -40,10 +40,34 @@ class VehicleContextTest {
         assertEquals("unknown", json.getString("passenger_state"))
     }
 
-    @Test fun `empty supported sensors never prove a private cabin`() {
+    @Test fun `unverified SDK booleans cannot establish either occupied or private cabin`() {
         assertEquals("unknown", VehicleContext(consented = true, occupiedPassengerSeat = sample(false)).passengerState(now))
-        assertEquals("occupied", VehicleContext(consented = true, occupiedPassengerSeat = sample(true)).passengerState(now))
+        assertEquals("unknown", VehicleContext(consented = true, occupiedPassengerSeat = sample(true)).passengerState(now))
         assertEquals("unknown", VehicleContext(consented = true, occupiedPassengerSeat = sample(true, now - 60_001)).passengerState(now))
+    }
+
+    @Test fun `readable but unverified occupied sample is excluded from cloud context and observation time`() {
+        val context = VehicleContext(
+            consented = true,
+            remainingSeconds = sample(90, now - 2_000),
+            occupiedPassengerSeat = VehicleSignal(true, "pleos_vehicle_seat", now, SignalStatus.AVAILABLE)
+        )
+        val json = context.toJson(now)
+        assertEquals("unknown", json.getString("passenger_state"))
+        assertEquals("2027-01-15T07:59:58Z", json.getString("observed_at"))
+        assertEquals(90, json.getInt("destination_eta_seconds"))
+    }
+
+    @Test fun `unavailable seat interpretation does not suppress valid independent vehicle signals`() {
+        val context = VehicleContext(
+            consented = true,
+            occupiedPassengerSeat = VehicleSignal(source = "pleos_vehicle_seat", status = SignalStatus.UNAVAILABLE),
+            arrival = sample(VehicleArrival(600, 1200, "public test destination"))
+        )
+        val json = context.toJson(now)
+        assertEquals("unknown", json.getString("passenger_state"))
+        assertTrue(json.getBoolean("arrived"))
+        assertEquals(600, json.getInt("trip_duration_seconds"))
     }
 
     @Test fun `precise coordinates and destination details remain off the wire`() {
