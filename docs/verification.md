@@ -1,12 +1,12 @@
 # 도란 검증 기록
 
-작성 기준: 2026-11-14 KST. 구현 중간의 코드 검사와 실제 실행 결과를 구분한다. 이 문서의 미검증 항목은 통과로 간주하지 않는다.
+작성 기준: 2026-11-14 KST. 구현 중간의 코드 검사와 실제 실행 결과를 구분한다. 이 문서의 미검증 항목은 통과로 간주하지 않는다. 최종 차량 APK·소스 독립 공개 검사는 커밋 `7214c534f5030665ee35047fa358632273b8dc7e`의 깨끗한 작업 폴더를 기준으로 수행했다. 이후 이 검증 문서의 갱신은 별도 변경이다.
 
 ## 확인된 결과
 
 | 검사 | 관측 결과 | 증거 |
 |---|---|---|
-| 공개 후보 소스 검사 | 개인 홈 경로 하드코딩 1건을 환경 변수로 교체한 후 최신 189개 후보 파일 검사 통과 | `python3 scripts/verify-publication.py --json`: 민감 패턴·내부 원본·개인 홈 경로 발견 0. 제출 커밋 전 재검사 필요 |
+| 공개 후보 소스 검사 | 개인 홈 경로 하드코딩 1건을 환경 변수로 교체한 후 고정 커밋의 190개 후보 파일 검사 통과 | `python3 scripts/verify-publication.py --apk apps/car/app/build/outputs/apk/release/app-release.apk --json`: 소스 민감 패턴·내부 원본·개인 홈 경로 발견 0 |
 | 공개 검사기 동작 | 기본 규칙 6개, 개인 홈 경로 5개, 정확한 vendor 바이너리 예외 7개 검사 통과 | 합성 입력·임시 Git 및 실제 바이너리로 검사기 동작 확인. 앱 기능 시험에 합산하지 않음 |
 | 패키징 복구 | 기존 manifest 거부, 부분 게시 실패 rollback, 성공 시 해시·소스 커밋 일치의 3개 검사 통과 | 격리된 임시 Git 저장소에서 검사. APK 검사와 영상 길이 판독은 스텁이므로 앱·영상 검증에 합산하지 않음 |
 | 로컬 DB 권한 | public 테이블 8개 RLS 활성, 클라이언트 쓰기·내부 RPC 실행·private schema 접근 차단 확인 | 로컬 PostgreSQL 읽기 전용 ACL 검사. 클라우드 배포 상태와 별도 |
@@ -14,12 +14,16 @@
 | 서버 단위·HTTP | 최종 `deno task verify` 통과: 시험 27개·0개 실패, 타입·lint·formatter 통과 | `supabase/deno.json`의 verify task. 최신 예산 결과 파일 추가 후 formatter 재검사 통과 |
 | 서버 배포 | API v7·worker v5 ACTIVE 확인 | 최신 프롬프트 배포 상태. 앞선 실제 HTTP 흐름·개인정보 관측 결과 및 최신 직접 모델 평가와 구분 |
 | 모바일 정적·단위·위젯 | 정적 검사 문제 없음, 전체 49개와 추가 자동 갱신 3개 시험 통과 | [모바일 구현 기록](mobile.md). 계정 변경 시 route 폐기·지연 저장 차단, 선택 날짜·추가 페이지 유지, 인증 만료 내용 제거 포함 |
+| 차량 Android 품질·빌드 | 최종 ktlintCheck·JVM 시험 27개·lintRelease·release 빌드·v2 서명 검증 통과 | `app.doran.car`, 1.0.0(1). 라이선스 원문 일치, debug Activity·테스트 클래스·합성 PCM의 release 미포함도 차량 담당이 확인 |
+| 차량 APK 공개 검사 | 17,220,494 bytes, 비밀키·미승인 개인 경로·debug/testOnly/cleartext manifest 발견 0 | SHA-256 `91390127bd0bc8a39308ed9db662dfe992371f1a2efe2cde630e683fc286a1d8`. 검토한 vendor native 바이너리 7개 SHA도 일치 |
 | 모바일 Android 빌드 | 계정·갱신 경계 수정 후 최종 release APK 빌드 및 별도 release 키의 v2 서명 검증 통과 | `app.doran.mobile`, 1.0.0(1), minSdk26·targetSdk36. 개인 이름 없는 임시 소스 경로에서 난독화·분리 심볼로 빌드 |
 | 모바일 APK 공개 검사 | 52,864,796 bytes, 개인 홈 경로·비밀키 패턴·debug/testOnly/cleartext manifest 발견 0 | SHA-256 `b7277a22279c2aa2b55012033b69b3a646852152cffc1e8cd0153747b8ae1c50`. 최종 APK를 독립 검사했으며 실행·로그인 성공을 뜻하지 않음 |
 | iOS 빌드 | Xcode27.0·iOS27.0 simulator 빌드 성공 | 설치와 launch PID 반환 확인, 실제 앱 화면 표시는 미확인. 계정 변경 경계 후속 수정 전 결과 |
 | Google OAuth 설정 | 공급자 설정 및 Production 상태 전환 확인 | 관리 화면 설정 확인. 실제 모바일 Google 로그인 성공은 미확인 |
 | 실제 클라우드 HTTP 흐름 | 폐기용 Auth 계정·차량 익명 계정으로 양쪽 연결, AI 2개 턴, 원문 보관, 큐 기록·일기 생성, 수동 일기 보호, 제외·삭제·계정 삭제 확인 | `supabase/tests/evals/cloud-20261114-results.json`: passed. 비밀번호 QA 계정을 사용했으며 Google UI·마이크·TTS·앱 화면 시험은 아님 |
 | 실제 클라우드 개인정보 시나리오 | 민감한 합성 원문과 파생 기억을 실제 저장한 뒤 occupied·unknown 각각 한 응답에서 선제 노출 없음 | `supabase/tests/evals/cloud-privacy-20261114-results.json`: passed. 관측한 두 응답의 결과이며 모든 발화의 비노출을 보장하는 시험은 아님 |
+
+차량의 `NO_TEXT_MESSAGE`·`NO_VOICE_TRANSCRIPTION` 표시 차단과 플랫폼 문자열 길이 상한의 전체 문구 적용은 위 `91390127…` APK 이후 보강된 변경이다. 해당 변경의 소스 검토는 마쳤으나, 새 JVM 28개 시험과 재빌드 APK 검증은 아직 별도로 진행해야 한다. 위 차량 빌드·공개 검사 결과를 이후 소스까지 적용한 결과로 해석하지 않는다.
 
 구 모바일 APK SHA-256 `36411eec9200a4ee53894e23ff0090ccf3a0e1d8d1e7eac8291cdcad35b21fb4`는 계정 경계 수정 전 파일이며, 생성된 Dart 파일의 개인 홈 경로도 포함했다. 위 최종 APK로 대체했으므로 제출·녹화에는 구 파일을 사용하지 않는다.
 
@@ -44,7 +48,7 @@
 | 차량 연결 | 만료, 코드 재사용, 양쪽 확인, 연결 해제 직후 차단 | 설치 앱과 실제 API 흐름 |
 | 데이터 변경 | 기록 수정·제외·삭제, 일기 수동 수정 보존, 생성 도중 삭제 | 최신 revision 검사 및 경쟁 조건 시험 |
 | 예산 | 동시 요청에서도 총 예약액 상한 유지, 실패·취소·중복의 비용 정산 | DB 트랜잭션 시험과 사용량 원장 |
-| Android 품질 | 차량·모바일 분석, 단위 시험, release 빌드 | 종료 코드와 시험 결과 파일 |
+| CI | 고정 소스의 서버·차량·모바일 job 결과 | GitHub Actions 실행 결과. 로컬 통과와 구분 |
 | iOS 품질 | 분석·시험, 시뮬레이터 빌드·실행 | 빌드 로그와 실행 화면 |
 | 음성 | 실제 마이크 → STT → AI → 실제 TTS 청취, 20회 연속 턴 | 사람 발화 시험과 합성 입력 시험을 각각 기록 |
 | 차량 상태 | 주차·주행·분할 화면·내비/통화 포커스·백그라운드·권한 거부 | 실제 SDK 이벤트와 화면 결과 |

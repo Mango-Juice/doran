@@ -18,6 +18,8 @@ flutter run --dart-define=SUPABASE_URL=https://YOUR_PROJECT.supabase.co \
 
 Supabase redirect allowlist: `app.doran.mobile://auth-callback`. 시스템 브라우저 PKCE로 로그인하며 세션과 코드 검증기는 Keychain/Android Keystore 기반 저장소에 보관합니다.
 
+Google 로그인 버튼은 [공식 브랜딩 지침](https://developers.google.com/identity/branding-guidelines)의 표준 G 아이콘, 밝은 배경, Google Sans Medium과 한국어 안내를 사용합니다. 자산 원본·해시·글꼴 라이선스는 [Google 자산 안내](assets/google/README.md)에 기록했습니다. 글꼴·아이콘을 실행 중 외부에서 내려받지 않습니다.
+
 ## 빌드
 
 ```sh

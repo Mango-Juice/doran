@@ -32,7 +32,7 @@ void main() {
           },
         ),
       );
-      final start = find.text('Google 계정으로 시작');
+      final start = find.text('Google로 계속하기');
       await tester.ensureVisible(start);
       await tester.tap(start);
       await tester.pump();
@@ -58,7 +58,7 @@ void main() {
           },
         ),
       );
-      final start = find.text('Google 계정으로 시작');
+      final start = find.text('Google로 계속하기');
       await tester.ensureVisible(start);
       await tester.tap(start);
       await tester.pumpAndSettle();
@@ -80,7 +80,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(loginApp(onLogin: () async {}, scale: 2));
       expect(tester.takeException(), isNull);
-      final start = find.text('Google 계정으로 시작');
+      final start = find.text('Google로 계속하기');
       await tester.ensureVisible(start);
       await tester.tap(start);
       await tester.pumpAndSettle();

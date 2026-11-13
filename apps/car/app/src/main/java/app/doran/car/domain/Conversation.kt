@@ -19,10 +19,20 @@ data class ConversationState(
     val driving: Boolean = true,
     val canSetup: Boolean = false,
     val canShowTranscript: Boolean = false,
+    val textLimit: Int? = null,
     val vehicleConsent: Boolean = false,
     val soloAsserted: Boolean = false,
+    val passengerDetected: Boolean = false,
     val errorCode: String? = null
 )
+
+/** The platform limit also applies to status labels, without leaving a split surrogate pair. */
+fun restrictCarText(text: String, maxLength: Int?): String {
+    if (maxLength == null || text.length <= maxLength) return text
+    if (maxLength <= 0) return ""
+    val prefix = text.take(maxLength - 1).dropLastWhile { it.isHighSurrogate() }
+    return "$prefix…"
+}
 
 /** Every asynchronous speech/network completion belongs to a single generation. */
 class GenerationGate {

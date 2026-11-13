@@ -58,18 +58,29 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 44),
                 SizedBox(
                   width: double.infinity,
-                  child: FilledButton.icon(
-                    icon: busy
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.login),
-                    label: Text(busy ? '로그인 여는 중' : 'Google 계정으로 시작'),
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.white,
+                      foregroundColor: const Color(0xff1f1f1f),
+                      disabledForegroundColor: const Color(0xff5f6368),
+                      overlayColor: const Color(0xff1f1f1f),
+                      side: const BorderSide(color: Color(0xff747775)),
+                      shape: const StadiumBorder(),
+                      padding: EdgeInsets.symmetric(
+                        horizontal:
+                            Theme.of(context).platform == TargetPlatform.iOS
+                            ? 16
+                            : 12,
+                        vertical: 16,
+                      ),
+                      textStyle: const TextStyle(
+                        fontFamily: 'GoogleSans',
+                        fontSize: 14,
+                        height: 20 / 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     onPressed: busy
                         ? null
                         : () async {
@@ -90,6 +101,40 @@ class _LoginPageState extends State<LoginPage> {
                               if (mounted) setState(() => busy = false);
                             }
                           },
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/google/g-logo.png',
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.contain,
+                          excludeFromSemantics: true,
+                        ),
+                        SizedBox(
+                          width:
+                              Theme.of(context).platform == TargetPlatform.iOS
+                              ? 12
+                              : 10,
+                        ),
+                        Expanded(
+                          child: Text(
+                            busy ? '로그인 여는 중' : 'Google로 계속하기',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        if (busy) ...[
+                          const SizedBox(width: 10),
+                          const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xff1f1f1f),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
                 if (error != null || widget.authError != null)

@@ -1,0 +1,143 @@
+{
+  "harness_completed": true,
+  "speech": {
+    "mode": "ON_DEVICE",
+    "microphone_requested": false,
+    "source": "Local synthetic 16kHz signed16LE mono PCM",
+    "cases": [
+      {
+        "index": 1,
+        "fixture": "THANKS-190.pcm",
+        "expected_text": "감사합니다",
+        "fixture_sha256": "e78c39c939bde42e0617290a67301ae7421f600156d185822451c6db0a0537ae",
+        "stt": {
+          "status": "FINAL_RECEIVED",
+          "final_text": "감사합니다",
+          "events": [
+            {
+              "name": "initialized",
+              "elapsed_realtime_ms": 519317
+            },
+            {
+              "name": "onStartedRecognition",
+              "elapsed_realtime_ms": 539239
+            },
+            {
+              "name": "onEndedRecognition",
+              "elapsed_realtime_ms": 539272
+            },
+            {
+              "name": "final",
+              "elapsed_realtime_ms": 539319
+            }
+          ],
+          "elapsed_ms": 20505,
+          "expected_match": true
+        },
+        "tts": {
+          "status": "SDK_ON_DONE_RECEIVED",
+          "evidence": "Production PleosSpeech.speak returned after real SDK onDone; physical speaker audibility unverified",
+          "elapsed_ms": 28569
+        }
+      }
+    ],
+    "audio_focus_interruptions": 0
+  },
+  "permission_denied_location": "PERMISSION_REQUIRED",
+  "permission_granted_location": "AVAILABLE",
+  "top_keys": [
+    "started_at",
+    "package",
+    "fingerprint",
+    "sdk_int",
+    "requested_speech_rounds",
+    "input_scope",
+    "foreground_host",
+    "location_initially_granted",
+    "permission_denied_phase",
+    "location_permission",
+    "context",
+    "vehicle_capabilities",
+    "speech",
+    "harness_completed",
+    "finished_at"
+  ],
+  "vehicle_capabilities": {
+    "driving_time": {
+      "status": "ERROR",
+      "error_class": "a",
+      "error_code": null
+    },
+    "driving_distance": {
+      "status": "ERROR",
+      "error_class": "a",
+      "error_code": null
+    },
+    "seat_occupancy": {
+      "status": "READ_SUPPORTED",
+      "access_type": "READ",
+      "areas": [
+        {
+          "status": "VALUE_RECEIVED",
+          "occupied": true,
+          "get_callback_count": 1,
+          "areas": [
+            "ROW_2_LEFT"
+          ]
+        },
+        {
+          "status": "VALUE_RECEIVED",
+          "occupied": true,
+          "get_callback_count": 1,
+          "areas": [
+            "ROW_2_RIGHT"
+          ]
+        },
+        {
+          "status": "VALUE_RECEIVED",
+          "occupied": true,
+          "get_callback_count": 1,
+          "areas": [
+            "ROW_2_CENTER"
+          ]
+        },
+        {
+          "status": "VALUE_RECEIVED",
+          "occupied": true,
+          "get_callback_count": 1,
+          "areas": [
+            "ROW_1_LEFT"
+          ]
+        },
+        {
+          "status": "VALUE_RECEIVED",
+          "occupied": true,
+          "get_callback_count": 1,
+          "areas": [
+            "ROW_1_RIGHT"
+          ]
+        }
+      ],
+      "source": "Vehicle.checkSeatOccupancyCapabilities/getCurrentSeatOccupancy"
+    }
+  },
+  "test_date_kst": "2026-11-14",
+  "environment": "Pleos Connect 2.1.0 official arm64 image, AAOS14/API34, Doran_Verification AVD, 3072MB, 2 cores",
+  "evidence_limitations": [
+    "Synthetic PCM through actual STT SDK; no human microphone input",
+    "TTS callback completion; physical audio audibility and first syllable unverified",
+    "Navi connected; active route, ETA and arrival not observed",
+    "Odometer capability requests failed; trip time/distance not available",
+    "One speech round only; warm latency and 20 continuous turns unverified",
+    "Vehicle signals are emulator data, not a physical vehicle",
+    "SDK instrumentation ran on the debug build from the same source build as the referenced release, not inside the release APK"
+  ],
+  "source_build_release_apk_sha256": "91390127bd0bc8a39308ed9db662dfe992371f1a2efe2cde630e683fc286a1d8",
+  "tested_debug_apk_sha256": "aa1934cd3c766ba2276dec1986ca91bf0e9cbb125cf3a95447adc47d1b668007",
+  "instrumentation_apk_sha256": "f51b8f262888b066aa4957cfdcda99408185f6271d43d78320893d2775810f42",
+  "target_package": "app.doran.car.debug",
+  "started_at": "2026-11-13T19:17:24.712827Z",
+  "finished_at": "2026-11-13T19:18:45.938300Z",
+  "sdk_int": 34,
+  "fingerprint": "Pleos/crp_avd_arm64/crp_avd_arm64:14/RELEASE.release_connect_v2.1.0/release_connect_v2.1.0:user/test-keys"
+}

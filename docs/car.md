@@ -24,4 +24,46 @@ Kotlin·Jetpack Compose 차량 앱은 실서버 설정을 사용하며, AI나 SD
 - 네트워크 단절, 중단 후 재개, 요청 중복, 계정 연결 해제
 - 실제 사람의 발화와 합성 입력을 분리한 연속 턴 시험
 
-검증 결과와 APK 해시는 실제 실행 후 이 문서에 덧붙인다. 현재 문서의 체크 항목 자체는 통과 증거가 아니다.
+위 체크 항목은 검증 범위이며, 항목 자체는 통과 증거가 아니다. 실제 결과는 아래와 별도의 SDK 문서에서 확인한다.
+
+## 2026-11-14 release 빌드 검증
+
+- 버전: `1.0.0` / versionCode `1`, 패키지 `app.doran.car`
+- 산출물: `apps/car/app/build/outputs/apk/release/app-release.apk`, 17,220,506 bytes
+- SHA-256: `dcd467b52dfe2379e1362732c93a6a60810d08ed026497a49c343211fb35362a`
+- `ktlintCheck`, JVM 단위 시험 28개, `lintRelease`, release 빌드가 통과했다. 시험에는 요청 세대·음성 종료 문구, 계정/세션 작업 소유권, 개별 UX 제한, 차량 정보 유효성, 반복 방문·도착 기준값 정책이 포함된다.
+- APK v2 서명을 검증했다. release는 디버그 가능하지 않으며, `assets/licenses.txt`는 배포 고지 원문과 일치한다.
+- `SdkVerificationActivity`, `SDKSmokeTest`와 합성 PCM 시험 자료는 release APK에 포함되지 않는다. 계측 시험용 debug는 `app.doran.car.debug`로 설치해 release의 차량 연결 상태를 보존한다.
+- Gradle 의존성 잠금 파일과 배포판 SHA-256을 고정했다. formatter 실행과 검사·빌드는 순차 수행한다.
+
+주행 여부 외에도 `NO_SETUP`, `LIMIT_CONTENT`, `LIMIT_STRING_LENGTH`를 별도로 검사한다. 주차 상태에서도 설정 제한은 코드·설정을 숨기고, 내용·문자열 제한은 긴 대화문까지 숨긴다. `DoranStartup` 로그는 모델 준비와 첫 내용 draw의 소요 시간만 기록하며 사용자 대화·계정 정보를 기록하지 않는다. 실제 화면에 나타난 시점은 OEM 합성과 전환 시간을 포함하므로 이 내부 시점과 별도로 측정한다.
+
+## 플랫폼 UX 제한과 화면 대응
+
+[Android CarUxRestrictions 공식 정의](https://developer.android.com/reference/android/car/drivingstate/CarUxRestrictions)에 따라 DO 필요 여부와 아래 flag를 함께 사용한다. 플랫폼 상태를 알 수 없으면 연결·설정·본문을 숨기고 음성 대화를 시작하지 않는다.
+
+| 플랫폼 flag | 차량 앱의 대응 |
+|---|---|
+| `NO_DIALPAD` | 전화 다이얼 입력 UI가 없다. 연결 코드는 표시만 하며 입력은 모바일에서 한다. |
+| `NO_FILTERING` | 목록 필터·검색 UI가 없다. |
+| `NO_KEYBOARD` | 텍스트 입력 UI가 없다. 기록 편집과 코드 입력은 모바일에서 한다. |
+| `NO_VIDEO` | 영상과 반복 상태 애니메이션을 제공하지 않는다. 준비·저장 상태는 즉시 바뀌는 짧은 문장으로 표시한다. |
+| `NO_SETUP` | 연결 코드·연결 확인·혼자 대화 선택·위치 권한 요청을 숨기고 실행 경로에서도 차단한다. |
+| `LIMIT_CONTENT` | 대화 원문·AI 본문 및 연결·설정을 숨긴다. 기록 목록·스크롤 탐색을 제공하지 않는다. |
+| `LIMIT_STRING_LENGTH` | 본문·연결·설정을 숨기고, 남는 상태·버튼 문구에도 플랫폼의 `maxRestrictedStringLength`를 적용한다. |
+| `NO_TEXT_MESSAGE` | 대화 원문·AI 본문을 숨긴다. 연결·설정도 보수적으로 숨긴다. |
+| `NO_VOICE_TRANSCRIPTION` | 실시간·완료된 음성 인식 문구와 AI 본문을 숨긴다. 음성 입력·출력 자체는 이 표시 제한으로 중단하지 않는다. |
+
+차량 안에는 라이선스 긴 본문 뷰어가 없다. 라이선스는 APK의 `assets/licenses.txt`와 저장소 문서로 제공한다. 모든 차량 화면 텍스트는 `CarText`를 거쳐 길이 제한을 적용하며, 원문·AI 본문·연결 코드의 숨김은 Compose와 접근성 트리 모두에 반영한다. 위 개별 flag 경계는 JVM 정책 시험으로 확인하고, 에뮬레이터에서 실제로 발생한 주행 flag 검증과 구분한다.
+
+## 실제 음성 지연 측정
+
+앱의 `DoranSpeech` 로그는 요청 번호·단계·요청 이후 경과 시간만 포함한다. STT의 `listen_requested`→`sdk_initialized`→`microphone_request_dispatched`→`callback_ready/started/ended/final`, TTS의 `speak_requested`→`sdk_initialized`→`preroll_started/done`→`sdk_speak_dispatched`→`callback_started/done`을 구분한다. SDK가 제공하지 않는 콜백은 관측되지 않은 것으로 남긴다. `callback_final/done`과 `accepted_final/done`의 차이는 SDK 콜백을 Main에서 처리할 때의 대기 시간을 보여 준다. 늦은 콜백은 기록되어도 현재 요청으로 채택하지 않는다.
+
+사람 발화를 시험할 때는 아래처럼 앱의 비식별 계측 태그만 수집한다. SDK 자체의 전체 로그는 발화 원문을 포함할 수 있으므로 공개 산출물에 넣지 않는다.
+
+```sh
+adb -s emulator-5554 logcat -v threadtime DoranSpeech:I DoranStartup:I '*:S'
+```
+
+이 계측은 실제 스피커 음량·첫 음절·발화 길이·음질을 증명하지 않는다. 해당 항목은 실제 청취와 별도로 확인한다.

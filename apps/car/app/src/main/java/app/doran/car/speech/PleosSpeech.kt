@@ -11,6 +11,8 @@ import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
+import android.util.Log
 import app.doran.car.domain.GenerationGate
 import java.io.IOException
 import java.util.Locale
@@ -41,6 +43,10 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
     private var sttOwner: Long? = null
     private var ttsOwner: Long? = null
     private var cancellationOwner: Long? = null
+
+    private fun trace(kind: String, id: Long, event: String, startedAt: Long) {
+        Log.i("DoranSpeech", "kind=$kind request=$id event=$event elapsed_ms=${SystemClock.elapsedRealtime() - startedAt}")
+    }
 
     private fun acquireFocus(owner: Long) {
         releaseFocus()
@@ -95,6 +101,8 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
     suspend fun listen(onPartial: (String) -> Unit): String = withContext(Dispatchers.Main.immediate) {
         withTimeout(45_000) {
             val id = generation.advance()
+            val startedAt = SystemClock.elapsedRealtime()
+            trace("stt", id, "listen_requested", startedAt)
             acquireFocus(id)
             try {
                 suspendCancellableCoroutine { continuation ->
@@ -119,14 +127,16 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                         stt = sdk
                         sttOwner = id
                         val listener = object : ResultListener {
-                            override fun onReady() = Unit
-                            override fun onStartedRecognition() = Unit
-                            override fun onEndedRecognition() = Unit
+                            override fun onReady() = trace("stt", id, "callback_ready", startedAt)
+                            override fun onStartedRecognition() = trace("stt", id, "callback_started", startedAt)
+                            override fun onEndedRecognition() = trace("stt", id, "callback_ended", startedAt)
                             override fun onUpdated(text: String, completed: Boolean) {
+                                if (completed) trace("stt", id, "callback_final", startedAt)
                                 main.post {
                                     if (!generation.accepts(id) || !continuation.isActive) return@post
                                     onPartial(text)
                                     if (completed) {
+                                        trace("stt", id, "accepted_final", startedAt)
                                         generation.advance()
                                         releaseStt()
                                         if (text.isBlank()) {
@@ -147,6 +157,7 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                         sdk.initialize(object : ai.pleos.playground.stt.listener.OnInitializeListener {
                             private var configured = false
                             override fun onSuccess() {
+                                trace("stt", id, "sdk_initialized", startedAt)
                                 main.post {
                                     if (!generation.accepts(id) || !continuation.isActive) return@post
                                     if (configured) return@post
@@ -155,6 +166,7 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                                         sdk.setLocale(Locale.KOREA)
                                         sdk.addListener(listener)
                                         sdk.request()
+                                        trace("stt", id, "microphone_request_dispatched", startedAt)
                                     }
                                         .onFailure { fail("recognition_unavailable") }
                                 }
@@ -182,6 +194,8 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
         if (text.isBlank()) return@withContext
         withTimeout(60_000) {
             val id = generation.advance()
+            val startedAt = SystemClock.elapsedRealtime()
+            trace("tts", id, "speak_requested", startedAt)
             acquireFocus(id)
             try {
                 suspendCancellableCoroutine<Unit> { continuation ->
@@ -206,13 +220,15 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                         tts = sdk
                         ttsOwner = id
                         val listener = object : ai.pleos.playground.tts.listener.EventListener {
-                            override fun onReady() = Unit
-                            override fun onStart() = Unit
+                            override fun onReady() = trace("tts", id, "callback_ready", startedAt)
+                            override fun onStart() = trace("tts", id, "callback_started", startedAt)
                             override fun onDone() {
+                                trace("tts", id, "callback_done", startedAt)
                                 main.post {
                                     if (generation.accepts(id) &&
                                         continuation.isActive
                                     ) {
+                                        trace("tts", id, "accepted_done", startedAt)
                                         generation.advance()
                                         releaseTts()
                                         continuation.resume(Unit)
@@ -231,6 +247,7 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                         sdk.initialize(object : ai.pleos.playground.tts.listener.OnInitializeListener {
                             private var configured = false
                             override fun onSuccess() {
+                                trace("tts", id, "sdk_initialized", startedAt)
                                 main.post {
                                     if (!generation.accepts(id) || !continuation.isActive) return@post
                                     if (configured) return@post
@@ -241,9 +258,12 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                                         CoroutineScope(continuation.context).launch {
                                             try {
                                                 // Open the initialized assistant route with 160ms of zero PCM.
+                                                trace("tts", id, "preroll_started", startedAt)
                                                 withContext(Dispatchers.IO) { preRoll() }
+                                                trace("tts", id, "preroll_done", startedAt)
                                                 if (generation.accepts(id) && continuation.isActive && focusOwner == id) {
                                                     sdk.speak(text, true)
+                                                    trace("tts", id, "sdk_speak_dispatched", startedAt)
                                                 }
                                             } catch (cancelled: CancellationException) {
                                                 throw cancelled

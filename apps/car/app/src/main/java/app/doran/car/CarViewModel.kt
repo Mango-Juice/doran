@@ -44,6 +44,7 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
             var previouslyOccupied = false
             vehicle.state.collect { context ->
                 val occupied = context.passengerState() == "occupied"
+                mutable.update { it.copy(passengerDetected = occupied) }
                 if (occupied && state.value.soloAsserted) mutable.update { it.copy(soloAsserted = false) }
                 if (occupied && !previouslyOccupied && isTalking()) pause("동승자가 감지되어 대화를 잠시 멈췄어요")
                 previouslyOccupied = occupied
@@ -56,7 +57,8 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
                         uxKnown = driving.known,
                         driving = driving.driving,
                         canSetup = driving.canSetup,
-                        canShowTranscript = driving.canShowTranscript
+                        canShowTranscript = driving.canShowTranscript,
+                        textLimit = driving.textLimit
                     )
                 }
                 if (!driving.known && isTalking()) pause("차량 상태를 확인한 뒤 다시 시작해 주세요")
@@ -213,7 +215,7 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
         }
         settings = api.request("/settings")
         val consented = settings.optBoolean("vehicle_context_enabled")
-        mutable.update { it.copy(vehicleConsent = consented) }
+        mutable.update { it.copy(vehicleConsent = consented, passengerDetected = vehicle.state.value.passengerState() == "occupied") }
         vehicle.syncMemoryRevision(settings.optLong("vehicle_memory_revision", 0))
         if (foreground) vehicle.start(consented)
         if (!settings.optBoolean("consent_accepted") && isTalking()) pause("휴대폰에서 데이터 처리 안내를 확인해 주세요")

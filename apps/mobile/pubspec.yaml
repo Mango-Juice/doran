@@ -21,3 +21,12 @@ dev_dependencies:
   flutter_lints: 6.0.0
 flutter:
   uses-material-design: true
+  assets:
+    - assets/google/g-logo.png
+    - assets/google/OFL.txt
+    - assets/google/TRADEMARKS.md
+  fonts:
+    - family: GoogleSans
+      fonts:
+        - asset: assets/google/GoogleSans.ttf
+          weight: 500

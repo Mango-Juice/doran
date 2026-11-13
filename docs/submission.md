@@ -16,7 +16,7 @@
 
 팀명 확정 전 빌드 보관 이름은 `doran-car-release.apk`, `doran-mobile-release.apk`를 사용한다. 실제 제출 시 차량 APK를 공식 형식인 `팀명_도란_release.apk`로 정리한다. 파일명만 변경해도 SHA-256은 동일하지만 최종 목록의 경로는 다시 확인한다.
 
-현재 모바일 빌드·정적 시험과 모델 직접 평가가 진행되었지만, 인증 소유자 변경과 차량 음성 취소 경계의 후속 수정이 있어 앞선 APK 해시는 최종 제출 버전을 뜻하지 않는다. Android·iOS 실제 로그인부터 기록 삭제까지의 통합 검증, 사람 발화, 제출 영상은 별도로 완료해야 한다. 최신 수치는 [검증 기록](verification.md)을 확인한다.
+현재 차량·모바일의 수정된 release APK 빌드와 독립 공개 검사를 마쳤다. 모델 직접 평가 결과도 기록했다. 차량·모바일의 실제 화면과 로그인부터 기록 삭제까지의 통합 검증, 사람 발화, 제출 영상은 별도로 완료해야 한다. 최신 해시와 관측 범위는 [검증 기록](verification.md)을 확인한다. APK가 생성됐다는 사실만으로 제출 패키지가 완료된 것은 아니다.
 
 ## 약 3분 시연 구성
 
@@ -49,5 +49,7 @@ python3 scripts/package-release.py \
 ```
 
 도구는 소스 작업 폴더의 변경 여부, 기존 출력 충돌, APK 공개 검사, 영상 길이를 확인한 뒤 `apk/`, `demo/`, `release-manifest.json`을 생성한다. manifest에는 `release_version`과 파일 해시가 들어간다. `source_commit`은 포장 시 소스 커밋이므로, 해당 커밋으로 빌드·시연했다는 별도 검증을 완료해야 한다. 새 산출물과 manifest를 추가 커밋하여 최종 제출 커밋을 기록한다. 영상 내용·개인정보·실제 앱 흐름의 수동 검토와 APK 서명 검사는 이 명령이 대신하지 않는다.
+
+팀명이 미정이면 `--team 확정팀명` 대신 `--provisional-team`을 사용한다. 이 경우 APK 이름은 `doran-car-release.apk`, `doran-mobile-release.apk`이며 manifest의 `team_name`은 null, `naming_status`는 `provisional`로 남긴다. 실제 접수 전 팀명이 정해지면 공식 파일명으로 변경하고 manifest의 경로·팀명을 갱신한다. 파일 내용이 같으면 SHA-256은 유지된다.
 
 공모전 이메일 접수는 앱 제작과 별도 작업이다. 제출용 신청서·서명·개인 연락처와 팀 내부 대화는 공개 저장소에 넣지 않는다.

@@ -6,6 +6,8 @@
 
 - 차량: [원문 고지 모음](license-notices.txt)을 `apps/car/app/src/main/assets/licenses.txt`에도 복사했다. 아래의 152개 해석된 Maven 의존성에서 확인한 9개 출처의 고유 원문 3개를 보존한다. Apache-2.0 원문, JNA의 선택 라이선스 안내, OkHttp의 public suffix 고지를 포함한다. 원문별 출처와 SHA-256을 함께 기록했다.
 - 모바일: Flutter가 생성한 `assets/flutter_assets/NOTICES.Z`가 Android release APK에 들어 있으며, 주요 직접 의존성 6개 모두의 이름과 고지가 포함됨을 압축 해제하여 확인했다. iOS 시뮬레이터 빌드에도 `App.framework/flutter_assets/NOTICES.Z`가 있다. Flutter 엔진은 여러 제3자 구성요소를 포함하므로 엔진 전체를 단일 BSD 라이선스로 표기하지 않는다.
+- Google 로그인 자산: 공식 G 이미지는 [Google 브랜드 사용 지침](https://developers.google.com/identity/branding-guidelines)에 따라 로그인 버튼에 사용한다. 글꼴의 OFL이 G 이미지나 Google 상표의 사용 권한까지 부여하는 것은 아니다. 원본 URL과 파일 해시는 [자산 출처](../apps/mobile/assets/google/README.md)에 기록했다.
+- Google Sans: Google Fonts의 가변 글꼴 원본을 보관하고 버튼에는 Medium 굵기를 사용한다. 저작권 표기는 `Copyright 2025 The Google Sans Project Authors`이며 [SIL Open Font License 1.1 원문](../apps/mobile/assets/google/OFL.txt)을 함께 배포한다. Google·Google Sans는 Google LLC의 상표로, 글꼴 이용을 Google의 제휴·후원으로 표현하지 않는다. [상표 안내 원문](../apps/mobile/assets/google/TRADEMARKS.md)
 - 라이선스 요약과 링크는 배포물의 원문 고지를 대체하지 않는다. APK를 다시 빌드할 때 고지 파일을 제거하지 않고, 의존성이 바뀌면 이 목록과 고지를 갱신한다.
 
 ## 차량 앱
