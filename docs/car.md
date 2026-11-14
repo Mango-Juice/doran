@@ -34,13 +34,15 @@ Kotlin·Jetpack Compose 차량 앱은 실서버 설정을 사용하며, AI나 SD
 
 - 버전: `1.0.0` / versionCode `1`, 패키지 `app.doran.car`
 - 산출물: `apps/car/app/build/outputs/apk/release/app-release.apk`, 17,220,506 bytes
-- SHA-256: `1271d0d1d7b358dfea23d947c42dff48dacf238c8be64b7d23a6d1221c4f3fc2`
-- `ktlintCheck`, JVM 단위 시험 44개, `lintRelease`, release 빌드가 통과했다. 시험에는 요청 세대·음성 종료 문구, 계정/세션 작업 소유권, 개별 UX 제한, 차량 정보 유효성, 반복 방문·도착 기준값 정책과 Navi 상태 회귀 8개가 포함된다. Navi 회귀는 기록한 실제 콜백의 재생 및 정책 경계 시험이며 실제 목적지 도착 검증이 아니다.
+- SHA-256: `b73fbd34a10735e428b57c93d15f1674cacf4b73302360934b23f13cfb49a386`, 소스 `4cbe3aa12d66256487eccc1238faf7cc12d61be1`
+- `ktlintCheck`, JVM 단위 시험 49개, `lintRelease`, release 빌드와 해당 커밋의 CI가 통과했다. 시험에는 요청 세대·음성 종료 문구, 계정/세션 작업 소유권, 개별 UX 제한, 차량 정보 유효성, 반복 방문·도착 기준값 정책과 Navi 상태 회귀 8개가 포함된다. Navi 회귀는 기록한 실제 콜백의 재생 및 정책 경계 시험이며 실제 목적지 도착 검증이 아니다.
 - APK v2 서명을 검증했다. release는 디버그 가능하지 않으며, `assets/licenses.txt`는 배포 고지 원문과 일치한다.
 - `SdkVerificationActivity`, `SDKSmokeTest`와 합성 PCM 시험 자료는 release APK에 포함되지 않는다. 계측 시험용 debug는 `app.doran.car.debug`로 설치해 release의 차량 연결 상태를 보존한다.
 - Gradle 의존성 잠금 파일과 배포판 SHA-256을 고정했다. formatter 실행과 검사·빌드는 순차 수행한다.
 
 주행 여부 외에도 `NO_SETUP`, `LIMIT_CONTENT`, `LIMIT_STRING_LENGTH`를 별도로 검사한다. 주차 상태에서도 설정 제한은 코드·설정을 숨기고, 내용·문자열 제한은 긴 대화문까지 숨긴다. `DoranStartup` 로그는 모델 준비와 첫 내용 draw의 소요 시간만 기록하며 사용자 대화·계정 정보를 기록하지 않는다. 실제 화면에 나타난 시점은 OEM 합성과 전환 시간을 포함하므로 이 내부 시점과 별도로 측정한다.
+
+정상 TTS 완료 뒤 비동기 stop이 다음 요청의 콜백에 영향을 줄 수 있는 경로를 확인해, 정상 완료에서만 불필요한 stop을 생략했다. 리스너 해제·SDK release 및 실패·취소의 stop은 유지한다. 새 APK의 사람 재시험 3주기에서 TTS 완료 6회·실패 0회를 관측했지만 사용자 잡음·지연은 해결되지 않았고 20턴 시험도 통과하지 않았다. 별도 scrcpy 출력 경로도 개선 증거를 얻지 못했다. 이전 `1271d0d1`의 실패·저장 관측과 [후속 재시험](verification/first-human-trial-20261114.json)을 구분한다.
 
 ## 재실행 복원의 실제 검증
 

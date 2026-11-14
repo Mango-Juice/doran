@@ -18,7 +18,7 @@ Google 로그인은 시스템 브라우저 PKCE를 사용합니다. redirect는 
 
 ## 실제 환경 확인 필요
 
-이전 `2c9bdc2`/Android `59a42829…`에서 실제 Google 로그인과 모바일·차량 양쪽 승인 연결을 확인했습니다. 이후 `183dd4c`로 빌드한 새 Android `d4dba0f6…`를 깨끗하게 설치하고 기존 Chrome Google 세션으로 재로그인해 기존 연결 차량 1개를 확인했습니다. 새 iOS Runner도 업데이트했으며 시스템 Google 로그인 페이지 표시까지 관측했고 계정 인증 완료는 사용자 입력을 기다립니다. 실제 대화·클라우드 기록 생성과 Android·iOS 간 동기화는 남아 있습니다. 위젯 시험의 성공을 실제 운영 성공으로 기록하지 않습니다. iOS는 시뮬레이터 범위이며 App Store 배포나 실제 iPhone 설치를 포함하지 않습니다.
+이전 `2c9bdc2`/Android `59a42829…`에서 실제 Google 로그인과 모바일·차량 양쪽 승인 연결을 확인했습니다. 이후 `183dd4c`로 빌드한 새 Android `d4dba0f6…`를 깨끗하게 설치하고 기존 Chrome Google 세션으로 재로그인해 기존 연결 차량 1개를 확인했습니다. 새 iOS Runner에서도 첫 인증 오류 후 재로그인에 성공해 오늘 빈 화면과 같은 계정의 차량 1개를 확인했습니다. 첫 사람 발화 종료 후 서버 기록·일기 생성과 iOS 본문 표시·편집 화면 진입을 확인했습니다. Android 본문 조회와 양 플랫폼의 수정 저장·보호·비교·삭제·동기화는 남아 있습니다. 위젯 시험의 성공을 실제 운영 성공으로 기록하지 않습니다. iOS는 시뮬레이터 범위이며 App Store 배포나 실제 iPhone 설치를 포함하지 않습니다.
 
 ## 2026-11-14 확인 결과
 
@@ -32,7 +32,7 @@ Google 로그인은 시스템 브라우저 PKCE를 사용합니다. redirect는 
 - 기존 API 33 기기는 OS Bluetooth crash·System UI ANR이 겹쳐 정상 실행 판정에서 제외했고 데이터를 초기화하지 않고 종료함.
 - 기존에 설치된 공식 Android API 37 Google APIs 이미지로 새 `Doran_Mobile_Verification` AVD(CPU 2개)를 생성해 release APK를 깨끗하게 설치함. RAM을 2GB로 요청했지만 실제 부팅 로그에서 4GB로 자동 상향된 것을 확인함. 실제 도란 로그인 화면이 오류 팝업 없이 표시되는 것을 확인함. `am start -W`의 Activity cold start는 3,300ms이며, Flutter 전체 화면 완료 시각을 별도로 계측한 결과는 아님.
 - 위 headless/SwiftShader 환경은 이후 QEMU watchdog 종료가 발생함. crash report에는 CoreAudio 장치 시작 대기와 QEMU I/O 잠금 대기가 함께 나타나며, 근본 정체 원인은 확정하지 않음. 지속 실행·다중 VM 안정성은 통과로 판정하지 않음. 이후 동일 userdata로 오디오를 끈 visible 환경에서 단독 설치·로그인 검증을 수행함.
-- Android 실제 Google 로그인 후 오늘 빈 화면과 모바일·차량 양쪽 승인 연결을 확인함. [인증 관측](verification/android-google-20261114.json)·[계정 연결 관측](verification/car-account-20261114.json). 기록 생성·수정·삭제·계정 간 동기화와 iOS 계정 인증 완료는 남음.
+- Android 실제 Google 로그인 후 오늘 빈 화면과 모바일·차량 양쪽 승인 연결을 확인함. [인증 관측](verification/android-google-20261114.json)·[계정 연결 관측](verification/car-account-20261114.json). 이후 iOS 실제 로그인과 첫 사람 발화의 서버 기록 생성은 별도 관측으로 추가했다. 이후 iOS 본문 표시·편집 화면 탐색까지 확인했다. Android 본문과 양 플랫폼의 수정 저장·삭제·계정 간 동기화는 남음.
 - Google 로그인 브랜딩과 초기 준비·재시도 화면을 포함한 Android release를 다시 빌드하고 동일 AVD에 업데이트 설치함. Android·iOS에서 공식 G 아이콘과 새 로그인 버튼의 실제 표시를 확인함.
 
 ## Android 검증 실행 설정
@@ -54,6 +54,10 @@ iPhone 17 Pro, iOS 27.0 runtime `24A5423a`, Xcode 27.0, Flutter 3.50.0의 simula
 
 고정 단계 메타데이터의 측정값은 Dart 진입→준비 프레임 구성 672ms, Supabase 초기화 575ms(첫 Keychain 읽기 525ms), Dart 진입→첫 raster 완료 1,432ms였다. 운영체제의 프로세스 실행 요청부터 잰 전체 시작 시간은 아니다. Swift `DEBUG` 조건은 이 Runner 구성에 정의되지 않아 Swift 단계 로그를 관측하지 못했다. 당시 첫 화면 검증을 마친 뒤 simulator를 정상 종료했다.
 
-이후 `183dd4c`로 새 Runner를 빌드해 기존 bundle 위에 한 번 업데이트했다. x86_64·arm64 빌드의 codesign strict 검증과 설치된 86개 파일·빌드 manifest 일치를 확인했다. bundle manifest SHA-256은 `b9a8a7d552b4d292bfab310b5b17f6d423b19d8d6d50f8f0fa1c9b4e8f3cb6fd`다. entitlements·Keychain access group·application identifier는 같지만 앱 컨테이너 UUID가 재배치됐고 실제 저장값·세션 보존은 측정하지 않았다. Keychain 값을 읽거나 초기화하지 않았다. 10:07 KST [새 앱 로그인 화면](images/ios-183dd4c-login.png), 10:08 KST 새 Google 버튼을 통한 시스템 Google 로그인 페이지 표시를 CUA로 확인했다. iOS 계정 인증은 아직 사용자 입력 대기다. 이 업데이트로 이전 검은 화면의 원인이 해결됐다고 주장하지 않는다.
+이후 `183dd4c`로 새 Runner를 빌드해 기존 bundle 위에 한 번 업데이트했다. x86_64·arm64 빌드의 codesign strict 검증과 설치된 86개 파일·빌드 manifest 일치를 확인했다. bundle manifest SHA-256은 `b9a8a7d552b4d292bfab310b5b17f6d423b19d8d6d50f8f0fa1c9b4e8f3cb6fd`다. entitlements·Keychain access group·application identifier는 같지만 앱 컨테이너 UUID가 재배치됐고 실제 저장값·세션 보존은 측정하지 않았다. Keychain 값을 읽거나 초기화하지 않았다. 10:07 KST [새 앱 로그인 화면](images/ios-183dd4c-login.png), 10:08 KST 새 Google 버튼을 통한 시스템 Google 로그인 페이지 표시를 CUA로 확인했다. 이 시점의 iOS 계정 인증은 대기 상태였으며 후속 실제 로그인 결과는 아래에 기록한다. 이 업데이트로 이전 검은 화면의 원인이 해결됐다고 주장하지 않는다.
+
+2026-11-14 11:37 KST 첫 실제 Google 인증 뒤 앱에 일반 인증 실패 안내가 표시됐다. 코드 수정 없이 사용자가 다시 로그인해 11:38 [오늘 빈 화면](images/ios-google-authenticated-20261114.png)과 3개 탭을 확인했다. 서버는 같은 Google 계정 1개·paired 기기 1개를 확인했다. 11:39 처리 동의를 켠 뒤 11:40 설정에서 [도란 차량 1개](images/ios-google-linked-20261114.png)를 조회했다. 첫 오류의 원인은 확정하지 않았다. 이후 사람 발화 4턴의 서버 응답과 기록·일기 생성은 확인했지만 TTS 실패가 있었으며, 모바일 기록 본문 열람·수정 성공을 뜻하지 않는다. 이후 차량 `b73fbd34…`의 재시험 3주기에서 TTS 완료 6회·실패 0회를 관측했지만 잡음·지연과 20턴 검증은 남아 있다. [iOS 인증과 첫 음성 시험 요약](verification/first-human-trial-20261114.json).
 
 추가 검토에서 계정 변경 시 편집 경로가 남는 문제를 수정했습니다. MaterialApp/Navigator 전체를 계정별로 교체하고, 저장소 인스턴스를 생성 당시 소유자에 고정합니다. 이전 편집기의 비동기 저장이 재개되어도 새 계정 토큰으로 요청하지 않습니다. 자동 갱신은 선택 날짜와 이미 불러온 이력 페이지를 유지합니다. 설정 화면에서 오픈소스 라이선스를 열 수 있습니다.
+
+13:12–13:14 KST에는 iOS 오늘 탭에서 11/14 개별 기록 3개(11:51·12:18·12:25)와 AI 하루 일기 본문을 확인했다. 12:18 기록의 편집 화면과 하루 일기 다듬기를 열고 저장 없이 돌아왔다. 이는 읽기·화면 탐색 확인이며 수정 저장·수동본 보호·비교/반영·삭제 검증이 아니다. 실제 자유 발화와 인식이 불명확한 표현이 포함된 본문·캡처는 공개하지 않는다.
