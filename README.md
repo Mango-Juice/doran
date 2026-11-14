@@ -21,11 +21,11 @@
 
 현재 통합 검증 중이며 제출 완료본은 아닙니다. Android 차량·모바일 release APK와 iOS 시뮬레이터 빌드를 생성했고 Google OAuth 및 서버 OpenAI 키를 설정했습니다. Android 실제 Google 로그인과 모바일·차량 양쪽 승인 연결을 완료했습니다. 최신 차량 APK의 깨끗한 설치와 연결 완료 후 대화 시작 전 화면의 가상 주행·분할 대응도 확인했습니다. iOS는 시스템 Google 로그인 페이지까지 표시됐으며 계정 인증 완료를 기다립니다. 실제 대화부터 기록 생성까지의 흐름, 연속 음성 대화와 최종 녹화를 확인한 후 제출 기준 버전을 고정합니다.
 
-현재 Android 로그인·차량 연결 관측은 기존 APK `59a42829…`와 `2c9bdc2` 소스 기준입니다. 후속 로그인 런처 수정은 정적 검사·65개 시험을 통과했으며, 현재 Android APK와 iOS Runner에 반영하려면 네이티브 재빌드가 필요합니다.
+로그인 런처 수정을 포함한 `183dd4c`는 CI와 65개 모바일 시험, 두 플랫폼 재빌드를 통과했습니다. 새 Android APK `d4dba0f6…`를 깨끗하게 설치한 뒤 기존 Google 세션으로 재로그인해 연결 차량 1개를 확인했습니다. 새 iOS Runner도 업데이트했으며 계정 인증은 대기 중입니다.
 
 [검증 기록](docs/verification.md)은 단위·계약 시험, 실제 클라우드 호출, SDK 실행, 사람 발화를 구분합니다. APK 파일명·영상 구성·버전 고정 절차는 [제출 안내](docs/submission.md)를 따릅니다. 미확인 동작은 완료로 표시하지 않습니다.
 
-실제 설치 앱 화면: [Google 계정 연결을 마친 차량](docs/images/car-google-connected-idle.png) · [모바일에서 차량 승인 대기](docs/images/android-pairing-await-confirmation.png) · [Android 로그인 후 오늘 탭](docs/images/android-google-empty-today.png) · [iOS 로그인 전](docs/images/ios-login.png). 차량 캡처는 Pleos 에뮬레이터의 가상 차량 상태이며, 연결된 계정과 기기 상태는 서버에서도 확인했습니다. 이 관측에서는 대화를 시작하지 않았습니다.
+실제 설치 앱 화면: [Google 계정 연결을 마친 차량](docs/images/car-google-connected-idle.png) · [모바일에서 차량 승인 대기](docs/images/android-pairing-await-confirmation.png) · [새 Android 오늘 탭](docs/images/android-d4db-empty-today.png) · [새 Android의 연결 차량](docs/images/android-d4db-linked-vehicle.png) · [업데이트한 iOS 로그인 화면](docs/images/ios-183dd4c-login.png). 차량 캡처는 Pleos 에뮬레이터의 가상 차량 상태이며, 연결된 계정과 기기 상태는 서버에서도 확인했습니다. 이 관측에서는 대화를 시작하지 않았습니다.
 
 ## 개인정보
 

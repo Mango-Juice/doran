@@ -1,12 +1,14 @@
 # 도란 검증 기록
 
-작성 기준: 2026-11-14 KST. 구현 중간의 코드 검사와 실제 실행 결과를 구분한다. 이 문서의 미검증 항목은 통과로 간주하지 않는다. 마지막 CI 통과 소스는 `2c9bdc2deb3e74ea6b91bfa0d63d7c1ee5a7cd6f`다. [설치 관측과 CI 요약](verification/install-20261114.json)은 당시 차량 `d81d030d…`·모바일 `59a42829…`의 깨끗한 설치와 인증 전 화면을 다룬다. 계측 주입점을 추가한 최신 차량 `1271d0d1…`의 최초 업데이트 설치는 [추가 계측 요약](verification/car-runtime-1271d0d1.json)에 기록했다. 이후 같은 APK의 깨끗한 설치, 실제 Android Google 계정과 양쪽 승인 연결, 가상 주행 상태·분할 화면은 [계정 연결·차량 화면 요약](verification/car-account-20261114.json)으로 구분한다. 이 소스의 서버·차량·모바일 CI는 모두 통과했다. Android 실제 Google 로그인 후 오늘 탭의 빈 화면도 확인했으며, [인증 관측 요약](verification/android-google-20261114.json)에 별도로 기록한다. 후속 모바일 로그인 런처 수정은 로컬 정적 검사·65개 시험을 통과했지만 현재 APK `59a42829…`와 iOS Runner에는 아직 포함되지 않아 네이티브 재빌드가 필요하다. 최종 제출 커밋·영상은 아직 고정하지 않았다.
+작성 기준: 2026-11-14 KST. 미검증 항목은 통과로 간주하지 않는다. 코드 검증 기준은 `183dd4c09c36010fe950c7ebbd652fb61faa44fb`이며 서버·차량·모바일 CI가 모두 통과했다. 현재 차량 APK는 `1271d0d1…`, 모바일 APK는 `d4dba0f6…`이다.
+
+Android의 실제 Google 로그인·차량 양쪽 승인 연결, 최신 APK의 깨끗한 설치 후 재로그인·연결 유지와 차량의 가상 주행·분할 화면을 확인했다. iOS는 업데이트한 앱에서 시스템 Google 로그인 페이지까지 표시됐다. iOS 계정 인증, 사람 발화부터 기록 생성까지의 앱 흐름과 최종 영상·제출 버전 고정은 아직 남아 있다. 과거 빌드의 관측은 아래 표와 연결된 원본 요약에서 해당 버전의 증거로 보존한다.
 
 ## 확인된 결과
 
 | 검사 | 관측 결과 | 증거 |
 |---|---|---|
-| 공개 후보 소스 검사 | `2c9bdc2`에 반영한 추가 계측·공개 관측 요약 등 219개 후보 파일 검사 통과 | `python3 scripts/verify-publication.py --json`: 당시 발견 0. 같은 검사기로 최신 차량 APK도 별도 확인. 이후 인증 관측 문서·이미지는 아래 검토와 구분 |
+| 공개 후보 소스 검사 | 최신 모바일 실행 관측 문서·이미지를 포함한 228개 후보 파일 검사 통과 | `python3 scripts/verify-publication.py --json`: 발견 0. APK와 이미지의 별도 검토 범위는 아래 항목에 기록 |
 | 공개 검사기 동작 | 기본 규칙 6개, 개인 홈 경로 5개, 정확한 vendor 바이너리 예외 7개 검사 통과 | 합성 입력·임시 Git 및 실제 바이너리로 검사기 동작 확인. 앱 기능 시험에 합산하지 않음 |
 | 기존 Git 이력 공개 점검 | `8251e6ab`까지 3개 커밋의 고유 blob 226개에서 검사 규칙에 해당하는 비밀값·개인 경로·검토 필요 이메일·내부 원본 발견 0 | 기존 검사기의 바이트 규칙을 각 Git blob에 별도로 적용하고 파일명·commit 이메일도 점검. author/committer는 GitHub noreply 주소. 이후 추가 커밋과 이미지·영상 수동 검토는 별도 |
 | 패키징 복구·배포 메타 | 원자적 게시·복구 3개 검사 및 정식 팀명/미정 이름 2개 격리 fixture 통과 | source_commit·파일 SHA·영상 release_asset/asset_name·영상 Git 제외·APK 비제외 확인. scanner·ffprobe 스텁을 사용했으므로 앱·영상 기능 검증에 합산하지 않음 |
@@ -15,8 +17,8 @@
 | 서버 단위·HTTP | 최종 `deno task verify` 통과: 시험 27개·0개 실패, 타입·lint·formatter 통과 | `supabase/deno.json`의 verify task. 최신 예산 결과 파일 추가 후 formatter 재검사 통과 |
 | 서버 배포 | API v7·worker v5 ACTIVE 확인 | 최신 프롬프트 배포 상태. 앞선 실제 HTTP 흐름·개인정보 관측 결과 및 최신 직접 모델 평가와 구분 |
 | 기존 CI | `dc6ea45`의 서버·차량·모바일 3개 job 모두 통과 | [실행 43508456280](https://github.com/Mango-Juice/doran/actions/runs/43508456280). Navi 수정 전 소스 기준이며, 후속 커밋의 CI는 별도 |
-| 최신 통과 CI | `2c9bdc2`의 서버·차량·모바일 3개 job 모두 통과 | [실행 43522201182](https://github.com/Mango-Juice/doran/actions/runs/43522201182). 서버 17초·차량 5분 10초·모바일 9분 16초. 계측 주입점·시험 추가를 포함한 소스이며 실제 로그인·사람 발화와는 별도 |
-| 모바일 정적·단위·위젯 | 현재 설치 파일에 대응하는 기존 62개 시험 통과. 후속 로그인 런처 수정 소스의 정적 검사·전체 65개 시험도 통과 | [모바일 구현 기록](mobile.md). `false` 반환 시 오류·재시도와 화면 폐기 뒤 늦은 결과 차단 추가. 새 수정의 네이티브 재빌드·실행·CI는 아직 별도 |
+| 최신 통과 CI | `183dd4c`의 서버·차량·모바일 3개 job 모두 통과 | [실행 43535314992](https://github.com/Mango-Juice/doran/actions/runs/43535314992). 서버 11초·차량 5분 9초·모바일 7분 33초. 로그인 런처 수정을 포함한 소스이며 실제 로그인·사람 발화와는 별도 |
+| 모바일 정적·단위·위젯 | `183dd4c` 소스의 정적 검사·전체 65개 시험 통과 | [모바일 구현 기록](mobile.md). `false` 반환 시 오류·재시도와 화면 폐기 뒤 늦은 결과 차단 포함. 같은 소스의 Android·iOS 재빌드와 아래 범위의 실행 확인 완료 |
 | 차량 Android 품질·빌드 | 최종 ktlintCheck·JVM 시험 44개·lintRelease·release 빌드·v2 서명 검증 통과 | `app.doran.car`, 1.0.0(1). 라이선스 원문 일치, debug Activity·테스트 클래스·합성 PCM의 release 미포함도 차량 담당이 확인 |
 | 차량 APK 공개 검사 | 17,220,506 bytes, 비밀키·미승인 개인 경로·debug/testOnly/cleartext manifest 발견 0 | SHA-256 `1271d0d1d7b358dfea23d947c42dff48dacf238c8be64b7d23a6d1221c4f3fc2`. 검토한 vendor native 바이너리 7개 SHA도 일치 |
 | 이전 차량 깨끗한 설치 | `d81d030d…` 재설치·설치 해시 일치·첫 연결 화면·앱 생존·정상 종료 확인 | [설치 요약](verification/install-20261114.json). 시작→내용 관측 4,607.589ms는 화면 폴링 시간을 포함한다. 연결 코드·기기 ID·스크린샷 원본은 공개 요약에서 제외 |
@@ -27,13 +29,15 @@
 | 실제 오디오 포커스 | 같은 UID·다른 listener의 통화 용도 요청에 TTS 취소와 플랫폼 포커스 항목 1→0 확인, 계측 명령 28.474초 | [추가 계측 요약](verification/car-runtime-1271d0d1.json). debug 앱의 제품 음성 코드로 실행. 이전 완료 콜백은 합성 재생으로 차단 확인. 내비 용도 요청은 거절되어 양보 성공이 아니며 실제 통화·내비 음성·청취는 미검증 |
 | release 조작 피드백 | 합성 탭 1회에서 연결 확인 문구·비활성 버튼이 처음 관측된 프레임의 상한 DOWN+185ms / UP+100ms | [추가 계측 요약](verification/car-runtime-1271d0d1.json)·[실제 프레임](images/car-connecting.png). 단일 guest 화면 관측에서 250ms 목표 이내. 물리 화면 표시 시각·일반 성능 보장은 아니며, 최초 탭 0회 사전 검사 중단과 후속 실행을 구분 |
 | B4 실제 연결 복원 | 앱 재시작 시 기존 연결 코드를 복원하고, 명시적 새 코드 요청에만 새 연결 요청 생성 | 차량 에뮬레이터·서버 확인: 재시작 시 기존 12행 유지, 새 코드 요청 후 13행. 모바일 Google 승인 전체 흐름과는 별도 |
-| 모바일 Android 빌드 | 초기 준비·재시도 화면과 Google 브랜딩을 포함한 release APK 빌드·v2 서명 검증 통과 | `app.doran.mobile`, 1.0.0(1), minSdk26·targetSdk36. 개인 이름 없는 임시 소스 경로에서 난독화·분리 심볼로 빌드 |
-| 모바일 APK 공개 검사 | 55,317,408 bytes, 개인 홈 경로·비밀키 패턴·debug/testOnly/cleartext manifest 발견 0 | SHA-256 `59a4282955e53e8a959ce60f69be94246464687f92e1d11e7f0acb1828baf4dd`. 최신 APK 독립 검사. 인증 이후 앱 흐름은 별도 |
-| Android 첫 화면 | API37 Google APIs AVD에서 최신 release 설치·로그인 전 화면 표시 확인 | [화면](images/android-login.png)·[실행 환경](mobile.md). Activity cold start 5,475ms는 Flutter 전체 화면 완료 시각이 아님 |
-| Android 실제 Google 로그인 | 설치된 `59a42829…` release에서 로그인 후 오늘 탭의 빈 기록 화면 확인 | [화면](images/android-google-empty-today.png)·[인증 관측 요약](verification/android-google-20261114.json). 서버 읽기 확인에서 Google 공급자·비익명 계정·프로필 1개와 대화/기록 0개를 확인. 이후 차량 연결은 별도 행에 기록하며 기록 생성은 미검증 |
-| 모바일 깨끗한 설치 | `59a42829…` 앱 패키지만 제거·재설치, 기기 APK 해시 일치·로그인 전 화면 확인 | [설치 요약](verification/install-20261114.json). AVD·Chrome·다른 앱 데이터 보존. Activity cold start 1,927ms는 Flutter 전체 화면 완료 시각이 아님. 빌드 시 기록한 모바일 소스·설정·자산 24개 해시가 `b25e910`과 일치 |
-| iOS 빌드·시스템 로그인 페이지 | 기존 Runner에서 준비·앱 로그인 화면과 후속 시스템 Google 로그인 페이지 표시 확인 | [최초 앱 화면](images/ios-login.png)·[실행 환경](mobile.md). 계정 인증 완료는 사용자 입력 대기. 최초 Dart 진입→첫 raster 1,432ms는 OS 전체 시작 시간이 아니며, 후속 런처 수정은 이 Runner에 미포함 |
-| 공개 화면·자산 | 로그인 전 캡처 2장, Android 로그인 후 빈 화면, 모바일 승인 대기·차량 연결 완료 후 대화 시작 전 화면에서 계정·연락처·토큰·연결 코드 노출 없음, Google 자산 4개 hash 일치 | 새 PNG 직접 검토·텍스트 메타데이터 부재·원본 복사 hash 일치 확인. 자산 README의 SHA-256과 원본 바이트 대조. OFL 원문·줄바꿈 변경 없음 |
+| 모바일 Android 빌드 | 로그인 런처 수정을 포함한 `183dd4c` release APK 빌드·v2 서명 검증 통과 | `app.doran.mobile`, 1.0.0(1), minSdk26·targetSdk36. 개인 이름 없는 임시 소스 경로에서 난독화·분리 심볼로 빌드 |
+| 모바일 APK 공개 검사 | 55,317,408 bytes, 3개 ABI와 manifest 검사 발견 0 | SHA-256 `d4dba0f67580b4c3b7c4b695983e9477630e862b862cb2842cea05f60d452298`. [모바일 빌드·실행 요약](verification/mobile-runtime-183dd4c.json)의 기존 빌드 검사 결과이며 이번 문서 갱신에서 재검사하지 않음 |
+| 이전 Android 첫 화면 | API37 Google APIs AVD에서 `59a42829…` release 설치·로그인 전 화면 표시 확인 | [화면](images/android-login.png)·[실행 환경](mobile.md). Activity cold start 5,475ms는 Flutter 전체 화면 완료 시각이 아님 |
+| 이전 Android 실제 Google 로그인 | 설치된 `59a42829…` release에서 로그인 후 오늘 탭의 빈 기록 화면 확인 | [화면](images/android-google-empty-today.png)·[인증 관측 요약](verification/android-google-20261114.json). 서버 읽기 확인에서 Google 공급자·비익명 계정·프로필 1개와 대화/기록 0개를 확인. 이후 차량 연결은 별도 행에 기록하며 기록 생성은 미검증 |
+| 이전 모바일 깨끗한 설치 | `59a42829…` 앱 패키지만 제거·재설치, 기기 APK 해시 일치·로그인 전 화면 확인 | [설치 요약](verification/install-20261114.json). AVD·Chrome·다른 앱 데이터 보존. Activity cold start 1,927ms는 Flutter 전체 화면 완료 시각이 아님. 빌드 시 기록한 모바일 소스·설정·자산 24개 해시가 `b25e910`과 일치 |
+| 최신 Android 설치·SSO | 이전 `59a42829…` 정상 로그아웃 후 `d4dba0f6…` 깨끗한 설치·기기 해시 일치, 기존 Chrome Google 세션으로 오늘 빈 화면 복귀 | [최신 요약](verification/mobile-runtime-183dd4c.json)·[오늘 화면](images/android-d4db-empty-today.png). 새 자격증명 입력은 없음. Activity cold start 3,108ms는 전체 Flutter 준비 시간이 아님 |
+| 최신 Android 연결 차량 조회 | 새 APK 설정에서 기존 도란 차량 1개 확인. 서버에서 같은 Google 계정·활성 기기·소유자 일치 확인 | [차량 목록](images/android-d4db-linked-vehicle.png)·[최신 요약](verification/mobile-runtime-183dd4c.json). 새 pairing 실행이 아니며 기록은 0개 |
+| iOS 재빌드·업데이트·로그인 페이지 | `183dd4c` Runner의 codesign 검증·설치 86개 파일 일치, 앱 로그인 화면과 시스템 Google 로그인 페이지 표시 확인 | [새 앱 화면](images/ios-183dd4c-login.png)·[최신 요약](verification/mobile-runtime-183dd4c.json). 기존 bundle 위 업데이트이며 entitlements는 동일. 컨테이너 UUID가 바뀌었고 실제 저장값·세션 보존은 미측정. 계정 인증은 사용자 입력 대기 |
+| 공개 화면·자산 | 기존 공개 캡처와 새 Android 오늘·연결 차량 목록 및 iOS 로그인 화면에서 계정·연락처·토큰·연결 코드 노출 없음, Google 자산 4개 hash 일치 | 새 PNG 직접 검토·텍스트 메타데이터 부재·원본 복사 hash 일치 확인. 새 iOS EXIF는 색 공간·픽셀 크기뿐임. 자산 README의 SHA-256과 원본 바이트 대조. OFL 원문·줄바꿈 변경 없음 |
 | 최초 Pleos SDK 계측 | 별도 debug 앱에서 합성 PCM 1회의 STT 최종 문구 수신·TTS onDone, 위치 권한 거부/허용, 좌석 점유 값 수신 확인 | [SDK 관측 요약](../apps/car/verification/sdk-91390127.json). 첫 실행 STT 20.505초·TTS 28.569초. 사람 마이크·실제 청취·첫 음절·연속 20턴 미확인. Odometer 오류, 내비 활성 경로·도착 미관측 |
 | 후속 Pleos SDK 계측 | B4 참조의 별도 debug 앱에서 합성 PCM 3회 모두 FINAL 일치·SDK onDone 확인 | [SDK 기록](car-sdk.md). STT 2.323/1.524/1.402초, TTS 4.869/3.233/3.412초. 최초 실행과 통제된 비교시험이 아니며 사람 음성·청취·연속 20턴은 미확인 |
 | 좌석 신호 의미 | Console 조수석 Empty/Occupied 토글의 원시 이벤트와 SDK Boolean 변환 사이 불일치 관측 | 이전 debug 계측 근거. 현재 최종 코드에는 검증된 신뢰 조합이 없어 자동 동승자 판단을 `unknown`·`UNAVAILABLE`로 처리하고 좌석 측정 시각을 서버로 보내지 않음 |
@@ -51,7 +55,9 @@ Navi 수정 차량 `d81d030d…` APK에는 UX 제한 보강과 진행 중 연결
 
 이후 같은 `1271d0d1…` APK를 깨끗하게 설치하고 실제 Google 계정으로 Android 모바일과 차량 양쪽 승인을 완료했다. 설치 단계는 앱을 실행하지 않았으며, 이후 CUA로 실제 연결 화면을 조작·관측했다. 차량 재부팅 뒤 claimed 요청을 같은 코드로 복원했고 원래 5분 만료 전 차량 확인을 마쳤다. 서버에서 기기 활성과 승인한 Google 소유자 일치를 확인했으며 세션·기록은 0개였다. 가상 Drive 20km/h→Park 전환의 화면 제한·복원과 실제 HMI 바를 이용한 분할 화면을 확인했다. 대화 시작 버튼은 누르지 않았고 마이크·AI 요청은 없었다. 실제 마이크 권한 거부 시험도 하지 않았다. 차량 앱은 `STT_SERVICE`를 사용하며 앱의 `RECORD_AUDIO` 런타임 권한 요청은 없다.
 
-직전 모바일 `b7277a22279c2aa2b55012033b69b3a646852152cffc1e8cd0153747b8ae1c50`도 위 최신 `59a42829…`로 대체했다. 구 모바일 APK SHA-256 `36411eec9200a4ee53894e23ff0090ccf3a0e1d8d1e7eac8291cdcad35b21fb4`는 계정 경계 수정 전 파일이며, 생성된 Dart 파일의 개인 홈 경로도 포함했다. 위 최종 APK로 대체했으므로 제출·녹화에는 구 파일을 사용하지 않는다.
+모바일 `b7277a22279c2aa2b55012033b69b3a646852152cffc1e8cd0153747b8ae1c50`는 `59a42829…`로, 이후 로그인 런처 수정을 포함한 최신 `d4dba0f6…`로 대체했다. `59a42829…`에서 관측한 실제 로그인·양쪽 승인·정상 로그아웃 기록은 해당 버전의 증거로 보존한다. 구 모바일 APK SHA-256 `36411eec9200a4ee53894e23ff0090ccf3a0e1d8d1e7eac8291cdcad35b21fb4`는 계정 경계 수정 전 파일이며, 생성된 Dart 파일의 개인 홈 경로도 포함했다. 위 최종 APK로 대체했으므로 제출·녹화에는 구 파일을 사용하지 않는다.
+
+새 `d4dba0f6…`은 이전 앱의 정상 로그아웃 후 앱 패키지만 제거·설치했다. Google 버튼→Chrome의 기존 Google 세션 SSO→오늘 빈 화면을 확인했고, 설정에서 기존 연결 차량 1개를 조회했다. 서버의 같은 Google 계정과 활성 paired 기기·소유자 일치 확인을 함께 기록했으며 새 pairing이나 기록 생성·수정·삭제는 수행하지 않았다. 두 플랫폼의 빌드는 `183dd4c`의 입력 파일 98개 해시가 유지된 상태에서 수행됐다. 새 iOS Runner는 기존 bundle 위에 한 번 설치했고 86개 파일과 빌드 manifest 일치를 확인했다. entitlements·Keychain access group·application identifier는 같지만 컨테이너 UUID가 재배치됐으며 실제 저장값·세션 보존을 측정하지 않았다. Keychain 값을 읽거나 초기화하지 않았다. 새 Runner의 앱 로그인 화면과 시스템 Google 로그인 페이지까지만 확인했고 인증은 대기 중이다. 이전 브라우저 검은 화면의 원인은 여전히 확정하지 않는다.
 
 초기 평가와 회귀에서 발견한 문제를 수정한 뒤, 최신 동일 프롬프트로 30개 전체를 다시 호출했다. 최신 출력은 `supabase/tests/evals/terra-20261114-release30.json`이며 30개 모두 정상 응답을 반환했다. 이 파일에는 실제 입력 배열과 프롬프트 원문을 함께 보존한다. 프롬프트 SHA-256 `8f652475b8aa9f5f005500e893fd4ecd3edbf594b8fb60fce510f7032a5e1559`가 현재 소스·기록 원문과 일치한다. 기록된 실행기 SHA-256 `60069efc64a62a0927ac817616f4fa4c401f38ff2f837d82a890386a81eb9e84`는 실행 당시 파일이며, 이후 변경은 JSON 출력 끝 개행 추가 한 건임을 역검증했다.
 
@@ -71,15 +77,15 @@ Navi 수정 차량 `d81d030d…` APK에는 UX 제한 보강과 진행 중 연결
 
 | 영역 | 남은 확인 | 기존 결과와의 구분 |
 |---|---|---|
-| 계정·차량 연결 | iOS 계정 인증 완료, 연결 해제·로그아웃·계정 변경 | Android Google 로그인과 실제 모바일 승인→차량 확인, claimed 상태 재부팅 복원은 확인됨 |
+| 계정·차량 연결 | iOS 계정 인증 완료, 최신 APK의 연결 해제·로그아웃·계정 변경 | 이전 APK의 양쪽 승인·정상 로그아웃과 새 APK의 동일 계정 SSO·기존 차량 조회는 확인됨 |
 | 앱과 서버 연동 | 실제 모바일·차량 화면에서 기록 도착, 수정 충돌, 일기 수동본 보호, 제외·삭제 반영 | 서버 SQL·클라우드 HTTP 시험과 모바일 위젯 시험은 통과함 |
-| 제출 버전의 CI·빌드 | 후속 모바일 로그인 런처 수정의 CI와 Android·iOS 네이티브 재빌드·실행 확인 | 수정 전 `2c9bdc2`의 3개 CI job과 현재 설치 파일 검증은 통과함. 후속 소스는 로컬 정적 검사·65개 시험 통과 |
+| 제출 버전의 CI·빌드 | 이후 제품 소스가 바뀌면 해당 소스와 산출물·실행 범위를 다시 고정 | `183dd4c`의 3개 CI job, 65개 모바일 시험, 두 플랫폼 재빌드와 위 범위의 실행 확인은 완료 |
 | Android·iOS 통합 | 실제 기록 조회·편집·삭제·동기화 | Android는 Google 로그인·차량 연결, iOS는 시스템 Google 로그인 페이지까지 확인됨 |
 | 음성 | 실제 마이크→STT→AI→TTS 청취, 첫 음절, 20회 연속 턴 | 이전 debug 빌드의 최초 1회·후속 3회 합성 PCM 및 TTS 콜백은 별도 증거 |
 | 차량 상태 | 대화 실행 중 분할 화면, 실제 내비·통화 앱 개입, 백그라운드·SDK 접근 제한과 음성 동작 | 최신 release의 연결 완료 후 대화 시작 전 화면에서 가상 Drive/Park·분할·복원 확인. 같은 UID 통화 용도 포커스 손실은 별도 debug 관측이며 내비 요청 거절을 양보로 보지 않음 |
 | 오프라인 대화 | 실제 네트워크 단절·재연결, 프로세스 재시작 후 재전송, 서버 응답 중복·종료 후 지연 처리 | 고립 Room·Keystore의 암호화 영속성·중복 방지·세션별 삭제, 연결 코드 복원, 서버 멱등성은 확인됨 |
 | 제출 버전·영상 | 최종 소스·APK·영상 동일 버전 고정과 그 버전의 전체 흐름 확인 | 현재 서명·공개 검사·첫 화면 확인만으로 전체 시연 완료를 뜻하지 않음 |
-| 공개 자료 | 최종 영상·추가 로그 개인정보 검토, 제출 커밋 공개 검사 | 기존 소스·APK 검사와 로그인 전 2장·Android 로그인 후 빈 화면·모바일 승인 대기·차량 연결 완료 후 대화 시작 전 캡처의 수동 검토는 통과함 |
+| 공개 자료 | 최종 영상·추가 로그 개인정보 검토, 제출 커밋 공개 검사 | 기존 소스·APK 검사와 공개된 이전·새 버전 캡처의 수동 검토는 통과함 |
 
 ## 기록 원칙
 
