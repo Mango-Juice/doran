@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "observed_date_kst": "2026-11-14",
+  "target_commit": "40447b3772b540ff357b6e3369a6169807b21452",
+  "scope": "Incremental Git publication checks and one new signed car APK. Not a final video or submission package acceptance.",
+  "scanner": {
+    "path": "scripts/verify-publication.py",
+    "sha256": "4097b146fec3c30bb04c225da09cd8964348489734ec6a7c04a7a98851390b80",
+    "rules_changed": false
+  },
+  "source_worktree_scan_reported_by_root": {
+    "candidate_files": 255,
+    "findings": [],
+    "independently_rerun_by_this_review": false,
+    "scope": "Root reported the publication-candidate working-tree scan before the final documentation update. The exact committed history is covered separately below."
+  },
+  "incremental_git_history": {
+    "base_commit": "d20c40e74af54d721af7cadc7c5e9754116c3491",
+    "target_commit": "40447b3772b540ff357b6e3369a6169807b21452",
+    "new_commit_count": 2,
+    "new_commits": [
+      "8f1739ba1bf113653b6c30a9b782f31750209ace",
+      "40447b3772b540ff357b6e3369a6169807b21452"
+    ],
+    "baseline_reachable_blob_count": 318,
+    "new_unique_blobs_scanned": 40,
+    "new_path_or_mode_entries_checked": 18,
+    "new_binary_blob_count": 0,
+    "binary_inventory": [],
+    "larger_than_8mib": [],
+    "apk_blobs_requiring_separate_inspection": [],
+    "findings": [],
+    "scanner_sha256": "4097b146fec3c30bb04c225da09cd8964348489734ec6a7c04a7a98851390b80"
+  },
+  "commit_metadata": {
+    "new_commits": 2,
+    "author_and_committer_identity_entries": 4,
+    "message_and_identity_segments_checked": 4,
+    "unique_email_addresses": 1,
+    "email_type": "GitHub numeric-ID-plus-handle noreply",
+    "display_names_match_public_github_handle": true,
+    "unclassified_personal_display_names": 0,
+    "raw_identity_values_published": false,
+    "findings": []
+  },
+  "images": {
+    "new_binary_blobs": 0,
+    "new_images_requiring_visual_review": 0,
+    "previous_review_record": "publication-d20c40e.json",
+    "previous_image_review_repeated": false
+  },
+  "car_apk_publication": {
+    "target_source_commit": "40447b3772b540ff357b6e3369a6169807b21452",
+    "scanner_sha256": "4097b146fec3c30bb04c225da09cd8964348489734ec6a7c04a7a98851390b80",
+    "apk": {
+      "file": "doran-car-1.0.0-40447b3-27142633.apk",
+      "sha256": "27142633b080307c7e4edb61119a5e6a7a158f00cc0e5c0aa148759bbbaffc2c",
+      "size_bytes": 17220506,
+      "reviewed_vendor_build_paths": [
+        {
+          "member": "lib/arm64-v8a/libuacore.so",
+          "sha256": "f41614cd7d30f4ec4e482fb6686722b559861c5b759a30fb46fb25fd73f2ef41"
+        },
+        {
+          "member": "lib/armeabi-v7a/libjnidispatch.so",
+          "sha256": "e262e528436960b51259a62d2a44deb914d00804b25a0a295c089b739ffe8445"
+        },
+        {
+          "member": "lib/armeabi-v7a/libuacore.so",
+          "sha256": "532e42c7c0f9366893629dc0da24bdf6e4f5ad13d96606205c2545150532cac3"
+        },
+        {
+          "member": "lib/armeabi/libjnidispatch.so",
+          "sha256": "05968c54b7bdc25c3e9a272389d70295692cee749a993633025397f9d01b2c56"
+        },
+        {
+          "member": "lib/x86/libjnidispatch.so",
+          "sha256": "1ff39ffce0dfc1ccc2f10a08777ece9096ae73276853a46ef307d48a78173de5"
+        },
+        {
+          "member": "lib/x86_64/libjnidispatch.so",
+          "sha256": "081d3f045743b818d4d3f1868b8655f34760828ead6e2b712659d5bceadafe04"
+        },
+        {
+          "member": "lib/x86_64/libuacore.so",
+          "sha256": "887e4327dcb08e6402e539b799eaf375baadb8b47587ccae984e17fc0615d2a0"
+        }
+      ],
+      "manifest_checked": true
+    },
+    "findings": [],
+    "supplemental_release_boundary": {
+      "package": "app.doran.car",
+      "version_name": "1.0.0",
+      "version_code": "1",
+      "activities": [
+        "app.doran.car.MainActivity"
+      ],
+      "test_instrumentation_entries": 0,
+      "qa_manifest_component_or_route_permission_findings": [],
+      "reviewed_vendor_binaries_exact_count": 7,
+      "reviewed_vendor_sha_set_matches": true,
+      "dex_markers_checked": [
+        "QaConversationActivity",
+        "SyntheticConversationApi",
+        "SyntheticSpeech",
+        "SocketReplayTest",
+        "ConversationLifecycleTest",
+        "SdkVerificationActivity",
+        "SDKSmokeTest",
+        "TtsPathComparisonTest",
+        "AudioFocusInterruptionTest",
+        "NavigationProbeTest",
+        "OutboxPersistenceTest",
+        "FeedbackTimingProbeTest"
+      ],
+      "dex_qa_marker_findings": [],
+      "synthetic_pcm_assets": [],
+      "qa_asset_findings": []
+    },
+    "limitations": [
+      "Targeted publication/manifest checks only; signature, licenses and source-input binding are reported separately by the build owner.",
+      "Absence of named debug markers is a targeted release-boundary check, not a proof against every possible hidden debug path.",
+      "No runtime, listening or final video/package validation was performed."
+    ]
+  },
+  "car_build_owner_evidence": {
+    "private_receipt_sha256": "18a793e0babae62adfedc08ee97ccacaa249c4befb3dced6c86e2262aacc2c36",
+    "source_commit": "40447b3772b540ff357b6e3369a6169807b21452",
+    "tracked_build_inputs": 71,
+    "app_inputs_unchanged_after_build": true,
+    "app_git_canonical_matches_commit": true,
+    "working_copy_line_ending_note": "Gradle Windows wrapper CRLF is compared using Git canonical contents.",
+    "apk_signature_verified": true,
+    "v2_verified": true,
+    "signer_matches_previous_b73_release": true,
+    "signer_certificate_sha256": "741fde2383a6223313d75f24ecc9d1eab466329a5037a11bc0d1c97d368da286",
+    "license_matches_source_and_notice": true,
+    "license_sha256": "0f589765fde9cc28d1b37240f79a604e2a95905afbae15f4e671fac6dc758972",
+    "license_bytes": 14089,
+    "immutable_copy_mode": "0o444"
+  },
+  "ci": {
+    "conclusion": "success",
+    "headSha": "40447b3772b540ff357b6e3369a6169807b21452",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "sql",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "mobile",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "car",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "server",
+        "status": "completed"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/Mango-Juice/doran/actions/runs/43563017993",
+    "new_run_triggered_by_this_review": false,
+    "durations_seconds": {
+      "server": 10,
+      "sql": 40,
+      "car": 399,
+      "mobile": 619
+    }
+  },
+  "limitations": [
+    "The 318 baseline reachable blobs were covered by previous reviews and were not rescanned. This incremental review added 40 unique blobs across two commits and checked 18 new path or mode entries.",
+    "Existing byte and filename rules were reused without changes; zero findings do not guarantee detection of every secret or personal fact.",
+    "The source candidate count is a separate root observation, not a claim that later uncommitted documentation is covered by commit 40447b3.",
+    "APK bytes and manifest were checked once from the immutable release copy. Signature, licenses and build-input binding are separate build-owner evidence.",
+    "This publication record does not establish release runtime, human audibility, twenty consecutive voice turns or final package readiness."
+  ]
+}

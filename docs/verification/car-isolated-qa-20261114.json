@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-14T05:13:08.829714+00:00",
+  "scope": "Isolated debug instrumentation; actual Android lifecycle/storage/platform and SDK checks, with synthetic speech/API or loopback transport where marked.",
+  "build": {
+    "product_source_commit": "40447b3772b540ff357b6e3369a6169807b21452",
+    "product_source_commit_status": "The checks ran on an uncommitted car working tree. Its 24 app/src/main file hashes were subsequently bound to product commit 40447b3; the debug observations are not new release validation.",
+    "debug_apk_sha256": "cb8754eb0563e043026cf56e3a820426f433d17d992577fb0b3c4ae8268d7269",
+    "test_apk_sha256": "a07a40e0715e12b969ffc08f98ddbe30854ab09516c04e769c24ba32fcacd2d1",
+    "unchanged_previous_release_apk_sha256": "b73fbd34a10735e428b57c93d15f1674cacf4b73302360934b23f13cfb49a386",
+    "new_release_built": false,
+    "checks": [
+      "ktlintCheck",
+      "testDebugUnitTest",
+      "lintRelease",
+      "assembleDebug",
+      "assembleDebugAndroidTest"
+    ],
+    "jvm": {
+      "tests": 63,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "private_build_receipt_sha256": "c480fc543b1f6a70a709f09d6d02e4ceda9ed695c5f3a408461e3c6909e63947",
+    "product_main_files": {
+      "app/src/main/AndroidManifest.xml": "324a8a485453d88250c91bf2f883d9e71839086b4cbcd144c820d44411eb4b40",
+      "app/src/main/assets/licenses.txt": "0f589765fde9cc28d1b37240f79a604e2a95905afbae15f4e671fac6dc758972",
+      "app/src/main/java/app/doran/car/CarViewModel.kt": "29c5fdf481b9ed56a966d531edfd0e996395de8b71231b77060cc9c8442e65db",
+      "app/src/main/java/app/doran/car/MainActivity.kt": "01ec36bf527347124f18c6736b758c72780f2d287d09d4c5d28736b705b449f7",
+      "app/src/main/java/app/doran/car/ui/DoranTheme.kt": "280bb2cbaf49d1fefd678b6fec55e7220012169415f5bb7a1abf32f41d2484fa",
+      "app/src/main/java/app/doran/car/ui/CarScreen.kt": "1bbef42fd3b13022e02d4c6b79b48792a21f751897dc71ce38cbcb3f5cbcbf58",
+      "app/src/main/java/app/doran/car/vehicle/LocalPlaceMemory.kt": "89db9dc5a1dd49de38bcaeac0e697e24ddf63b5f4af76a4f9c70d759af25b640",
+      "app/src/main/java/app/doran/car/vehicle/PleosVehicleContext.kt": "65c8001e03ee2fc56b794355f1414bb4e3cf1dc08c0cd5934cff8a2da3e24e62",
+      "app/src/main/java/app/doran/car/vehicle/NavigationLifecycleGuard.kt": "dc883651dbd4b17e911a66b8f897d7120f33345a23e76de89b3906940b0d92a9",
+      "app/src/main/java/app/doran/car/vehicle/DrivingRestrictions.kt": "d4a6f0c5363a505d285240ffad6b3a6b100478711bc75fb89663125ea3ba8aaa",
+      "app/src/main/java/app/doran/car/vehicle/SeatOccupancyTrust.kt": "cc82d45b0a58708620b1d3d0bca7720fedc1734a0884792421eb104638e2c784",
+      "app/src/main/java/app/doran/car/speech/TtsResources.kt": "55ee19addf3c4159083a2610233d9eaa3f62dc1145e4588025e39da53499193b",
+      "app/src/main/java/app/doran/car/speech/SpeechEngine.kt": "86bb2a06549d7e1c68cd11eb115c1099c37cf75ae51868017546931815d083d3",
+      "app/src/main/java/app/doran/car/speech/PleosSpeech.kt": "c77a1a095bd4df428629a19a36636d898322deed633acc94a12bbd9108228fe6",
+      "app/src/main/java/app/doran/car/data/ConversationApi.kt": "ee48701148267035bb4700bdc3f81eb0c7b1af3b3f8b3938b90ffd76c4cb7ece",
+      "app/src/main/java/app/doran/car/data/SecureStorage.kt": "57e113ce03c2ded04fd0c12e1bb0f3f24f175b8c2e2cf402f1232569402c261d",
+      "app/src/main/java/app/doran/car/data/DoranApi.kt": "b35fd74fbfc3f5fa907a5f5285a069c40ad7cffb8e9a1bd3c5add1a4bc0ac6c4",
+      "app/src/main/java/app/doran/car/domain/SessionRecovery.kt": "a3d21f8fd0fa35bec293f4b9e86739e0228a2a28b08f822b5debc408953e424d",
+      "app/src/main/java/app/doran/car/domain/PendingPairing.kt": "353e6dcf1040b1a8621cdecfcba1a7e3ce76656b74b781106a4200bace3f077a",
+      "app/src/main/java/app/doran/car/domain/ReplayPrivacy.kt": "1c0c5095a5e5605cee43d34a4b8bfbed21cda1e601e0cd15a0e0afb1a13b8094",
+      "app/src/main/java/app/doran/car/domain/Conversation.kt": "87153a8c95f6d9a1314b0711712cdb6cba460515fecad957001bc17c661b928f",
+      "app/src/main/res/drawable/ic_doran.xml": "f40f656e726e9f72eae38c7080283af761ae132973c8a4244c6229059d689fb0",
+      "app/src/main/res/values/styles.xml": "49cf6c2036b3a426f9db6efa6aa6ecb4cfb38edcd8641ae3ca0e5538123ff232",
+      "app/src/main/res/xml/data_extraction_rules.xml": "36fc03ea0ed9d7c967452a30c28c6fc73e69c774984d13fc6b57e3455c245f80"
+    },
+    "product_main_files_fingerprint_sha256": "cd21b4f942e83d8cef484ff769eb194ddcf4c2ffb342f41bc4b7a955c515494b",
+    "fingerprint_encoding": "SHA-256 of UTF-8 compact JSON with sorted keys, mapping app/src/main paths to the build receipt SHA-256 values."
+  },
+  "private_summary_sha256_at_observation": "d6af5214963d3f58e8560b9dc087c74580b70ea99072079b2c8ed8c9afe4fe8f",
+  "synthetic_lifecycle": {
+    "cases_passed": 7,
+    "actual_activity_and_storage": true,
+    "speech_and_api_synthetic": true,
+    "owned_cleanup_succeeded": true,
+    "evidence": "Private instrumentation receipt; raw archive not published."
+  },
+  "drive_park": {
+    "actual_platform_ux": true,
+    "speech_and_api_synthetic": true,
+    "test_passed": true,
+    "park_full_panel_and_drive_20_minimal_panel_observed_by_cua": true,
+    "final_park_instrumentation_state": {
+      "phase": "LISTENING",
+      "can_setup": true,
+      "can_show_transcript": true,
+      "app_bounds": "1256x850"
+    },
+    "final_park_conversation_frame_cua_observed": false,
+    "split_screen_verified_in_this_run": false
+  },
+  "socket_recovery": {
+    "actual_client_socket_and_encrypted_storage": true,
+    "server": "Synthetic loopback fixture",
+    "phases_passed": [
+      "response_stream_interrupted_pending_preserved",
+      "new_process_without_fixture_connection_pending_preserved",
+      "new_process_replay_acknowledged"
+    ],
+    "process_restarts_used": true,
+    "ciphertext_preserved_between_first_two_phases": true,
+    "fixture_rows_after_replay": 1,
+    "fixture_attempts_after_replay": 2,
+    "owned_storage_and_reverse_forward_removed": true,
+    "production_server_idempotency_verified_here": false,
+    "release_account_accessed": false
+  },
+  "sdk_cancel_resume": {
+    "passed": true,
+    "new_call_waited_before_ack": true,
+    "stop_requests": 1,
+    "stop_acknowledgements": 1,
+    "ack_elapsed_ms": 4,
+    "next_completed": true,
+    "synthetic_callbacks": 0
+  },
+  "audio_focus": {
+    "passed": true,
+    "navigation_incoming_result": 0,
+    "navigation_loss_observed": false,
+    "call_usage_incoming_result": 1,
+    "call_usage_loss_observed": true,
+    "platform_release_verified": true,
+    "synthetic_old_done_injected": 1,
+    "synthetic_old_done_accepted": 0
+  },
+  "limitations": [
+    "The seven lifecycle cases use actual Activity and isolated storage with synthetic speech and API implementations.",
+    "Loopback transport recovery is separate from real cloud SQL generation and idempotency evidence.",
+    "Navigation-usage focus acquisition was denied, so it is not successful yielding to a navigation app. Call-usage focus is a same-UID test, not a real phone call.",
+    "One old completion callback was deliberately synthesized in the focus case; the cancel/resume case used actual SDK callbacks.",
+    "The SDK stop event has no request ID. The observed local cancel/immediate-next ordering does not prove every external-stop or cross-process race.",
+    "The host output was muted for these observations. No microphone, human speech, physical listening, audible improvement or full 20-turn conversation was verified.",
+    "Additional split-screen testing, a fixed product commit, a new release build and release runtime verification were pending at this observation."
+  ],
+  "followup_split_record": "car-split-20261114.json"
+}

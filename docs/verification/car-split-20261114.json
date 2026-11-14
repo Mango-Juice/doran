@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "observed_date_kst": "2026-11-14",
+  "scope": "Prepared Activity split-screen check with synthetic speech and API, no microphone/audio/AI.",
+  "build": {
+    "product_main_source_commit": "40447b3772b540ff357b6e3369a6169807b21452",
+    "source_binding": "The 24 product app/src/main file hashes match the earlier 63-JVM/debug QA receipt; the commit was fixed after the observations.",
+    "debug_apk_sha256": "180e036ef9065d02fb4f2f1fe39751e373251884ec369ae5175c9385b2d3a532",
+    "test_apk_sha256": "b2d1fc9bf4576fc0321997f64296755474751e291759cc8fa2ab9ab1fd34fa98",
+    "release_apk_sha256_at_observation": "b73fbd34a10735e428b57c93d15f1674cacf4b73302360934b23f13cfb49a386",
+    "new_release_built_for_this_observation": false
+  },
+  "initial_attempt": {
+    "passed": false,
+    "phase": "READY before synthetic conversation start",
+    "reason": "Host control helper stdin transport failed; READY wait timed out after 100 seconds.",
+    "synthetic_session_started": false,
+    "cleanup_succeeded": true,
+    "original_failed_evidence_preserved": true
+  },
+  "retry": {
+    "passed": true,
+    "junit_seconds": 84.119,
+    "same_debug_and_test_apks": true,
+    "only_host_control_helper_corrected": true,
+    "fresh_test_scope": true,
+    "actual_ready_window_px": [
+      1256,
+      850
+    ],
+    "actual_oem_split_window_px": [
+      628,
+      850
+    ],
+    "synthetic_listening_in_split": true,
+    "finish_saved_state_verified": true,
+    "saved_ui_frame_cua_verified": false,
+    "cleanup_succeeded": true
+  },
+  "root_cua_observed": [
+    "high-contrast synthetic marker",
+    "LISTENING title and short guidance",
+    "pause and record buttons visible without clipping",
+    "OEM navigation alongside"
+  ],
+  "private_evidence_sha256": {
+    "build-receipt.json": "8e05e6e3724073822d173072f336831ca50881965022bb94b6fbf4b68f3a077a",
+    "main-source-match.json": "5f2f90ce66c5c4f3a4053c90e777495a6c85371c3ee3e33e05ceff7c0fc90d15",
+    "attempt-1-report.json": "ccf36c85543e87654b5ff2a099c9fa8d717d44d4d8f59d17273091a7b945d634",
+    "attempt-2/summary.json": "b258580236fdfedc770e8982a7fc563fcfeba95d76b01fa843cdfa0708218bb8"
+  },
+  "limitations": [
+    "The initial attempt is a preserved preparation failure, not a passed split test.",
+    "The successful retry verifies an actual OEM 628x850 window with synthetic listening and API state. It is not an image resize or real cloud conversation.",
+    "The LISTENING title, short guidance and two unclipped controls were visually observed; SAVED was verified by state only.",
+    "No microphone, TTS, human listening or AI request was used. Physical audibility and final release runtime remain separate."
+  ]
+}
