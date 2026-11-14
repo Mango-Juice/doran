@@ -18,6 +18,8 @@ jobs:
       - run: deno task verify
         working-directory: supabase
       - run: python3 scripts/verify-publication.py --json
+      - name: Verify capture inspection without devices or playback
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
   sql:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

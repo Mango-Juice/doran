@@ -71,6 +71,10 @@ Google 로그인, 차량 연결, 마이크 권한과 처리 동의는 녹화 전
 
 20턴 시험 전체는 별도 검증으로 남긴다. 약 3분 영상에는 대표 흐름을 담으며, 짧은 영상만으로 20턴이 모두 성공했다고 주장하지 않는다. 아래 시각은 편집 계획이고 실제 응답 시간을 보장하지 않는다.
 
+현재 촬영 기준은 UI 개편 소스 `dc6b20f`, 차량 APK `116b5d38…`, 모바일 APK `89411800…`이다. 촬영 직전에 [개편 산출물 확인서](verification/design-refresh-dc6b20f.json)의 전체 해시와 대조한다. 이후 제품을 수정하면 이 기준을 다시 고정한다.
+
+개발 Mac에서는 메모리 압박을 피하기 위해 **에뮬레이터를 한 번에 하나만 실행**한다. 따라서 현재 장비의 차량→모바일 전환을 실시간 무편집 동기화처럼 보여 주지 않는다. 핵심 무편집 구간은 차량에서 과거 이야기 조회→정정→실제 응답→종료까지 보존하고, 차량을 정상 종료한 뒤 모바일을 켜 같은 대화에서 생성된 기록을 조회한다. 이 전환에는 `같은 대화 종료 후 모바일에서 확인 — 에뮬레이터 전환 구간 생략`을 표시한다. 서버의 생성 시각과 최초 조회 시각은 별도 검증 기록에 남기며 영상으로 동기화 지연을 측정했다고 주장하지 않는다. 아래 표의 모바일 기록 도착 장면은 이 별도 구간으로 촬영한다.
+
 | 목표 구간 | 실제로 담을 장면 | 설명·표시 |
 |---|---|---|
 | 0:00–0:15 | 차량과 모바일의 역할, 제출 버전 표시 | `Pleos Connect 2.1.0 에뮬레이터 / 사람의 실제 발화 / 모든 이야기·기록은 가상 사례`를 명시한다. |
@@ -82,47 +86,81 @@ Google 로그인, 차량 연결, 마이크 권한과 처리 동의는 녹화 전
 
 핵심 구간이 길어지면 소개와 다른 장면을 줄이거나 영상 길이를 늘린다. 대기를 잘라 빠른 응답처럼 보이게 하거나 재생 속도를 높이지 않는다. 실패 후 다시 촬영한 구간은 별도 실행으로 표시하며 서로 다른 실행을 연속 성공처럼 연결하지 않는다. 차량 신호를 사용하지 않았다면 내비·좌석 연동이 작동한 영상이라고 설명하지 않는다.
 
+### 촬영 순서와 짧은 설명 대사
+
+1. 모바일 준비 화면: 가상 기록 A와 수정본 M을 촬영한다. “차에서 나눈 이야기는 기록으로 남고, 하루 일기는 휴대폰에서 다듬을 수 있습니다.” 모바일 VM을 종료한다.
+2. 차량 핵심 구간: 위 본시험의 1·3·4번 발화를 사용하고 실제 응답 후 종료한다. 이 짧은 촬영은 20턴 검증과 구분한다. 대사나 정정은 사람의 발화이며 AI 답변은 실제 출력 그대로 둔다.
+3. 차량 VM 종료 후 모바일: 같은 날짜를 열고 새 기록 B, 유지된 M, `새 AI 일기 비교`를 차례로 보여 준다. “새 기록이 생겨도 직접 쓴 글은 남습니다. 새 초안을 읽고 반영 여부를 고릅니다.”
+4. 별도 가상 기록 C: 삭제 화면에서 수동 일기 삭제 체크가 꺼진 상태를 먼저 보여 주고 확정한다. “기록 삭제 범위를 확인하고 선택합니다.” 삭제 후 C 부재와 M2 보존을 확인한다.
+5. 마지막 화면: 실제 촬영한 버전, 확인된 기능, 저장소 링크를 표시한다. 계정 삭제·내비·통화·음질 등 검증하지 않은 항목을 성공 목록에 넣지 않는다.
+
+최종 촬영 전에는 음성 사전 녹음의 실제 청취가 필요하다. 지금의 무음 준비 작업에서는 마이크 녹음이나 스피커 출력을 시작하지 않는다.
+
 녹화 전후에 계정 이메일·프로필·연락처·로그·인증 URL·토큰·연결 코드를 확인한다. 로그인과 코드 연결을 먼저 마치고 알림이 노출되지 않는 상태에서 녹화한다. 개인정보가 들어간 원본은 공개하지 않고 필요한 가림 처리를 검토한다. 가림 때문에 상태나 대기 시간이 사라져서는 안 된다. 영상·APK·소스의 동일 버전과 최종 파일 해시는 [제출 절차](submission.md)에 따라 확인한다.
 
 ## 녹화 도구 준비
 
-개발 Mac에 설치된 scrcpy 3.1, FFmpeg 7.1, adb 37.0.1의 버전·도움말을 확인했다. 아래는 준비 방법이며 **이 문서 작성 중 실제 녹화·마이크 접근은 하지 않았다.** Pleos의 실제 오디오 캡처 지원과 두 프로그램을 함께 실행할 때의 안정성은 짧은 사전 녹화로 확인해야 한다.
+아래는 설치된 scrcpy 3.1·FFmpeg·adb를 사용하는 준비 절차다. **무음 화면 캡처와 실제 음성 녹화를 구분한다.** 새 녹화·마이크 접근을 이 문서나 검사 도구가 자동으로 시작하지 않는다.
 
-권장 원본은 **차량 화면+TTS 파일**과 **사람 마이크 WAV** 두 개다. scrcpy의 `output`은 Android 전체 오디오 출력을 전달하며 기기 자체 재생은 끈다. 사람은 PC에서 전달되는 TTS를 듣는다. 이 파일에 Mac 마이크가 자동으로 들어가지는 않는다. `mic`으로 바꾸면 출력 대신 Android 마이크를 캡처하므로 TTS 보존 방법이 아니며 SDK의 음성 인식과도 별도로 확인해야 한다. [scrcpy 3.1 오디오](https://github.com/Genymobile/scrcpy/blob/v3.1/doc/audio.md) · [녹화 안내](https://github.com/Genymobile/scrcpy/blob/v3.1/doc/recording.md)
+### 현재 확인된 범위
 
-녹화를 진행할 사람이 준비된 뒤 실제 serial과 입력 장치를 확인한다. 장치 목록과 마이크 캡처는 권한 요청이 나타날 수 있으므로 준비 단계에서 자동 실행하지 않는다. [FFmpeg AVFoundation](https://ffmpeg.org/ffmpeg-devices.html#avfoundation)
+2026-11-14의 direct Pleos SDK baseline은 완료 콜백과 정리를 확인했지만, scrcpy `output` 90초 원본을 디코드한 **89.4335초·48kHz·stereo PCM은 전부 0**이었다. 같은 시험 시각의 AAOS `bus0_media_out`에는 0이 아닌 출력 활동이 있었다. product 비교는 중단했다. 이는 SDK 실패나 잡음 원인을 확정하지 않으며, 해당 `REMOTE_SUBMIX` 캡처가 TTS를 보존했다는 증거도 아니다. [실제 관측](verification/first-human-trial-20261114.json)
 
-```sh
-adb devices
-ffmpeg -hide_banner -f avfoundation -list_devices true -i ""
-```
+따라서 `scrcpy --audio-source=output`을 검증된 TTS 녹화 방법으로 권장하지 않는다. `--require-audio`는 캡처 초기화 실패 때 영상만 계속하는 동작을 막지만 **정상 길이의 무음 PCM까지 검출하지 않는다.** 코덱만 AAC나 raw로 바꾸면 해결된다는 근거도 없다. `--allow-host-audio`는 호스트 마이크 입력 전달 옵션이며 이 출력 캡처의 해결책으로 켜지 않는다. [scrcpy 3.1 오디오](https://github.com/Genymobile/scrcpy/blob/v3.1/doc/audio.md)
 
-두 터미널에서 같은 새 비공개 출력 폴더를 지정한다. `DORAN_CAPTURE_DIR`에는 `artifacts/private/` 아래의 **이번 촬영 전용 새 폴더**, `DORAN_CAR_SERIAL`에는 실제 차량 serial, `DORAN_MIC_INDEX`에는 확인한 Mac 마이크 번호를 설정한다. 기존 촬영 파일을 덮어쓰지 않는다. 아래 명령은 해당 변수를 설정한 뒤 실행한다.
+현재 로컬 차량 mirror는 `--max-size=1280 --max-fps=15 --no-audio`이고 녹화 옵션이 없다. guest가 1920×1080이어도 이 미러 스트림은 최대 1280×720·15fps다. 호스트 창 높이를 키워도 원본 해상도가 복원되지는 않는다.
 
-```sh
-# 터미널 A: 차량 화면과 실제 TTS. 오디오 실패를 무음 영상으로 넘기지 않는다.
-scrcpy --serial="$DORAN_CAR_SERIAL" \
-  --no-control --no-clipboard-autosync \
-  --max-fps=30 --video-bit-rate=8M \
-  --audio-source=output --audio-codec=aac --require-audio \
-  --record="$DORAN_CAPTURE_DIR/car.mp4"
+### 무음 화면 원본 준비
 
-# 터미널 B: 사람이 실제로 말한 음성. :번호는 비디오 없이 마이크만 선택한다.
-ffmpeg -hide_banner -n -f avfoundation -i ":$DORAN_MIC_INDEX" \
-  -c:a pcm_s16le -ar 48000 "$DORAN_CAPTURE_DIR/human.wav"
-```
+VM 독점 슬롯을 확보하고 기존 mirror를 정상 종료한 뒤 하나의 캡처만 실행한다. 모바일과 차량 VM을 동시에 띄우지 않는다. 아래 명령은 **오디오 전달·기록을 제외**하지만 앱이나 에뮬레이터 자체의 스피커를 음소거하지는 않는다. 무음 검증 중에는 마이크·대화·TTS를 시작하지 않으며, 기존의 호스트 음소거 상태를 유지한다.
 
-본시험 전에 약 20초간 두 파일을 함께 시험 녹화한다. 이 준비 구간에서 동일한 TTS가 PC 스피커를 통해 마이크 파일에도 잡히게 하여 공통 음절로 시작 시각 차이를 확인한다. 본시험에서는 이어폰 등으로 TTS가 다시 STT 입력으로 들어가는 현상과 마이크의 중복 수음을 줄인다. 마이크를 바꾸면 입력 경로를 다시 확인한다. 공통 음절을 맞추기 위해 산정한 **하나의 고정 시작 오프셋**만 전체 트랙에 적용하고, 발화마다 시간을 옮기거나 STT 표시 시각에 사람 음성을 억지로 맞추지 않는다. 후자는 실제 인식 지연을 숨길 수 있다.
-
-사전 시험 뒤 녹화 프로세스를 종료하고 본촬영을 새로 시작하면 시작 시각 차이도 달라지므로 **이전 촬영의 오프셋을 재사용하지 않는다.** 각 본촬영의 앞에도 공통 TTS 준비 구간을 두 파일에 함께 담고, 두 프로세스를 종료하지 않은 채 본시험으로 이어간다. 고정 오프셋은 반드시 해당 촬영 자체의 공통 구간에서 산정한다. 이 준비 구간은 핵심 무편집 구간 바깥에서 제출본에서 덜어낼 수 있지만, 구간을 포함한 두 원본은 보존한다.
-
-사전 파일을 재생하여 사람 발화·TTS의 첫 음절과 끝, 음량·왜곡, 영상과 음성의 시간 관계를 확인한다. 캡처 시작 실패, 마이크 무음, TTS 누락 또는 SDK 인식 방해가 있으면 본시험을 시작하지 않는다. 스피커 청취·입력 경로를 검증한 기록과 분리된 원본 파일을 보존한다. 촬영은 각 프로세스에 `Ctrl+C`로 정상 종료하고, 결합본은 두 음성을 한 재생 트랙으로 믹스하여 일반 플레이어에서도 모두 들리는지 확인한다. 영상의 실제 시간과 핵심 무편집 조건은 그대로 유지한다.
+저장 위치는 Git에서 제외되는 `apps/car/app/build/verification/` 아래의 이번 촬영 전용 새 폴더로 정한다. 실제 serial을 `DORAN_CAR_SERIAL`, 새 경로를 `DORAN_CAPTURE_DIR`에 설정하고 기존 파일을 덮어쓰지 않는다. 사전 화면 시험은 20초, 본촬영 시간은 별도로 정한다.
 
 ```sh
-ffprobe -v error -show_entries stream=codec_type,codec_name \
-  -show_entries format=duration -of json "$DORAN_CAPTURE_DIR/car.mp4"
-ffprobe -v error -show_entries stream=codec_type,codec_name \
-  -show_entries format=duration -of json "$DORAN_CAPTURE_DIR/human.wav"
+# guest 디스플레이 크기를 유지하는 무음 영상. 기존 mirror와 동시에 실행하지 않는다.
+scrcpy --serial="$DORAN_CAR_SERIAL" --display-id=0 \
+  --no-audio --no-control --no-clipboard-autosync --no-power-on \
+  --no-window --max-size=0 --no-downsize-on-error \
+  --max-fps=30 --video-codec=h264 --video-bit-rate=8M \
+  --record="$DORAN_CAPTURE_DIR/car-video-only.mp4" --time-limit=20
 ```
 
-스트림이 있다는 사실만으로 음성이 정상이라는 판정을 내리지 않는다. SDK에 합성 PCM을 넣은 녹화는 별도 시험으로 표시하며 위 사람 발화 시험에 합산하지 않는다. 모바일 화면은 로그인·연결 완료 후 별도 녹화하고, 준비 화면에서 계정·코드·로그가 보이지 않는지 다시 확인한다. 원본은 공개하지 않고 검토한 제출본만 포장한다.
+`--max-size=0`은 인코딩 크기를 제한하지 않고, `--no-downsize-on-error`는 인코더 오류 때 자동으로 해상도를 낮추지 않게 한다. guest의 해상도·DPI를 바꾸는 명령이 아니다. 실제 인코더가 1920×1080을 처리했는지는 파일에서 확인하며, 30fps는 고정값이 아닌 상한이다. `--no-window`만으로 영상 인코딩이 꺼지는 것은 아니므로 화면 없이도 영상 파일을 만들 수 있다. [scrcpy 3.1 녹화](https://github.com/Genymobile/scrcpy/blob/v3.1/doc/recording.md)
+
+호스트 scrcpy를 사용하지 않는 대안은 `adb shell screenrecord`다. 이 방법도 오디오를 포함하지 않으며, 최대 180초·녹화 중 회전 미지원 등의 제한이 있다. 고유한 guest 파일명을 지정하고 수집 후 자신이 만든 파일만 정리한다. [Android screenrecord](https://developer.android.com/tools/adb#screenrecord)
+
+```sh
+adb -s "$DORAN_CAR_SERIAL" shell screenrecord \
+  --size 1920x1080 --bit-rate 8000000 --time-limit 20 \
+  /sdcard/doran-video-only-UNIQUE_TAKE.mp4
+adb -s "$DORAN_CAR_SERIAL" pull \
+  /sdcard/doran-video-only-UNIQUE_TAKE.mp4 "$DORAN_CAPTURE_DIR/"
+```
+
+두 방법은 **무음 화면 동작의 증거**다. 사람 발화·TTS의 청취·음질이나 제출용 전체 음성 녹화의 성공으로 표시하지 않는다. 설정·연결 코드·계정 화면은 제출 영상에 넣지 않는다. 녹화 종료를 확인한 뒤 영상 트랙, 해상도, 길이와 디코드 오류를 검사한다.
+
+```sh
+ffprobe -v error -show_entries stream=codec_type,codec_name,width,height,avg_frame_rate \
+  -show_entries format=duration -of json "$DORAN_CAPTURE_DIR/car-video-only.mp4"
+ffmpeg -nostdin -v error -i "$DORAN_CAPTURE_DIR/car-video-only.mp4" \
+  -map 0:v:0 -f null -
+```
+
+### 음성 녹화의 남은 검증과 파일 검사
+
+실제 사람과 TTS를 담는 오디오 경로는 아직 확정하지 않았다. 다시 `output`을 시험한다면 별도 캡처 슬롯에서 단일 세션만 사용하고, 전체 0 PCM이면 반복하거나 성공으로 포장하지 않는다. `mic`으로 바꾸는 것은 출력 대신 Android 마이크를 캡처하는 별도 작업이므로 현재 경로의 대체 명령으로 사용하지 않는다.
+
+사람이 참여하는 녹화에서는 운영자가 확인한 실제 마이크/시스템 오디오 경로를 먼저 짧게 검증해야 한다. 마이크 장치 조회·수음과 실제 청취는 별도 참여 단계에서만 수행한다. 기존 파일의 PCM 검사만으로 사람 음성·TTS·음질을 판별할 수 없다. SDK에 합성 PCM을 넣은 시험이나 고정 문장 SDK probe도 사람 발화 20턴 결과에 합산하지 않는다.
+
+오디오 원본이 생기면 원본을 보존한 채 **필터·gain·리샘플 없이** PCM16 WAV 사본으로 디코드하고 검사한다. 아래 예시는 Opus 원본이며 다른 컨테이너는 실제 파일명을 지정한다. 스크립트는 기존 파일을 읽을 뿐 녹음·재생·기기 접근을 하지 않는다.
+
+```sh
+ffmpeg -nostdin -v error -n -i "$DORAN_CAPTURE_DIR/tts-original.opus" \
+  -map 0:a:0 -c:a pcm_s16le "$DORAN_CAPTURE_DIR/tts-decoded.wav"
+python3 scripts/inspect-audio-capture.py "$DORAN_CAPTURE_DIR/tts-decoded.wav" \
+  --require-nonzero > "$DORAN_CAPTURE_DIR/tts-pcm-inspection.json"
+```
+
+검사 종료값은 `0`: 0이 아닌 PCM 존재, `1`: 빈 PCM 또는 전체 0, `2`: 손상·미지원 입력이다. **0도 정상 음질·사람 발화·TTS의 성공을 뜻하지 않는다.** RMS와 20ms·−60dBFS 기준 구간은 신호 수치일 뿐 음성 인식 결과가 아니다. 이 도구는 PCM16 WAV만 지원하며 파일 크기를 512MiB로 제한한다. 검사 결과는 원본 SHA-256과 함께 기록하고 자동으로 음량을 올리거나 원본을 자르지 않는다.
+
+사람 음성과 TTS의 두 트랙을 결합할 수 있게 된 뒤에는 매 촬영 자체에 공통 준비 구간을 담고 **하나의 고정 시작 오프셋**만 적용한다. 프로세스를 다시 시작한 촬영에 이전 오프셋을 재사용하지 않으며, 발화마다 시간을 옮겨 인식·응답 지연을 숨기지 않는다. 준비 구간을 포함한 원본을 보존하고, 첫 음절·끝 음절·왜곡·영상과의 시간 관계는 사람이 실제로 확인한다. 전체 0 파일에는 유효 음성 구간이 없으므로 청취용 preview를 만들지 않는다. 원본은 공개하지 않고 검토한 제출본만 포장한다.

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-14T09:41:17.224030+00:00",
+  "scope": "Read-only evidence/source audit, synthetic WAV parser tests, and reinspection of an existing capture. No new VM, native build, microphone, playback, or AI operation.",
+  "source_comparison": {
+    "baseline_evidence": "car-isolated-qa-20261114.json",
+    "tested_product_commit": "40447b3772b540ff357b6e3369a6169807b21452",
+    "git_head_at_audit": "0f21db71b53cfebdcd4992be9b1faba31f7a0697",
+    "comparison_target": "Current working-tree app/src/main file bytes; not a new release runtime assertion",
+    "baseline_file_count": 24,
+    "unchanged_file_count": 20,
+    "changed_files": [
+      {
+        "path": "app/src/main/java/app/doran/car/ui/DoranTheme.kt",
+        "previous_sha256": "280bb2cbaf49d1fefd678b6fec55e7220012169415f5bb7a1abf32f41d2484fa",
+        "current_sha256": "6632b99b32f091a6f382fc1f8ee2c15253ceeaf1bfbd6f795ac4f08949ebab7f"
+      },
+      {
+        "path": "app/src/main/java/app/doran/car/ui/CarScreen.kt",
+        "previous_sha256": "1bbef42fd3b13022e02d4c6b79b48792a21f751897dc71ce38cbcb3f5cbcbf58",
+        "current_sha256": "de6507197d4d3f8a4002a2b8dd94df2fc7b705031fd8cba729cef7a10f05363f"
+      },
+      {
+        "path": "app/src/main/res/drawable/ic_doran.xml",
+        "previous_sha256": "f40f656e726e9f72eae38c7080283af761ae132973c8a4244c6229059d689fb0",
+        "current_sha256": "6266b506e5d4e506a05288ada38a5a0babe2b1ed67737c4d194b095535371501"
+      },
+      {
+        "path": "app/src/main/res/values/styles.xml",
+        "previous_sha256": "49cf6c2036b3a426f9db6efa6aa6ecb4cfb38edcd8641ae3ca0e5538123ff232",
+        "current_sha256": "c1b9db8497103ecf3892a8a30e7a8870530fa6e30c23c4425daed116739102a1"
+      }
+    ],
+    "unchanged_recovery_sources_sha256": {
+      "app/src/main/java/app/doran/car/CarViewModel.kt": "29c5fdf481b9ed56a966d531edfd0e996395de8b71231b77060cc9c8442e65db",
+      "app/src/main/java/app/doran/car/data/ConversationApi.kt": "ee48701148267035bb4700bdc3f81eb0c7b1af3b3f8b3938b90ffd76c4cb7ece",
+      "app/src/main/java/app/doran/car/data/SecureStorage.kt": "57e113ce03c2ded04fd0c12e1bb0f3f24f175b8c2e2cf402f1232569402c261d",
+      "app/src/main/java/app/doran/car/data/DoranApi.kt": "b35fd74fbfc3f5fa907a5f5285a069c40ad7cffb8e9a1bd3c5add1a4bc0ac6c4",
+      "app/src/main/java/app/doran/car/domain/SessionRecovery.kt": "a3d21f8fd0fa35bec293f4b9e86739e0228a2a28b08f822b5debc408953e424d",
+      "app/src/main/java/app/doran/car/domain/PendingPairing.kt": "353e6dcf1040b1a8621cdecfcba1a7e3ce76656b74b781106a4200bace3f077a",
+      "app/src/main/java/app/doran/car/domain/ReplayPrivacy.kt": "1c0c5095a5e5605cee43d34a4b8bfbed21cda1e601e0cd15a0e0afb1a13b8094",
+      "app/src/main/java/app/doran/car/domain/Conversation.kt": "87153a8c95f6d9a1314b0711712cdb6cba460515fecad957001bc17c661b928f"
+    }
+  },
+  "existing_socket_evidence": {
+    "source": "car-isolated-qa-20261114.json",
+    "actual_client_socket_and_encrypted_storage": true,
+    "server": "Synthetic loopback fixture",
+    "phases_passed": [
+      "response_stream_interrupted_pending_preserved",
+      "new_process_without_fixture_connection_pending_preserved",
+      "new_process_replay_acknowledged"
+    ],
+    "process_restarts_used": true,
+    "ciphertext_preserved_between_first_two_phases": true,
+    "fixture_rows_after_replay": 1,
+    "fixture_attempts_after_replay": 2,
+    "owned_storage_and_reverse_forward_removed": true,
+    "production_server_idempotency_verified_here": false,
+    "release_account_accessed": false,
+    "done_events_after_replay": 1
+  },
+  "decision": {
+    "duplicate_vm_retest_performed": false,
+    "reason": "Recovery/API/storage/privacy source bytes match the existing tested baseline. Only theme, screen layout, icon, and styles differ. No additional runtime claim is made for UI changes.",
+    "remaining_gap": "Release-app network loss/relaunch/recovery with the real cloud and human speech remains separate from loopback evidence."
+  },
+  "capture_tool_tests": {
+    "tool": "scripts/inspect-audio-capture.py",
+    "suite": "scripts/tests/test_inspect_audio_capture.py",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "fixtures": "Temporary synthetic PCM files only; no TTS, recording, playback or devices",
+    "covered": [
+      "All-zero/empty PCM gate",
+      "Stereo frame positions and RMS",
+      "Energy-window ranges and low-level nonzero samples",
+      "Truncated PCM and partial frames",
+      "RIFF child chunk outside parent bounds",
+      "Unsupported sample width and invalid/missing/non-file/oversize inputs",
+      "Input preservation and SHA binding"
+    ]
+  },
+  "existing_capture_reinspection": {
+    "new_capture_performed": false,
+    "kind": "Earlier direct SDK baseline Android output capture; product comparison was not executed",
+    "file": "baseline.decoded.wav",
+    "sha256": "a8528f2cb7d5840daed5e36f1f0571b79da542c944fc0789c7534abcaa19f1a2",
+    "status": "ALL_ZERO_PCM",
+    "duration_seconds": 89.4335,
+    "sample_rate_hz": 48000,
+    "channels": 2,
+    "nonzero_samples": 0,
+    "rms_int16": 0.0,
+    "require_nonzero_exit_code": 1,
+    "preview_created": false,
+    "speech_presence_verified": false,
+    "audio_quality_verified": false,
+    "physical_audibility_verified": false,
+    "interpretation": "The existing all-zero PCM is rejected as signal evidence. This does not establish SDK failure or the cause of noise."
+  }
+}
