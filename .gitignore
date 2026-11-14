@@ -30,3 +30,8 @@ artifacts/private/
 supabase/.temp/
 supabase/.branches/
 
+# Internal execution reports stay outside the public tree.
+/docs/verification/
+/apps/car/verification/
+/supabase/tests/evals/*.json
+!/supabase/tests/evals/korean_cases.json

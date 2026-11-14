@@ -63,121 +63,29 @@ API v1의 `source`, `observed_at`, `passenger_state`와 유효한 `destination_e
 - [NaviHelper 권한](https://document.pleos.ai/docs/pleos-only/connect-sdk-pleos/NaviHelper/declaring-permissions)
 - [FusedLocation 소개](https://document.pleos.ai/docs/pleos-only/connect-sdk-pleos/FusedLocation/intro)
 
-## 최초 SDK 계측: 2026-11-14 04:17 KST
+## 에뮬레이터에서 확인한 지원 범위
 
-공식 Pleos Connect 2.1.0/API 34의 `Doran_Verification`에서 별도 `app.doran.car.debug` 패키지를 새로 설치해 04:17:24–04:18:45 KST에 1회 측정했다. 아래 결과는 실제 SDK 콜백이며 입력은 에뮬레이터 신호와 합성 PCM이다. 사람의 마이크 발화, 실차 센서, 실제 스피커 청취 시험으로 해석하지 않는다.
+Pleos Connect 2.1.0 / Android 14 ARM64에서 확인한 범위입니다. 가상 신호와 합성 입력을 사용한 SDK 시험이며 실차 센서 검증은 아닙니다.
 
-| 항목 | 실제 관측 | 앱에서의 의미와 남은 검증 |
-|---|---|---|
-| FusedLocation | 권한 미허용 `PERMISSION_REQUIRED` → 허용 후 `AVAILABLE`, 원래 측정 시각 수신 | 호스트가 주입한 가상 GPS 값이다. 실제 위치 정확도는 미검증이다. |
-| Odometer 시간·거리 | 두 capability 요청 모두 `ERROR`(예외 클래스 `a`, 상세 오류 코드 없음) | 어댑터는 `UNAVAILABLE`로 처리하고 맥락에서 제외했다. 값·단위 변환의 실측 및 이 이미지의 정상 지원 여부는 미확인이다. |
-| Seat | `READ_SUPPORTED`, 앞 좌우·뒤 좌중우 5개 영역에서 GET 콜백 각 1회, SDK Boolean `true` | 이 시험 당시 코드는 `occupied`로 처리했다. 이후 동시 토글에서 의미 불일치를 확인해 현재 생산 코드에서는 자동 판단을 제외했다. |
-| NaviHelper | 연결 `AVAILABLE`, `CONNECTED_NO_ACTIVE_ROUTE_OBSERVED`; ETA `UNAVAILABLE`, 도착 `WAITING` | 서비스 연결만 확인했다. 실제 활성 경로·목적지 도착·반복 방문 학습은 이 실행에서 검증하지 못했다. |
-| CarUxRestrictions | 정차 시 `known=true`, `requires_do=false`, 제한 플래그 `0`, 설정 허용 | SDK 계측 중의 정차 상태다. 주행 전환 검증은 별도 UI 시험 결과를 사용한다. |
-| SpeechToText 3.3.1 | `ON_DEVICE`, 0.974초 PCM의 FINAL “감사합니다”, 예상 문장 일치 | 합성 입력에서 실제 인식 결과를 수신했다. 마이크 권한·사람 발화·20회 연속 음성 턴은 별도 시험이 필요하다. |
-| TextToSpeech 3.3.1 | `ON_DEVICE`, 실제 `onReady`·`onStart`·`onDone`, 오디오 포커스 중단 0회 | SDK 완료 콜백을 확인했다. 실제 소리·첫 음절·재생 속도는 녹음 또는 청취로 확인해야 한다. |
+| 기능 | 관측과 사용 범위 |
+|---|---|
+| SpeechToText·TextToSpeech | SDK 인식 결과와 출력 완료 콜백 확인. 청취 품질은 별도 검증 |
+| FusedLocation | 권한 거부·허용 상태와 가상 GPS의 측정 시각 수신 |
+| Odometer | 현재 운행 시간·거리 capability 오류. 앱에서 유효하지 않은 맥락으로 제외 |
+| Seat | Console 점유 상태와 SDK Boolean 의미 불일치. 자동 동승 판단에서 제외 |
+| NaviHelper | 실제 서비스 연결·경로 시작·안내 모드·남은 시간·취소 콜백 확인. 실제 도착·반복 방문은 미검증 |
+| CarUxRestrictions | 주행·정차 전환의 표시 제한과 분할 화면 확인 |
 
-공개용 [SDK 관측 요약](../apps/car/verification/sdk-91390127.json)에는 실제 시험한 debug APK와 instrumentation APK의 SHA-256, 실행 조건과 한계를 기록했다. 이름의 `91390127`은 같은 소스 빌드에서 만든 release APK를 가리키며, 계측 대상은 별도 debug 패키지다. 이 결과가 이후 최종 release APK의 실제 실행 검증을 대신하지 않는다.
+`NAVI_ROUTE_SEARCH` 권한과 경로 요청 시험은 debug/instrumentation에만 있으며 release에는 없습니다. SDK 콜백에 경로 식별자가 없어 새 안내가 시작된 뒤 이전 경로의 payload가 도착하는 경우를 완전히 구분할 수는 없습니다.
 
-원본은 로컬 `apps/car/app/build/verification/`의 `sdk-verification-91390127.json`, `sdk-summary-91390127.json`, `sdk-callback-log-91390127.txt`다. 원본 로그와 설정은 Git 관리 대상이 아니다. StateFlow 관측 개수와 SDK의 원래 GET 콜백 개수는 서로 다른 지표다. `harness_completed=true`는 결과 수집과 정리 완료를 뜻하며 모든 SDK 기능 성공을 뜻하지 않는다.
+## 에뮬레이터 실행
 
-최초 시험에서는 약 7분 앞선 Console의 4좌석 `false`와 SDK 5영역 `true` 사이의 차이만 확인해 원인을 미확정으로 남겼다. [Vehicle 2.3.2 배포 소스](https://nexus-playground.pleos.ai/repository/maven-releases/ai/pleos/playground/Vehicle/2.3.2/Vehicle-2.3.2-sources.jar)의 `SeatImpl.kt:435`와 `PropertyCallback.kt:352`는 원시 정수 `1`만 `true`로 바꾸며 실제 AAR 바이트코드도 같다. [공개 Seat API](https://document.pleos.ai/en/api-reference/connect-sdk-pleos/Vehicle/vehicle/ai.pleos.playground.vehicle.api/seat/get-current-seat-occupancy)는 Boolean 콜백을 제공하지만 원시 정수 의미나 Android 표준 enum과의 변환 계약을 설명하지 않는다. 후속 동시 토글 결과는 아래에 별도로 기록했다.
+전체 디스플레이 기준은 1920×1080입니다. OEM 화면 배치에 따라 앱 영역은 더 작으며 분할 시 다시 줄어듭니다. 메모리가 부족한 호스트에서는 Android 빌드와 에뮬레이터를 동시에 실행하지 않습니다.
 
-### 첫 실행 음성 지연 분석
-
-| 측정 구간 | 첫 실행 관측 |
-|---|---:|
-| STT 하네스 호출 전체 | 20.505초 |
-| STT initialize → 서비스 연결 | 약 0.366초 |
-| STT 첫 PCM 전송 → completeAudioSend | 약 1.305초 |
-| STT completeAudioSend → FINAL 콜백 | 약 18.514초 |
-| TTS 하네스 호출 전체 | 28.569초 |
-| TTS initialize → 서비스 연결 | 약 0.065초 |
-| TTS speak → onStart | 약 0.391초 |
-| TTS onStart → onDone | 약 27.122초 |
-
-STT 입력은 16 kHz·16-bit·mono PCM 31,168바이트였다. [공식 PCM 전송 예제](https://document.pleos.ai/docs/pleos-only/connect-sdk-pleos/SpeechToText/sending-audio-data)에 맞춰 최대 3,200바이트씩 100ms 간격으로 보내고 `completeAudioSend()`를 호출했다. 전송 간격의 실제 합계에는 에뮬레이터 스케줄링 지연도 포함된다. TTS 문장은 “도란 음성 출력 점검입니다. 감사합니다”로 공백·마침표를 포함한 21자이며 앱에서 속도 설정을 변경하지 않았다. 배포 AAR 3.3.1의 `TextToSpeech` 공개 메서드에는 재생 속도 setter가 없고, [공식 API 목록](https://document.pleos.ai/en/docs/pleos-only/connect-sdk-pleos/TextToSpeech/text-to-speech/ai.pleos.playground.tts/text-to-speech/set-speaker-type)과도 대조했다. SDK 내부 기본 속도의 실제 값은 확인하지 못했다.
-
-가장 긴 구간은 서비스 연결 이후다. STT 클라이언트 바이트코드는 서비스 연결을 기다린 뒤 `requestCompleteSendBuffer`를 호출하지만, 서비스 내부 VAD·추론·모델 로드 시점은 공개 클라이언트에서 확인되지 않는다. TTS 콜백 간 27초가 실제 27초간의 소리인지도 로그만으로 판단할 수 없다. 이 한 번의 결과로 SDK 인스턴스 생성이나 모델 cold start를 원인으로 단정하지 않는다.
-
-`completeAudioSend()`의 공개 설명은 입력 종료 통지이며 즉시 EPD 종료·FINAL 반환이나 특정 무음 길이·최대 대기시간을 보장하지 않는다. 사용한 PCM 끝 100ms의 RMS는 약 −89dBFS(최대 샘플 절댓값 2), 연속 완전 무음은 약 3.31ms였다. 따라서 무음이 전혀 없는 입력이라고 하기는 어렵지만 실제 마이크에서 긴 무음을 계속 받는 조건과 같지도 않다. 입력 종료 후 EPD 처리의 영향은 원인 후보로 남기되 확인된 원인으로 쓰지 않는다. 이 합성 `sendAudio()` 시험의 지연을 사람 발화의 `request()` 경로 지연으로 그대로 일반화하지 않는다.
-
-코드 검토에서 18–27초 동안 메인 스레드를 막는 명시적 대기는 발견하지 못했다. 하네스의 `runBlocking`은 JUnit 계측 스레드에서 실행되고, Main 컨텍스트의 콜백 대기는 코루틴을 중단한다. PCM 전송과 간격 대기는 IO 컨텍스트에서 실행한다. TTS 준비 무음의 160ms `Thread.sleep`도 IO 컨텍스트에서 실행한다. 이것은 SDK 내부 처리나 에뮬레이터 CPU 경합이 없다는 증거는 아니다.
-
-하네스는 차량 맥락 수집·해제 → 개별 capability 확인·해제 → 음성 시험 순서로 실행한다. 로그의 마지막 Vehicle 해제는 04:17:56.070, STT 초기화는 04:17:56.310이며 NaviHelper 해제도 그 전에 끝났다. 이 실행에서 Seat/Odometer/Navi 초기화가 TTS `onDone` 시점과 겹쳐 지연시켰다는 증거는 없다. 실제 앱에서 차량 정보 동의 켜기·끄기 비교는 별도 측정 대상이다.
-
-후속 계측 하네스는 초기화 호출·완료, 첫 PCM 전송·마지막 전송, `completeAudioSend` 호출·반환, FINAL의 단조 시각과 구간별 시간을 기록하며 실패·시간 초과에도 이미 수집한 시각을 보존한다. SDK 메서드 반환은 서비스 처리 완료 확인이 아니므로 SDK logcat과 함께 비교한다. TTS는 호출 시각·문장 길이와 `DoranSpeech` 콜백 로그를 대응시킨다. 별도 Main 코루틴의 100ms 간격 관측으로 최대 스케줄링 공백도 수집한다.
-
-## 후속 SDK 계측: 2026-11-14 05:46 KST
-
-보이는 Pleos 에뮬레이터 한 대를 4096MB·CPU 2개로 실행해 05:46:32–05:46:54 KST에 합성 PCM 3회를 측정했다. GLES 렌더러는 Apple M1 Pro/Metal로 별도 관측했다. 원래 AVD 설정 파일은 변경하지 않고 실행 인수로 메모리·코어를 지정했다. 원본은 로컬 `apps/car/app/build/verification/b4fdac87-sdk-warm3/`의 `runtime.json`, `artifacts.json`, `sdk-verification.json`, `sdk-logcat.txt`, `seat-transitions.json`, `summary.json`에 보존했다.
-
-계측 APK SHA-256은 debug `8a565859f5966df9d823dca86a7b094747481828046c7b7455a22b198aa33be4`, instrumentation `d2e3b128b9e0582d8a19739b531498c09770a3db3df1d75f2728d8fc9ec8125c`다. 디렉터리 접미사 `b4fdac87`은 당시 release 참조 해시의 앞부분이며 계측 앱은 별도 debug 빌드다. 이후 자동 좌석 판단을 제외하는 변경은 이 계측 APK에 포함되지 않는다.
-
-비식별 [3회 음성·좌석 관측 요약](../apps/car/verification/sdk-b4fdac87-warm3.json)을 공개 저장소에 함께 제공한다. 원본 logcat과 설정은 로컬 검증 폴더에만 둔다.
-
-| 회차 | 합성 입력 | STT 전체 | 입력 완료 호출 → FINAL | TTS 전체 | 결과 |
-|---|---|---:|---:|---:|---|
-| 1 | 감사합니다, 0.974초 | 2.323초 | 1.277초 | 4.869초 | FINAL 일치·SDK onDone |
-| 2 | 미안합니다, 0.998초 | 1.524초 | 0.503초 | 3.233초 | FINAL 일치·SDK onDone |
-| 3 | 감사합니다, 0.974초 | 1.402초 | 0.366초 | 3.412초 | FINAL 일치·SDK onDone |
-
-오디오 포커스 중단은 0회, Main 코루틴의 최대 관측 간격은 138ms였고 500ms 초과는 없었다. 이 실행에서는 최초 시험보다 지연이 줄었지만, 메모리·시스템 부하·초기화 이력이 통제된 비교시험은 아니므로 원인을 특정하지 않는다. 사람의 마이크 발화·실제 청취·첫 음절·연속 20턴 성공을 대신하지 않는다.
-
-### 같은 실행에서 확인한 좌석 의미 불일치
-
-공식 Console 카탈로그의 요청은 `PUT /vehicle/seat?kind=occupied&value=false&area=passenger`이며 Empty는 `false`, Occupied는 `true`다. SDK 구독 중 조수석을 Empty → Occupied → Empty로 바꾼 뒤 원래 상태로 복구했다.
-
-| Console 조수석 설정 | SDK areaId 4 원시 이벤트 | SDK Boolean에 대한 근거 |
-|---|---:|---|
-| Empty (`false`) | `1` | 마지막 Empty 상태의 직접 GET에서 `true` 수신 |
-| Occupied (`true`) | `2` | 배포 소스의 `raw == 1` 규칙에 따르면 `false`. 개별 Boolean 전환은 이 실행의 JSON에 따로 기록되지 않음 |
-| Empty (`false`) | `1` | 원시 이벤트의 복귀와 최종 GET `true`를 확인 |
-
-다른 좌석의 값이 남아 집계 상태는 계속 `occupied`였으므로 집계만으로 조수석 Boolean 전환을 관측했다고 주장하지 않는다. Console은 운전석·동승석·뒤 좌우 4영역만 제공하며 SDK의 뒤 가운데 영역에 대응하는 입력은 없다. 이 결과는 현재 이미지/SDK 조합의 의미 불일치를 재현한 것이며 모든 차량의 동작으로 일반화하지 않는다. 현재 생산 코드의 자동 판단 제외 정책은 이 증거를 근거로 한다.
-
-Odometer 현재 운행 시간·거리 capability는 이 실행에서도 예외 `a`로 실패했다. Console의 누적 주행거리(km)를 현재 운행거리(m)로 대체하지 않는다. Navi 연결은 확인됐지만 이 합성 음성 시험에서 활성 경로·도착은 관측하지 않았다.
-
-## 실제 내비 경로 관측과 상태 처리 수정: 2026-11-14 06:15 KST
-
-단독 4096MB·CPU 2개 환경에서 별도 debug 계측 앱으로 공식 샘플의 공개 목적지에 `requestRoute`를 한 번 호출했다. 설치된 Navigation 앱과 Navi 서비스, 필요한 권한, 정차 상태 및 기존 경로가 없음을 먼저 확인했다. [비식별 관측 요약](../apps/car/verification/navigation-cdfc0e8c.json)에 실제 debug·instrumentation APK 해시와 콜백 순서를 남겼다. `cdfc0e8c`는 이때 함께 만든 release의 참조 해시이며, 이후 상태 처리 수정본을 뜻하지 않는다.
-
-실제 SDK는 `onRouteStarted` → `ROUTE_DRIVE` → `ROUTE_GUIDING / isRouting=false` 순서를 보냈고, 같은 안내 모드에서 목적지의 남은 시간 60초·거리 50m를 제공했다. 종료 시 시험 목적지임을 다시 확인한 뒤 취소했으며 `onRouteCancelled`와 `FREE_DRIVE`를 받았다. 실제 도착 및 `onRoutingCompleted`는 관측하지 못했다. 원본은 로컬 `app/build/verification/cdfc0e8c-clean-install/navigation/`에 보존한다.
-
-이 관측으로 기존 생산 어댑터가 `isRouting=false`만 보고 유효한 안내 맥락을 지우는 결함을 발견했다. 수정한 `NavigationLifecycleGuard`는 명시적인 안내 모드를 사용하며, 실제 콜백 10개를 담은 fixture와 취소·FREE·검색 완료·시뮬레이션·정상 도착 보존 경계를 JVM 시험으로 확인한다. [공식 목적지 안내](https://document.pleos.ai/docs/pleos-only/connect-sdk-pleos/NaviHelper/destinations)에서 경로 탐색 시작·완료와 목적지 설정을 구분하며, 배포된 NaviHelper 3.0.5의 `NaviHelperEventListener`에서도 `onRouteEnded`는 `onRoutingCompleted`로 대체된 검색 완료 콜백이다. 이는 기록된 실제 콜백을 정책 코드에 재생하는 시험이며, 수정한 release에서 연결된 사용자의 맥락·AI 대화가 실제로 동작했다는 증거는 아니다.
-
-취소나 FREE 이후에는 같은 SDK 세대의 늦은 안내 상태·목적지·도착이 경로를 다시 만들 수 없다. 새 경로 시작은 별도 상태로 전환하며, 새 SDK 세대는 현재 안내 상태를 다시 조회할 수 있다. 최초 복원 상태의 `INITIALIZING`은 경로 종료로 확정하지 않고 다음 안내 상태를 기다린다. 이 초기화 순서는 실제 관측 사례가 아닌 별도 정책 회귀 범위이며, 이미 취소된 경로의 재개는 허용하지 않는다. SDK 콜백에 경로 식별자가 없어 새로운 안내가 시작된 뒤 이전 경로의 payload가 도착하는 경우를 완전히 구분할 수는 없다. 정상 도착 뒤 늦게 도착한 GPS 확인용 목표는 기기 내에만 잠시 보존하고, 기존 120초·GPS 신선도·200m 조건을 적용한다. 취소·새 경로·동의 철회·중지 시에는 함께 지운다.
-
-`NAVI_ROUTE_SEARCH` 권한과 경로 요청 시험은 debug/instrumentation에만 있으며 release에는 없다. 실제 목적지 도착, 반복 방문, 이동시간 기준값 및 사람의 연결 후 대화는 아직 별도 검증이 필요하다.
-
-## 에뮬레이터 실행 및 Virtual Console 활성화
-
-검증용 `Doran_Verification` AVD는 공식 Pleos Connect 2.1.0 arm64, 전체 디스플레이 1920×1080이다. 최초 시험은 RAM 3072MB·CPU 2개였으며, 현재 검증 명령은 `-memory 4096 -cores 2`로 지정한다. 디스플레이 전체 크기와 OEM이 배치하는 앱 영역(관측된 1256×850 및 실제 바 조작 후 628×850)은 구분한다. 기존 PoC AVD와 원본 시스템 이미지는 보존했다. 메모리가 작은 개발 Mac에서는 release 축소 빌드(R8)와 에뮬레이터의 동시 실행을 피한다. 실제로 QEMU main loop와 CPU thread의 15초 무응답 뒤 HangDetector 종료가 관측됐다. 이 현상을 앱 크래시와 구분한다.
-
-기본 이미지 시간대는 `America/Los_Angeles`였으며, UTC를 비교했을 때 호스트와 에뮬레이터는 초 단위 측정의 1초 범위 안에서 일치했다. 한국 시나리오의 화면 표시를 위해 새 검증 AVD에만 `settings put global auto_time_zone 0`과 `cmd alarm set-timezone Asia/Seoul`을 적용했다. 자동 시각 동기화(`auto_time=1`)와 실제 epoch는 유지했다. 기존 AVD나 시스템 이미지의 시간은 변경하지 않았다.
-
-Virtual Console의 페이지는 `POST /browser/session?client=<UUID>`를 1초마다 호출하며, 세션 유효기간은 3초다. 브라우저 페이지를 열어 두거나 같은 세션 프로토콜을 유지해야 DDS bridge가 활성화된다. 활성화 전에는 `/vehicle/state` 조회가 성공해도 `emulator_active=false`, `dds_ready.all=false`일 수 있고 상태 변경은 HTTP 503 `emulator_inactive`로 거절된다. 이를 차량 SDK 기능 미지원으로 판단하면 안 된다.
-
-아래 명령은 `apps/car` 디렉터리에서 실행한다. `adb`는 Android SDK의 `platform-tools`를 PATH에 추가해 사용한다.
+Virtual Console을 열어 DDS bridge를 활성화한 뒤 가상 차량 신호를 사용합니다. Console이 비활성인 동안의 HTTP 오류를 SDK 미지원으로 판정하지 않습니다. `adb`는 Android SDK의 `platform-tools`를 PATH에 추가합니다.
 
 ```sh
 adb -s emulator-5554 forward tcp:8088 tcp:8088
-# PC에서 http://127.0.0.1:8088/ 페이지를 열고 유지한다.
-# 또는 실제 가상 신호와 앱 UI를 함께 확인하는 아래 스크립트를 사용한다.
-python3 scripts/verify_vehicle.py \
-  --serial emulator-5554 \
-  --apk app/build/outputs/apk/release/app-release.apk \
-  --output app/build/verification/release-ux-check \
-  --expect-unpaired
 ```
 
-스크립트는 실제 에뮬레이터만 허용하며 연결 세션 heartbeat, Park→Drive 20km/h→Park 전환, 플랫폼 UXR, 앱 생존과 화면을 검사한다. 시험 종료 시 Park 복구와 heartbeat 종료를 시도한다. 마이크·AI·모바일 연동 시험을 대신하지 않는다. 결과 디렉터리는 새 경로를 지정하여 이전 실패 증거를 보존한다.
-
-`ui_wait_seconds`에는 UIAutomator의 idle 대기와 ADB 통신 시간이 포함되므로 조작 피드백 시간으로 사용하지 않는다. Android `am start -W`의 완료 시간도 사용자가 실제 내용을 본 시각과 다를 수 있다. 앱 첫 내용 draw 로그와 시각이 기록된 화면 샘플을 함께 비교한다.
-
-사람의 마이크 입력과 TTS 청취를 확인할 때는 보이는 창으로 실행하고 `-allow-host-audio`를 추가한다. 설치된 emulator의 도움말은 이 옵션이 없으면 호스트 입력을 0으로 채운다고 명시한다. `hw.audioInput=yes`만으로 실제 마이크 입력이 활성화됐다고 판단하지 않는다. 다음 명령에는 `-no-window`, `-no-audio`, `-audio none`을 사용하지 않는다. 호스트의 마이크 접근 권한과 실제 출력 청취는 별도로 확인한다.
-
-```sh
-emulator -avd Doran_Verification -port 5554 \
-  -memory 4096 -cores 2 -no-snapshot -no-boot-anim -allow-host-audio
-```
+브라우저에서 `http://127.0.0.1:8088/`를 열어 유지합니다. 현재 기기 serial과 포트는 실행 환경에 맞게 선택합니다. 준비 도구와 Mac 출력 경로는 [오디오 안내](emulator-audio.md), 실제 시험 범위는 [검증 요약](verification.md)을 참고하세요.

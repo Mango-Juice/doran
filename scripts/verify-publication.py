@@ -30,7 +30,7 @@ SECRET_RULES = {
     "private_local_path": rb"(?:/Users/|/home/)[A-Za-z0-9._-]+/|[A-Za-z]:\\Users\\[A-Za-z0-9._-]+\\",
 }
 JWT = re.compile(rb"\b(eyJ[A-Za-z0-9_-]{8,})\.(eyJ[A-Za-z0-9_-]{8,})\.([A-Za-z0-9_-]{20,})\b")
-EMAIL = re.compile(rb"\b[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+EMAIL = re.compile(rb"\b[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@[A-Za-z0-9.-]{1,253}\.[A-Za-z]{2,63}\b")
 PRIVATE_EXPORT = re.compile(r"(?:KakaoTalk_Chat|참가정보|참가신청|consent|server-events|logcat|source-manifest)", re.I)
 SAFE_EMAIL_DOMAINS = {"example.com", "example.org", "example.net", "localhost.test"}
 # Reviewed native SDK/JNA binaries contain their vendor's build paths, not this

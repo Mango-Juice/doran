@@ -17,7 +17,6 @@ jobs:
           deno-version: v2.5.6
       - run: deno task verify
         working-directory: supabase
-      - run: python3 scripts/verify-publication.py --json
       - name: Verify capture inspection without devices or playback
         run: python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
   sql:
@@ -37,6 +36,21 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Verify publication and submitted APK signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          doran_sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -d "$doran_sdk"
+          doran_analyzer=$(find "$doran_sdk/cmdline-tools" -type f -name apkanalyzer | sort -V | tail -n 1)
+          doran_signer=$(find "$doran_sdk/build-tools" -type f -name apksigner | sort -V | tail -n 1)
+          test -x "$doran_analyzer"
+          test -x "$doran_signer"
+          export PATH="$(dirname "$doran_analyzer"):$PATH"
+          python3 scripts/verify-publication.py --json
+          while IFS= read -r -d '' doran_apk; do
+            "$doran_signer" verify --verbose --print-certs "$doran_apk"
+          done < <(git ls-files -z -- 'apk/*.apk')
       - run: ./gradlew --no-daemon --max-workers=2 ktlintCheck testDebugUnitTest lintRelease assembleDebug
         working-directory: apps/car
   mobile:

@@ -25,7 +25,13 @@ Flutter 버전과 커밋은 루트 `toolchain.json`, Dart 패키지는 `apps/mob
 5. `supabase/functions/doran-api`와 `doran-worker`를 배포한다. `supabase/config.toml`의 `verify_jwt = false`는 함수 내부 Auth 검증을 전제로 한다. `/about`과 `/privacy` 외 API를 인증 없이 열어서는 안 된다.
 6. 워커 스케줄 마이그레이션의 실행 대상이 새 프로젝트를 가리키는지 확인한다. 큐 처리·비밀 워커 인증·예산 예약을 실제 HTTP 요청으로 검증한다. 원래 도란 프로젝트의 운영 예산을 새 환경에 그대로 공유하지 않는다.
 
-현재 프로젝트는 개발 검증과 운영을 합쳐 30USD 이내로 관리한다. 서버 예산 29USD와 별도 연결·품질 평가 1USD를 구분한다. 서버의 보수적인 예약·차감 금액은 OpenAI 청구서의 실결제 금액과 다르다. 자세한 방식은 [서버 문서](backend.md)를 따른다.
+제출 서비스의 총 AI 한도는 30USD다. 서버에 29USD, 별도 연결·품질 평가에 1USD를 배정한다. 기본 마이그레이션의 서버 한도를 그대로 둔 채 외부 평가비를 추가하지 않도록 배포 후 다음을 적용한다.
+
+```sql
+update private.budget set limit_usd = 29 where id = 1;
+```
+
+직접 모델 평가는 DB 원장을 거치지 않으므로 평가 실행기의 이전 정산·미정산 예약액을 이어 사용한다. 예약·차감 방식은 [서버 문서](backend.md), 평가 명령은 [평가 안내](../supabase/tests/evals/README.md)를 따른다.
 
 ## Release 서명과 제출
 
