@@ -437,7 +437,10 @@ class _DayEditorState extends State<DayEditor> {
                   },
                 ),
 
-                if (widget.compare || day.hasNewGenerated) ...[
+                if (widget.compare && !day.hasGeneratedText)
+                  const Notice('비교할 새 일기 내용이 없어요. 직접 수정한 글은 그대로 보관돼요.'),
+                if (day.hasGeneratedText &&
+                    (widget.compare || day.hasComparableDraft)) ...[
                   const SizedBox(height: 24),
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -462,16 +465,12 @@ class _DayEditorState extends State<DayEditor> {
                         ),
                         const SizedBox(height: 20),
                         SelectableText(
-                          day.generatedText.isEmpty
-                              ? '아직 새 일기가 없어요'
-                              : day.generatedText,
+                          day.generatedText,
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         const SizedBox(height: 24),
                         OutlinedButton(
-                          onPressed: busy || day.generatedText.isEmpty
-                              ? null
-                              : _adopt,
+                          onPressed: busy ? null : _adopt,
                           child: const Text('새 AI 일기 전체 반영'),
                         ),
                       ],

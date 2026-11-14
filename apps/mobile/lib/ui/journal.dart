@@ -274,11 +274,21 @@ class _JournalPageState extends State<JournalPage> {
             child: Center(child: CircularProgressIndicator()),
           )
         else ...[
-          if (!widget.history && day != null && day!.status != 'empty') ...[
+          if (!widget.history && day != null && day!.hasEntry) ...[
             _diary(),
             const SizedBox(height: 32),
           ],
-          if (records.isEmpty && error == null) _empty(),
+          if (records.isEmpty && error == null)
+            if (!widget.history && day?.hasEntry == true)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 16),
+                child: Text(
+                  '이 날짜에 남아 있는 개별 기록은 없어요',
+                  style: TextStyle(color: DoranColors.secondary),
+                ),
+              )
+            else
+              _empty(),
           if (records.isNotEmpty) ...[
             Row(
               children: [
@@ -301,7 +311,9 @@ class _JournalPageState extends State<JournalPage> {
                 ),
               ),
           ],
-          if (!widget.history && records.isNotEmpty && day != null)
+          if (!widget.history &&
+              day != null &&
+              (records.isNotEmpty || day!.hasEntry))
             Padding(
               padding: const EdgeInsets.only(top: 24),
               child: TextButton(
@@ -356,7 +368,7 @@ class _JournalPageState extends State<JournalPage> {
           const Notice('새 기록을 반영하고 있어요. 기존 일기는 계속 읽을 수 있어요.'),
         if (day!.status == 'failed')
           const Notice('일기 갱신이 지연되고 있어요. 개별 기록은 안전하게 보관되어 있습니다.'),
-        if (day!.hasNewGenerated) ...[
+        if (day!.hasComparableDraft) ...[
           const Text(
             '내 글은 그대로 두고, 새로 정리한 일기와 비교해 보세요',
             style: TextStyle(color: DoranColors.secondary, fontSize: 14),
@@ -372,7 +384,7 @@ class _JournalPageState extends State<JournalPage> {
               icon: const Icon(Icons.edit_outlined, size: 18),
               label: const Text('다듬기'),
             ),
-            if (day!.hasNewGenerated)
+            if (day!.hasComparableDraft)
               FilledButton(
                 onPressed: () => _openDay(compare: true),
                 child: const Text('새 AI 일기 비교'),

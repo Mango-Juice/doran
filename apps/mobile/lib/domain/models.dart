@@ -45,6 +45,11 @@ class DoranDay {
   });
   String get displayText => manualText ?? generatedText;
   bool get isManual => manualText != null;
+  // AI generation status can be empty after the last source record is deleted.
+  // An explicitly saved manual draft, including an empty one, remains an entry.
+  bool get hasEntry => isManual || hasGeneratedText || status != 'empty';
+  bool get hasGeneratedText => generatedText.trim().isNotEmpty;
+  bool get hasComparableDraft => hasNewGenerated && hasGeneratedText;
   factory DoranDay.fromJson(Map<String, dynamic> j) => DoranDay(
     date: j['date'] as String,
     generatedText: j['generated_text'] as String? ?? '',
