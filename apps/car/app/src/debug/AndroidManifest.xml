@@ -1,7 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="pleos.car.permission.NAVI_ROUTE_SEARCH" />
-    <application>
+    <application android:networkSecurityConfig="@xml/qa_network_security_config">
         <activity android:name="app.doran.car.SdkVerificationActivity" android:exported="false">
+            <meta-data android:name="distractionOptimized" android:value="true" />
+        </activity>
+        <activity android:name="app.doran.car.qa.QaConversationActivity" android:exported="false"
+            android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|uiMode">
             <meta-data android:name="distractionOptimized" android:value="true" />
         </activity>
     </application>

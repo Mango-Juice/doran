@@ -57,3 +57,5 @@ deno lint --config supabase/deno.json supabase/functions supabase/tests
 `doran_turn_generations`는 Edge Function과 DB 내부 계약을 함께 변경한다. 먼저 API가 모든 `turns.validate/complete/fail`에 캡처한 세대를 전달하도록 배포한다. 이전 DB가 세대를 반환하지 않으면 API는 최초 세대 1을 사용하며 이전 DB는 추가 필드를 무시하므로 이 순서는 호환된다. 진행 중 발화가 없는지 확인한 뒤 DB 마이그레이션을 적용한다.
 
 새 DB는 세대가 없는 콜백을 거부한다. 따라서 DB 적용 뒤 API만 이전 버전으로 되돌리면 대화 응답 처리가 실패한다. 문제가 생기면 세대를 전달하는 API를 유지하고 수정 버전을 배포한다. DB 정의를 되돌려야 할 때는 진행 중 요청을 중단한 별도 배포 창에서 함께 검토해야 하며, 이전 정의에는 취소 재시도 및 늦은 콜백 결함이 다시 생긴다. 배포 전 DB 함수 정의는 공개 저장소 밖에 권한을 제한해 보존한다. 개인 데이터나 예산 원장을 되돌리는 방식으로 복구하지 않는다.
+
+2026-11-14 배포에서는 [격리 SQL CI](https://github.com/Mango-Juice/doran/actions/runs/43558563631)의 전체 회귀·동시성 시험을 통과한 뒤 API 8과 DB 마이그레이션 `20261114045149`를 적용했다. 클라우드의 21개 추가 회귀는 트랜잭션을 되돌려 시험용 Auth·기록을 남기지 않았다. 기존 사용자 자료·설정·차량 연결 보존도 해시로 대조했다. 버전·해시와 검증 범위는 `supabase/tests/evals/generation-deployment-20261114.json`에 기록한다. 이 결과는 사람 발화나 음성 청취 품질의 통과를 뜻하지 않는다.

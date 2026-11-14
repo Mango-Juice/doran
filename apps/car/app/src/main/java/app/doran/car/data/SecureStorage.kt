@@ -43,6 +43,14 @@ class SecureStorage(context: Context, preferencesName: String = "doran_secure", 
     fun remove(name: String) {
         check(preferences.edit().remove(name).commit())
     }
+
+    /** Session completion must not leave a finish marker after removing its session identity. */
+    fun removeAll(vararg names: String) {
+        if (names.isEmpty()) return
+        val editor = preferences.edit()
+        names.forEach { editor.remove(it) }
+        check(editor.commit())
+    }
 }
 
 @Entity(tableName = "pending_turns")

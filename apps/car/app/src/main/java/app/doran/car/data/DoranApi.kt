@@ -25,8 +25,10 @@ class ApiFailure(val code: String, override val message: String, val retryable: 
 
 data class ServerEvent(val name: String, val body: JSONObject)
 
-class DoranApi(private val storage: SecureStorage) {
-    private val client = OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(45, TimeUnit.SECONDS).build()
+class DoranApi internal constructor(
+    private val storage: SecureStorage,
+    private val client: OkHttpClient = OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(45, TimeUnit.SECONDS).build()
+) : ConversationApi {
     private val authMutex = Mutex()
 
     @Volatile private var turnCall: Call? = null
@@ -70,17 +72,7 @@ class DoranApi(private val storage: SecureStorage) {
         }
     }
 
-    suspend fun request(
-        path: String,
-        body: JSONObject? = null,
-        method: String = if (body ==
-            null
-        ) {
-            "GET"
-        } else {
-            "POST"
-        }
-    ): JSONObject = withContext(Dispatchers.IO) {
+    override suspend fun request(path: String, body: JSONObject?, method: String): JSONObject = withContext(Dispatchers.IO) {
         repeat(2) { attempt ->
             val jwt = token(attempt > 0)
             val request = Request.Builder().url("$base/functions/v1/doran-api/v1$path")
@@ -96,7 +88,7 @@ class DoranApi(private val storage: SecureStorage) {
         throw ApiFailure("authentication_failed", "차량 인증을 다시 확인해 주세요", true)
     }
 
-    suspend fun turn(sessionId: String, body: JSONObject, onEvent: suspend (ServerEvent) -> Unit) = withContext(Dispatchers.IO) {
+    override suspend fun turn(sessionId: String, body: JSONObject, onEvent: suspend (ServerEvent) -> Unit) = withContext(Dispatchers.IO) {
         val request = Request.Builder().url("$base/functions/v1/doran-api/v1/sessions/$sessionId/turns")
             .header("apikey", key).header("Authorization", "Bearer ${token()}").header("Accept", "text/event-stream")
             .post(body.toString().toRequestBody(JSON)).build()
@@ -152,11 +144,11 @@ class DoranApi(private val storage: SecureStorage) {
         }
     }
 
-    fun cancelTurn() {
+    override fun cancelTurn() {
         turnCall?.cancel()
         turnCall = null
     }
-    fun close() {
+    override fun close() {
         cancelTurn()
         client.dispatcher.cancelAll()
         client.connectionPool.evictAll()

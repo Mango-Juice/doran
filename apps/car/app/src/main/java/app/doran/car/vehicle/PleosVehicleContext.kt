@@ -119,7 +119,7 @@ data class VehicleContext(
 }
 
 /** Foreground, opt-in subscriptions. Every callback is fenced to its SDK generation. */
-class PleosVehicleContext(context: Context) {
+class PleosVehicleContext(context: Context, private val secure: SecureStorage = SecureStorage(context.applicationContext)) {
     private val context = context.applicationContext
     private val main = Handler(Looper.getMainLooper())
     private val mutableState = MutableStateFlow(VehicleContext())
@@ -128,7 +128,6 @@ class PleosVehicleContext(context: Context) {
     private var active = false
     private val navigationLifecycle = NavigationLifecycleGuard()
     private val routeActive: Boolean get() = navigationLifecycle.isGuiding
-    private val secure = SecureStorage(this.context)
     private var placeMemory = LocalPlaceMemory()
     private var placeOwner: String? = null
     private var memoryRevision: Long? = null

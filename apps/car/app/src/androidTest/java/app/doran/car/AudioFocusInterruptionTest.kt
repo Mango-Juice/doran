@@ -20,6 +20,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import app.doran.car.data.SecureStorage
 import app.doran.car.speech.PleosSpeech
 import app.doran.car.speech.SpeechFailure
+import app.doran.car.speech.TtsResources
 import app.doran.car.vehicle.DrivingRestrictions
 import java.io.File
 import java.time.Instant
@@ -28,7 +29,9 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -77,13 +80,7 @@ class AudioFocusInterruptionTest {
 
     @Test
     fun capturePlatformFocusLossAndRejectStaleDone(): Unit = runBlocking {
-        assumeTrue("Explicit opt-in required", InstrumentationRegistry.getArguments().getString("run_focus_probe") == "true")
-        assertEquals("app.doran.car.debug", target.packageName)
-        assertTrue(target.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0)
-        assertTrue(target.packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE))
-        assertTrue(Build.FINGERPRINT.contains("avd", true) || Build.HARDWARE in setOf("ranchu", "goldfish"))
-        val secure = SecureStorage(target)
-        assertTrue("Use an unpaired debug installation", secure.get("owner_id") == null && secure.get("active_session") == null)
+        assertDiagnosticEnvironment("run_focus_probe")
         val report = JSONObject()
             .put("started_at", Instant.now().toString())
             .put("package", target.packageName)
@@ -93,6 +90,7 @@ class AudioFocusInterruptionTest {
                 "Real same-UID/different-listener focus requests and production TTS; one synthetic old-done replay after each loss"
             )
             .put("microphone_used", false)
+            .put("operator_confirmed_host_output_muted", true)
             .put("real_call_or_navigation_audio", false)
             .put("physical_speaker_audibility_verified", false)
         var activity: Activity? = null
@@ -134,6 +132,7 @@ class AudioFocusInterruptionTest {
                     focusRequests.forEach { audio.abandonAudioFocusRequest(it) }
                 }
                 running.forEach { it.job.cancelAndJoin() }
+                recordFinalCleanup(report)
                 activity?.let { host -> instrumentation.runOnMainSync { host.finish() } }
                 report.put("interruption_count", interruptions.get())
                     .put("interruption_elapsed_realtime_ms", JSONArray(interruptionTimes))
@@ -142,6 +141,109 @@ class AudioFocusInterruptionTest {
             }
         }
         Unit
+    }
+
+    @Test
+    fun cancelAndImmediatelyStartAfterTheRealStopAcknowledgement(): Unit = runBlocking {
+        assertDiagnosticEnvironment("run_cancel_probe")
+        val report = JSONObject()
+            .put("started_at", Instant.now().toString())
+            .put("package", target.packageName)
+            .put("scope", "Real SDK start, local pause, immediate next request; no synthetic callback injection")
+            .put("microphone_used", false)
+            .put("operator_confirmed_host_output_muted", true)
+            .put("synthetic_callbacks_injected", 0)
+            .put("physical_speaker_audibility_verified", false)
+        var activity: Activity? = null
+        try {
+            activity = instrumentation.startActivitySync(
+                Intent(target, SdkVerificationActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+            instrumentation.waitForIdleSync()
+            assertParked()
+            Log.i("DoranFocusProbe", runMarker)
+            withTimeout(120_000) {
+                val first = startSpeech()
+                val old = waitForOwnedSpeech(first)
+                awaitSpeechEvent(first, old.id, "callback_started")
+                // Prepare the child in the test scope. Starting it inside the same main-thread
+                // block as pause adds no sleep or model/tool round trip between the operations.
+                val next = startSpeech(CoroutineStart.LAZY, Dispatchers.Main.immediate)
+                withContext(Dispatchers.Main) {
+                    report.put("pause_elapsed_realtime_ms", SystemClock.elapsedRealtime())
+                    speech.pause()
+                    next.job.start()
+                    report.put("next_launched_elapsed_realtime_ms", SystemClock.elapsedRealtime())
+                    val waiting = inspectSpeech()
+                    val blocked = waiting.stopPending &&
+                        !waiting.stopSettled &&
+                        waiting.id == null &&
+                        waiting.focus == null &&
+                        waiting.listener == null &&
+                        !waiting.ttsBound
+                    report.put("next_request_blocked_before_stop_acknowledgement", blocked)
+                    assertTrue("The immediate successor acquired SDK/focus before the pending stop settled", blocked)
+                }
+                val cancelled = withTimeout(5_000) { first.outcome.await() }
+                report.put("cancelled_outcome", cancelled.kind).put("old_request", old.id)
+                assertEquals("CANCELLED", cancelled.kind)
+                val current = waitForOwnedSpeech(next)
+                assertTrue(current.id != old.id)
+                awaitSpeechEvent(next, current.id, "sdk_speak_dispatched")
+                report.put("new_request", current.id)
+                val ordered = allSpeechEvents()
+                val acknowledged = ordered.indexOfFirst { it.request == old.id && it.event == "stop_acknowledged" }
+                assertTrue("The real old stop acknowledgement was not logged", acknowledged >= 0)
+                val requested = ordered.indexOfFirst { it.request == current.id && it.event == "speak_requested" }
+                report.put("new_request_log_index", requested)
+                assertTrue("The successor did not actually overlap the pending stop", requested >= 0 && requested < acknowledged)
+                val startIndices = JSONObject()
+                for (event in listOf("sdk_initialized", "preroll_started", "sdk_speak_dispatched")) {
+                    val index = ordered.indexOfFirst { it.request == current.id && it.event == event }
+                    startIndices.put(event, index)
+                    assertTrue("New $event preceded the old stop acknowledgement", index > acknowledged)
+                }
+                report.put("old_stop_acknowledged_log_index", acknowledged)
+                    .put("new_start_log_indices", startIndices)
+                assertStopAcknowledged(old.id, report)
+                val outcome = withTimeout(60_000) { next.outcome.await() }
+                report.put("next_outcome", outcome.kind).put("next_error_kind", outcome.errorKind ?: JSONObject.NULL)
+                assertEquals("COMPLETED", outcome.kind)
+                assertEquals(0, eventsFor(old.id).count { it.event == "accepted_done" })
+                assertEquals(1, eventsFor(current.id).count { it.event == "accepted_done" })
+                assertReleased(report)
+                report.put("harness_completed", true)
+            }
+        } catch (error: Throwable) {
+            report.put("failure_class", error.javaClass.simpleName)
+            throw error
+        } finally {
+            withContext(NonCancellable) {
+                withContext(Dispatchers.Main) { speech.pause() }
+                running.forEach { it.job.cancelAndJoin() }
+                recordFinalCleanup(report)
+                runCatching { allSpeechEvents() }.onSuccess { events ->
+                    val indexed = events.mapIndexed { index, event -> event.toJson().put("log_index", index) }
+                    report.put("ordered_production_events", JSONArray(indexed))
+                }.onFailure { report.put("production_event_capture_error", it.javaClass.simpleName) }
+                activity?.let { host -> instrumentation.runOnMainSync { host.finish() } }
+                report.put("finished_at", Instant.now().toString())
+                File(target.filesDir, "audio-cancel-verification.json").writeText(report.toString(2))
+            }
+        }
+        Unit
+    }
+
+    private fun assertDiagnosticEnvironment(optIn: String) {
+        val arguments = InstrumentationRegistry.getArguments()
+        assumeTrue("Explicit opt-in required", arguments.getString(optIn) == "true")
+        assertTrue("Operator must confirm host output is muted", arguments.getString("host_output_muted") == "true")
+        assertEquals("app.doran.car.debug", target.packageName)
+        assertTrue(target.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0)
+        assertTrue(target.packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE))
+        assertTrue(Build.FINGERPRINT.contains("avd", true) || Build.HARDWARE in setOf("ranchu", "goldfish"))
+        val secure = SecureStorage(target)
+        assertTrue("Use an unpaired debug installation", secure.get("owner_id") == null && secure.get("active_session") == null)
     }
 
     private suspend fun assertParked() = withContext(Dispatchers.Main) {
@@ -194,6 +296,7 @@ class AudioFocusInterruptionTest {
                 report.put("interrupted_speech_outcome", outcome.kind)
                 assertEquals("CANCELLED", outcome.kind)
                 assertReleased(report)
+                assertStopAcknowledged(owner.id, report)
                 verifyPlatformRelease(owner, platformBefore, report)
                 withContext(Dispatchers.Main) { audio.abandonAudioFocusRequest(contender) }
                 focusRequests.remove(contender)
@@ -258,12 +361,15 @@ class AudioFocusInterruptionTest {
         assertReleased(replay)
     }
 
-    private suspend fun startSpeech(): SpeechRun {
+    private suspend fun startSpeech(
+        start: CoroutineStart = CoroutineStart.DEFAULT,
+        dispatcher: CoroutineDispatcher = Dispatchers.Main
+    ): SpeechRun {
         val outcome = CompletableDeferred<SpeechOutcome>()
         // Long enough to request focus after the real onStart without relying on a blind delay.
         val text = "도란 오디오 포커스 시험입니다. 다른 음성의 개입을 확인하고 있어요. " +
             "이 문장은 시험용 합성 음성입니다. 사용자의 실제 대화나 통화 내용은 사용하지 않습니다."
-        val job = CoroutineScope(currentCoroutineContext()).launch(Dispatchers.Main) {
+        val job = CoroutineScope(currentCoroutineContext()).launch(dispatcher, start = start) {
             try {
                 speech.speak(text)
                 outcome.complete(SpeechOutcome("COMPLETED"))
@@ -297,20 +403,50 @@ class AudioFocusInterruptionTest {
         }
     }
 
-    private suspend fun eventsFor(request: Long?): List<SpeechEvent> = withContext(Dispatchers.IO) {
+    private suspend fun eventsFor(request: Long?): List<SpeechEvent> = allSpeechEvents().filter { it.request == request }
+
+    private suspend fun allSpeechEvents(): List<SpeechEvent> = withContext(Dispatchers.IO) {
         val log = readShell("logcat -d --pid=${Process.myPid()} -v brief -s DoranSpeech:I DoranFocusProbe:I '*:S'")
         val marker = log.lastIndexOf(runMarker)
         check(marker >= 0) { "This run's log marker is absent; stale log events cannot be used" }
         speechEvents.findAll(log.substring(marker + runMarker.length)).map {
             SpeechEvent(it.groupValues[1].toLong(), it.groupValues[2], it.groupValues[3].toLong())
-        }.filter { it.request == request }.toList()
+        }.toList()
     }
 
     private suspend fun assertReleased(report: JSONObject) {
-        val released = withContext(Dispatchers.Main) { inspectSpeech() }
+        val started = SystemClock.elapsedRealtime()
+        var released = withContext(Dispatchers.Main) { inspectSpeech() }
+        while (released.stopPending && !released.stopSettled && SystemClock.elapsedRealtime() - started < 3_500) {
+            delay(20)
+            released = withContext(Dispatchers.Main) { inspectSpeech() }
+        }
+        report.put("tts_stop_barrier_observation_ms", SystemClock.elapsedRealtime() - started)
+            .put("tts_stop_timeout_budget_ms", 3_000)
+            .put("tts_stop_barrier_present", released.stopPending)
+            .put("tts_stop_barrier_settled_successfully", released.stopSettled)
         assertTrue(released.id == null && released.focus == null && released.listener == null)
         assertFalse(released.ttsBound || released.sttBound || released.cancelPending)
+        assertTrue("Null public SDK references do not prove a pending stop was acknowledged", released.stopSettled)
         report.put("local_focus_and_sdk_references_released", true)
+    }
+
+    private suspend fun recordFinalCleanup(report: JSONObject) {
+        val cleanup = JSONObject()
+        runCatching { assertReleased(cleanup) }.onFailure { cleanup.put("failure_class", it.javaClass.simpleName) }
+        report.put("final_cleanup", cleanup)
+    }
+
+    private suspend fun assertStopAcknowledged(request: Long?, report: JSONObject) {
+        val events = eventsFor(request)
+        val stops = events.filter { it.event == "stop_requested" }
+        val acknowledgements = events.filter { it.event == "stop_acknowledged" }
+        report.put("stop_request_count", stops.size).put("stop_acknowledgement_count", acknowledgements.size)
+        assertEquals("Cancellation should enqueue exactly one stop", 1, stops.size)
+        assertEquals("A real stop acknowledgement is required", 1, acknowledgements.size)
+        val elapsed = acknowledgements.single().elapsedMs - stops.single().elapsedMs
+        report.put("stop_acknowledgement_elapsed_ms", elapsed).put("stop_acknowledgement_within_3_seconds", elapsed in 0..3_000)
+        assertTrue("Stop acknowledgement preceded its request", elapsed >= 0)
     }
 
     private suspend fun verifyPlatformRelease(owner: SpeechOwner, before: FocusMembership, report: JSONObject) {
@@ -389,6 +525,7 @@ class AudioFocusInterruptionTest {
         fun field(name: String): Any? = PleosSpeech::class.java.getDeclaredField(name).apply { isAccessible = true }.get(speech)
         val focus = field("focus") as AudioFocusRequest?
         val manager = field("audio") as AudioManager
+        val pendingStop = field("pendingTtsStop") as TtsResources?
         return SpeechOwner(
             field("focusOwner") as Long?,
             focus,
@@ -396,6 +533,8 @@ class AudioFocusInterruptionTest {
             field("tts") != null,
             field("stt") != null,
             field("cancelPending") != null,
+            pendingStop != null,
+            pendingStop == null || pendingStop.isSettledSuccessfully,
             manager.toString()
         )
     }
@@ -417,6 +556,8 @@ class AudioFocusInterruptionTest {
         val ttsBound: Boolean,
         val sttBound: Boolean,
         val cancelPending: Boolean,
+        val stopPending: Boolean,
+        val stopSettled: Boolean,
         val managerPrefix: String,
         val clientId: String? = null
     )

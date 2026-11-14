@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import app.doran.car.data.*
 import app.doran.car.domain.*
 import app.doran.car.speech.PleosSpeech
+import app.doran.car.speech.SpeechEngine
 import app.doran.car.speech.SpeechFailure
 import app.doran.car.vehicle.DrivingRestrictions
 import app.doran.car.vehicle.PleosVehicleContext
@@ -16,16 +17,25 @@ import kotlinx.coroutines.flow.*
 import org.json.JSONArray
 import org.json.JSONObject
 
-class CarViewModel(application: Application) : AndroidViewModel(application) {
+class CarViewModel internal constructor(
+    application: Application,
+    private val secure: SecureStorage,
+    private val database: DoranDatabase,
+    speechFactory: (() -> Unit) -> SpeechEngine,
+    private val api: ConversationApi = DoranApi(secure)
+) : AndroidViewModel(application) {
+    constructor(application: Application) : this(
+        application,
+        SecureStorage(application),
+        DoranDatabase.open(application),
+        { onInterrupted -> PleosSpeech(application, onInterrupted) }
+    )
     private val mutable = MutableStateFlow(ConversationState())
     val state: StateFlow<ConversationState> = mutable.asStateFlow()
-    private val secure = SecureStorage(application)
-    private val database = DoranDatabase.open(application)
     private val outbox = database.outbox()
-    private val api = DoranApi(secure)
-    private val speech = PleosSpeech(application) { pause("다른 음성 안내가 재생 중이에요") }
+    private val speech = speechFactory { pause("다른 음성 안내가 재생 중이에요") }
     private val restrictions = DrivingRestrictions(application)
-    private val vehicle = PleosVehicleContext(application)
+    private val vehicle = PleosVehicleContext(application, secure)
     private val gate = GenerationGate()
     private val pairingGate = GenerationGate()
     private var foreground = false
@@ -99,7 +109,7 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
         if (isTalking()) pause("대화를 잠시 멈췄어요")
         speech.pause()
         vehicle.stop()
-        mutable.update { it.copy(soloAsserted = false) }
+        mutable.update { it.copy(soloAsserted = false, transcript = "", reply = "") }
     }
 
     private fun isTalking() = state.value.phase in setOf(Phase.STARTING, Phase.LISTENING, Phase.THINKING, Phase.SPEAKING)
@@ -126,8 +136,14 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
                     if (owner == null) secure.remove("owner_id") else secure.put("owner_id", owner)
                 }
                 secure.put("device_id", deviceId)
-                val session = secure.get("active_session")
-                finishWanted = secure.get("finish_wanted") == "true"
+                val recovered = recoverSession(
+                    secure.get("active_session"),
+                    secure.get("finish_wanted") == "true",
+                    secure.get("finish_request")
+                )
+                if (recovered.clearSessionKeys) secure.removeAll(*SESSION_FINISH_KEYS)
+                val session = recovered.sessionId
+                finishWanted = recovered.finishWanted
                 val pendingCount = outboxCount()
                 if (!current()) return@launch
                 mutable.update { it.copy(paired = paired, sessionId = session, pendingCount = pendingCount, errorCode = null) }
@@ -394,7 +410,7 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
                     mutable.update { it.copy(sessionId = session) }
                 }
                 for (pending in outbox.all().filter { it.sessionId == session }) {
-                    sendTurn(pending, generation)
+                    sendTurn(pending, generation, replaying = true)
                 }
                 while (isActive && foreground && gate.accepts(generation)) {
                     mutable.update {
@@ -428,22 +444,35 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } catch (e: TimeoutCancellationException) {
                 if (gate.accepts(generation)) {
-                    speech.pause()
+                    loop = null
+                    pause()
                     showError(SpeechFailure("timeout", "잠시 멈췄어요. 준비되면 다시 말씀해 주세요"))
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 if (gate.accepts(generation)) {
-                    speech.pause()
+                    loop = null
+                    pause()
                     showError(e)
                 }
             }
         }
     }
 
-    private suspend fun sendTurn(turn: PendingTurn, generation: Long) = coroutineScope {
-        mutable.update { it.copy(phase = Phase.THINKING, title = "이야기를 생각하고 있어요", detail = "말씀하신 내용을 바탕으로 답할게요", reply = "") }
+    private suspend fun sendTurn(turn: PendingTurn, generation: Long, replaying: Boolean = false) = coroutineScope {
+        val payload = JSONObject(secure.decrypt(turn.ciphertext))
+        val current = currentContext()
+        val showResponse = mayReplayResponse(replaying, current)
+        if (replaying) payload.put("context", replayContext(current, java.time.Instant.now().toString()))
+        mutable.update {
+            it.copy(
+                phase = Phase.THINKING,
+                title = if (showResponse) "이야기를 생각하고 있어요" else "보관한 이야기를 정리하고 있어요",
+                detail = if (showResponse) "말씀하신 내용을 바탕으로 답할게요" else "말씀하신 내용을 복구하고 있어요. 곧 대화를 이어갈 수 있어요",
+                reply = ""
+            )
+        }
         val sentences = Channel<String>(Channel.BUFFERED)
         val playback = launch {
             for (sentence in sentences) {
@@ -453,14 +482,14 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         try {
-            api.turn(turn.sessionId, JSONObject(secure.decrypt(turn.ciphertext))) { event ->
+            api.turn(turn.sessionId, payload) { event ->
                 withContext(Dispatchers.Main.immediate) {
                     if (!gate.accepts(generation)) throw CancellationException()
                     when (event.name) {
-                        "delta" -> mutable.update { it.copy(reply = it.reply + event.body.optString("text")) }
-                        "sentence" -> sentences.send(event.body.getString("text"))
+                        "delta" -> if (showResponse) mutable.update { it.copy(reply = it.reply + event.body.optString("text")) }
+                        "sentence" -> if (showResponse) sentences.send(event.body.getString("text"))
                         "done" -> {
-                            mutable.update { it.copy(reply = event.body.optString("assistant_text", it.reply)) }
+                            if (showResponse) mutable.update { it.copy(reply = event.body.optString("assistant_text", it.reply)) }
                             outbox.remove(turn.requestId)
                             mutable.update { it.copy(pendingCount = (it.pendingCount - 1).coerceAtLeast(0)) }
                         }
@@ -524,10 +553,7 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 outbox.removeSession(session)
                 if (!stillOwned()) return@launch
-                secure.remove("active_session")
-                secure.remove("finish_wanted")
-                secure.remove("finish_request")
-                secure.remove("start_request")
+                secure.removeAll(*SESSION_FINISH_KEYS)
                 finishWanted = false
                 mutable.update {
                     it.copy(
@@ -603,10 +629,7 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
         speech.pause()
         vehicle.stop()
         vehicle.clearPrivateData()
-        secure.remove("active_session")
-        secure.remove("finish_wanted")
-        secure.remove("finish_request")
-        secure.remove("start_request")
+        secure.removeAll(*SESSION_FINISH_KEYS)
         outbox.clear()
         finishWanted = false
         suggestedTrip = null
@@ -623,7 +646,15 @@ class CarViewModel(application: Application) : AndroidViewModel(application) {
             it.copy(
                 phase = if (it.paired) Phase.PAUSED else Phase.ERROR,
                 title = message,
-                detail = if (it.pendingCount > 0) "말씀하신 내용은 기기에 보관했어요" else "다시 시작하면 안전하게 이어갈 수 있어요",
+                detail = if ((error as? SpeechFailure)?.kind in
+                    setOf("playback_stop_timeout", "playback_stop_failed", "playback_cleanup_failed")
+                ) {
+                    "안전을 위해 음성 시작을 중단했어요. 앱을 완전히 닫고 다시 열어 주세요"
+                } else if (it.pendingCount > 0) {
+                    "말씀하신 내용은 기기에 보관했어요"
+                } else {
+                    "다시 시작하면 안전하게 이어갈 수 있어요"
+                },
                 errorCode = (error as? ApiFailure)?.code ?: (error as? SpeechFailure)?.kind
             )
         }

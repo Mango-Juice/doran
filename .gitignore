@@ -13,6 +13,7 @@ node_modules/
 .toolchains/
 .release-stage-*/
 **/.gradle/
+**/.kotlin/
 **/build/
 **/.dart_tool/
 **/Pods/

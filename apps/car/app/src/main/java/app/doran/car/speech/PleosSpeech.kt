@@ -28,8 +28,8 @@ import kotlinx.coroutines.withTimeout
 
 class SpeechFailure(val kind: String, message: String) : IOException(message)
 
-/** A new SDK instance/listener per request prevents late callbacks from crossing turns. */
-class PleosSpeech(private val context: Context, private val onInterrupted: () -> Unit) {
+/** Generation checks isolate callbacks; cancelled package-scoped TTS stops also require acknowledgement. */
+class PleosSpeech(private val context: Context, private val onInterrupted: () -> Unit) : SpeechEngine {
     private val main = Handler(Looper.getMainLooper())
     private val generation = GenerationGate()
     private val audio = context.getSystemService(AudioManager::class.java)
@@ -41,6 +41,7 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
     private var tts: TextToSpeech? = null
     private var ttsListener: ai.pleos.playground.tts.listener.EventListener? = null
     private var ttsResources: TtsResources? = null
+    private var pendingTtsStop: TtsResources? = null
     private var cancelPending: (() -> Unit)? = null
     private var focusOwner: Long? = null
     private var sttOwner: Long? = null
@@ -97,13 +98,27 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
         tts = null
         ttsListener = null
         resources?.close(completed)
+        if (resources != null && !resources.isSettledSuccessfully) {
+            pendingTtsStop = resources
+            if (resources.isStopping) main.postDelayed({ resources.stopTimedOut() }, 3_000)
+        }
     }
 
-    suspend fun listen(onReady: () -> Unit = {}, onPartial: (String) -> Unit): String = withContext(Dispatchers.Main.immediate) {
+    private suspend fun awaitTtsStop() {
+        val pending = pendingTtsStop ?: return
+        pending.awaitReleased()
+        if (pendingTtsStop === pending) pendingTtsStop = null
+        // A timed-out instance stays failed. Recreating an Activity may retain its ViewModel;
+        // the SDK has no request ID to prove that a previous process's queued stop has drained.
+    }
+
+    override suspend fun listen(onReady: () -> Unit, onPartial: (String) -> Unit): String = withContext(Dispatchers.Main.immediate) {
         withTimeout(45_000) {
             val id = generation.advance()
             val startedAt = SystemClock.elapsedRealtime()
             trace("stt", id, "listen_requested", startedAt)
+            awaitTtsStop()
+            if (!generation.accepts(id)) throw CancellationException()
             acquireFocus(id)
             try {
                 suspendCancellableCoroutine { continuation ->
@@ -206,20 +221,22 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
         }
     }
 
-    suspend fun speak(text: String) = withContext(Dispatchers.Main.immediate) {
+    override suspend fun speak(text: String) = withContext(Dispatchers.Main.immediate) {
         if (text.isBlank()) return@withContext
         withTimeout(60_000) {
             val id = generation.advance()
             val startedAt = SystemClock.elapsedRealtime()
             trace("tts", id, "speak_requested", startedAt)
+            awaitTtsStop()
+            if (!generation.accepts(id)) throw CancellationException()
             acquireFocus(id)
             try {
                 suspendCancellableCoroutine<Unit> { continuation ->
-                    fun fail(code: String) {
+                    fun fail(code: String, alreadyStopped: Boolean = false) {
                         if (!generation.accepts(id) || !continuation.isActive) return
                         trace("tts", id, "failure_$code", startedAt)
                         generation.advance()
-                        releaseTts()
+                        releaseTts(id, completed = alreadyStopped)
                         continuation.resumeWithException(SpeechFailure(code, "음성을 재생하지 못했어요. 다시 시작해 주세요"))
                     }
                     cancellationOwner = id
@@ -236,6 +253,7 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                         val sdk = TextToSpeech(context, ai.pleos.playground.tts.constant.Mode.ON_DEVICE)
                         tts = sdk
                         ttsOwner = id
+                        lateinit var resources: TtsResources
                         val listener = object : ai.pleos.playground.tts.listener.EventListener {
                             override fun onReady() = trace("tts", id, "callback_ready", startedAt)
                             override fun onStart() = trace("tts", id, "callback_started", startedAt)
@@ -255,7 +273,16 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                                 }
                             }
                             override fun onStop() {
-                                main.post { fail("playback_stopped") }
+                                main.post {
+                                    // Stop has no utterance ID. This acknowledgement is accepted only
+                                    // while the old binding is retained and no successor can register.
+                                    if (resources.isStopping) {
+                                        trace("tts", id, "stop_acknowledged", startedAt)
+                                        resources.acknowledgeStop()
+                                    } else {
+                                        fail("playback_stopped", alreadyStopped = true)
+                                    }
+                                }
                             }
                             override fun onError(errorType: ai.pleos.playground.tts.constant.ErrorType) {
                                 main.post { fail("playback_${errorType.name}") }
@@ -263,11 +290,15 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                             override fun onUpdatedRms(rms: Double) = Unit
                         }
                         ttsListener = listener
-                        ttsResources = TtsResources(
+                        resources = TtsResources(
                             detachListener = { sdk.removeEventListener(listener) },
-                            stop = { sdk.stop() },
+                            stop = {
+                                trace("tts", id, "stop_requested", startedAt)
+                                sdk.stop()
+                            },
                             release = { sdk.release() }
                         )
+                        ttsResources = resources
                         sdk.initialize(object : ai.pleos.playground.tts.listener.OnInitializeListener {
                             private var configured = false
                             override fun onSuccess() {
@@ -286,6 +317,7 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
                                                 withContext(Dispatchers.IO) { preRoll() }
                                                 trace("tts", id, "preroll_done", startedAt)
                                                 if (generation.accepts(id) && continuation.isActive && focusOwner == id) {
+                                                    resources.markSpeakDispatched()
                                                     sdk.speak(text, true)
                                                     trace("tts", id, "sdk_speak_dispatched", startedAt)
                                                 }
@@ -337,7 +369,7 @@ class PleosSpeech(private val context: Context, private val onInterrupted: () ->
             track.release()
         }
     }
-    fun pause() {
+    override fun pause() {
         generation.advance()
         cancelPending?.invoke()
         cancelPending = null
