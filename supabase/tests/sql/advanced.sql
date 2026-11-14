@@ -43,13 +43,13 @@ begin
  -- A failed turn retry updates privacy context and consumes a dispatch rate unit.
  v:=public.doran_command(car,'sessions.create',jsonb_build_object('request_id',gen_random_uuid()));s:=(v->'session'->>'id')::uuid;
  v:=public.doran_command(car,'sessions.turn',jsonb_build_object('session_id',s,'request_id',request,'text','첫 발화','vehicle_context',jsonb_build_object('source','pleos','observed_at',now(),'passenger_state','alone','passenger_source','pleos_seat')));tid:=(v->'turn'->>'id')::uuid;
- perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',tid));
+ perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',tid,'generation',(select generation from private.turns where id=tid)));
  v:=public.doran_command(car,'sessions.turn',jsonb_build_object('session_id',s,'request_id',request,'text','첫 발화','vehicle_context',jsonb_build_object('source','pleos','observed_at',now(),'passenger_state','occupied','passenger_source','pleos_seat')));
  perform pg_temp.assert_true(v->'session'->'vehicle_context'->>'passenger_state'='occupied','failed retry replaces formerly alone context');
- perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',tid));
+ perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',tid,'generation',(select generation from private.turns where id=tid)));
  for n in 3..10 loop
   perform public.doran_command(car,'sessions.turn',jsonb_build_object('session_id',s,'request_id',request,'text','첫 발화'));
-  perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',tid));
+  perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',tid,'generation',(select generation from private.turns where id=tid)));
  end loop;
  begin perform public.doran_command(car,'sessions.turn',jsonb_build_object('session_id',s,'request_id',request,'text','첫 발화')); raise exception 'retry rate bypass'; exception when raise_exception then if sqlerrm<>'RATE_LIMITED' then raise; end if; end;
  perform pg_temp.assert_true(true,'failed retries consume per-user rate allowance');

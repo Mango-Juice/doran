@@ -29,7 +29,7 @@ begin
  perform pg_temp.assert_true(v->'context'->>'passenger_state'='alone' and not(v->'context'?'trip_distance_m'),'AI context receives only manual choice without sensor consent');
  v:=public.doran_command(car,'sessions.turn',jsonb_build_object('session_id',s,'request_id',request,'text','오늘 이야기를 나누자','vehicle_context',c));turn_id:=(v->'turn'->>'id')::uuid;
  perform pg_temp.assert_true(v->'session'->'vehicle_context'->>'passenger_state'='alone','new turn keeps manual solo context');
- perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',turn_id));
+ perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',turn_id,'generation',(select t.generation from private.turns t where t.id=turn_id)));
  v:=public.doran_command(car,'sessions.turn',jsonb_build_object('session_id',s,'request_id',request,'text','오늘 이야기를 나누자','vehicle_context',c));
  perform pg_temp.assert_true(v->'session'->'vehicle_context'->>'passenger_source'='user_assertion','failed turn retry also keeps manual-only context');
  perform public.doran_command(owner,'profiles.update','{"version":2,"consent_vehicle":true}');

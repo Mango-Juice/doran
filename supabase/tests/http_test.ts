@@ -215,3 +215,107 @@ for (const occupancy of ["occupied", "unknown"]) {
     }
   });
 }
+
+Deno.test("late cancelled dispatch cannot publish or fail its retry generation", async () => {
+  let generation = 0;
+  let currentStatus = "pending";
+  const calls: { action: string; generation: unknown }[] = [];
+  let releaseOld!: () => void;
+  const oldProvider = new Promise<void>((resolve) => releaseOld = resolve);
+  const database = db(() => ({
+    turn: { id, status: "pending", generation: ++generation },
+    session: { version: generation },
+    owner_id: id,
+    duplicate: false,
+  }));
+  database.worker = async (action, payload = {}) => {
+    if (action === "context.get") return { messages: [{ role: "user", content: "합성 재시도" }] };
+    if (action.startsWith("turns.")) {
+      calls.push({ action, generation: payload.generation });
+      const matches = payload.generation === generation;
+      if (action === "turns.validate") return { valid: matches };
+      if (action === "turns.complete") {
+        if (matches) currentStatus = "complete";
+        return { accepted: matches, session_version: generation };
+      }
+      if (action === "turns.fail") {
+        if (matches) currentStatus = "failed";
+        return { failed: matches };
+      }
+    }
+    return { reserved: true, settled: true };
+  };
+  let providers = 0;
+  const handler = createHandler(() => database, () => ({
+    stream: async (_, delta) => {
+      const dispatch = ++providers;
+      if (dispatch === 1) await oldProvider;
+      await delta(dispatch === 1 ? "취소된 옛 응답입니다." : "새 시도의 응답입니다.");
+      return { input_tokens: 1, output_tokens: 1 };
+    },
+    summarize: async () => {
+      throw new Error("unused");
+    },
+  }));
+  const oldResponse = await handler(request(`sessions/${id}/turns`, "POST", {
+    request_id: id,
+    text: "합성 재시도",
+  }));
+  const oldBody = oldResponse.text();
+  const retry = await handler(request(`sessions/${id}/turns`, "POST", {
+    request_id: id,
+    text: "합성 재시도",
+  }));
+  const retryBody = await retry.text();
+  releaseOld();
+  const cancelledBody = await oldBody;
+  if (!retryBody.includes("event: done")) throw new Error("Retry did not complete");
+  if (cancelledBody.includes("취소된 옛 응답") || cancelledBody.includes("event: done")) {
+    throw new Error("Old generation response leaked");
+  }
+  equal(currentStatus, "complete");
+  equal(calls.filter((c) => c.action === "turns.complete"), [{
+    action: "turns.complete",
+    generation: 2,
+  }]);
+  equal(calls.filter((c) => c.action === "turns.fail"), [{ action: "turns.fail", generation: 1 }]);
+});
+
+for (const failure of ["oversized_context", "budget_rejected"]) {
+  Deno.test(`pre-stream ${failure} failure retains the dispatch generation`, async () => {
+    const failures: Json[] = [];
+    const database = db(() => ({
+      turn: { id, status: "pending", generation: 7 },
+      session: { version: 1 },
+      owner_id: id,
+      duplicate: false,
+    }));
+    database.worker = async (action, payload = {}) => {
+      if (action === "context.get") {
+        return {
+          messages: [{
+            role: "user",
+            content: failure === "oversized_context" ? "a".repeat(100000) : "합성",
+          }],
+        };
+      }
+      if (action === "budget.reserve") throw new ApiError("BUDGET_EXHAUSTED", 429);
+      if (action === "turns.fail") failures.push(payload);
+      return {};
+    };
+    const handler = createHandler(() => database, () => ({
+      stream: async () => {
+        throw new Error("Provider must not be called");
+      },
+      summarize: async () => {
+        throw new Error("unused");
+      },
+    }));
+    const response = await handler(request(`sessions/${id}/turns`, "POST", {
+      request_id: id,
+      text: "합성",
+    }));
+    equal(response.status, failure === "oversized_context" ? 400 : 429);
+    equal(failures, [{ turn_id: id, generation: 7 }]);
+  });
+}

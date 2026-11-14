@@ -189,6 +189,9 @@ export function createHandler(getDb: () => Database = database, getAI: () => AI 
             text: utterance,
             vehicle_context: sanitizeContext(body.context),
           });
+          // Migration rollout: old SQL returns no generation, which is its initial attempt (1).
+          // The captured value must stay attached to this dispatch even if the same turn is retried.
+          const generation = Number(turn.turn.generation ?? 1);
           if (turn.duplicate) {
             if (!["complete", "completed"].includes(turn.turn.status)) {
               throw new ApiError("TURN_IN_PROGRESS", 409, true);
@@ -225,7 +228,7 @@ export function createHandler(getDb: () => Database = database, getAI: () => AI 
             })),
           ];
           if (new TextEncoder().encode(JSON.stringify(input)).length > 96000) {
-            await db.worker("turns.fail", { turn_id: turn.turn.id });
+            await db.worker("turns.fail", { turn_id: turn.turn.id, generation });
             throw new ApiError("INVALID_TEXT");
           }
           const reservation = crypto.randomUUID();
@@ -233,10 +236,10 @@ export function createHandler(getDb: () => Database = database, getAI: () => AI 
           try {
             await db.worker("budget.reserve", { request_id: reservation, max_cost_usd: reserve });
           } catch (error) {
-            await db.worker("turns.fail", { turn_id: turn.turn.id });
+            await db.worker("turns.fail", { turn_id: turn.turn.id, generation });
             throw error;
           }
-          return streamTurn(req, db, ai, input, turn.turn.id, reservation, reserve);
+          return streamTurn(req, db, ai, input, turn.turn.id, generation, reservation, reserve);
         }
       }
       if (path[0] === "records") {
@@ -373,6 +376,7 @@ function streamTurn(
   ai: AI,
   input: Json[],
   turnId: string,
+  generation: number,
   reservation: string,
   reserved: number,
 ): Response {
@@ -396,7 +400,7 @@ function streamTurn(
           const parsed = sentenceSplit(pending);
           pending = parsed.rest;
           if (parsed.sentences.length) {
-            const guard = await db.worker("turns.validate", { turn_id: turnId });
+            const guard = await db.worker("turns.validate", { turn_id: turnId, generation });
             if (!guard.valid) throw new ApiError("STALE_CONTEXT", 409);
           }
           for (const sentence of parsed.sentences) {
@@ -405,7 +409,11 @@ function streamTurn(
           }
         }, abort.signal);
         billed = Math.min(reserved, accountedCost(usage));
-        const complete = await db.worker("turns.complete", { turn_id: turnId, text: full });
+        const complete = await db.worker("turns.complete", {
+          turn_id: turnId,
+          generation,
+          text: full,
+        });
         if (!complete.accepted) throw new ApiError("STALE_CONTEXT", 409);
         for (const sentence of sentenceSplit(pending, true).sentences) {
           emit("delta", { text: sentence });
@@ -417,7 +425,7 @@ function streamTurn(
           session_version: complete.session_version,
         });
       } catch (error) {
-        await db.worker("turns.fail", { turn_id: turnId }).catch(() => {});
+        await db.worker("turns.fail", { turn_id: turnId, generation }).catch(() => {});
         emit("error", errorPayload(error));
       } finally {
         clearTimeout(timeout);

@@ -7,7 +7,7 @@ Supabase anonymous auth then bootstrap. Responses are direct JSON (no data envel
 timestamps ISO8601, diary dates YYYY-MM-DD Asia/Seoul. Mutable operations require UUID `request_id`
 and version where stated. Generic error statuses 400 invalid, 401 unauthenticated, 403 denied, 404
 not found, 409 version conflict, 429 quota, 503 missing service configuration. No production
-fixtures or model substitutes.
+mock AI or authentication bypass.
 
 ## Vehicle and pairing
 
@@ -33,7 +33,12 @@ fixtures or model substitutes.
   `{id,version,status:"active",record_date}`. Paired vehicle only.
 - `POST /sessions/{id}/turns` `{request_id,text,context?:VehicleContext}` → SSE
   (`Accept: text/event-stream`). `text` must contain a final recognized user utterance. One active
-  turn per session. Retry same request id returns existing result; never duplicates user messages.
+  turn per session. Retrying the same request ID and text never duplicates user messages.
+  A completed turn replays its result; a failed or paused/cancelled turn starts a new provider
+  attempt. A pending attempt returns `TURN_IN_PROGRESS` until it is at least90 seconds old,
+  after which the same ID can be reclaimed. Changed text with the same ID is an idempotency error.
+  A retry uses the current vehicle privacy context. Internal attempt generations reject late
+  success/failure callbacks from earlier attempts; clients do not supply a generation.
 - SSE `start`: `{turn_id}`; `delta`: `{text}`; `sentence`: `{text,index}` (only completed sentences
   for TTS); `done`: `{turn_id,assistant_text,session_version}`; `error`: `{code,message,retryable}`.
   Every event is `event: NAME\ndata: JSON\n\n`. Cancellation must stop local speech. HTTP errors
@@ -43,8 +48,8 @@ fixtures or model substitutes.
   `{record_id,status:"pending"|"ready"}`. Save source text immediately; asynchronous AI processing.
   Idempotent. pending_turns (maximum20) are recognized offline/provider-failed utterances,
   deduplicated atomically without invoking AI.
-- `POST /sessions/{id}/pause` `{request_id}` → `{id,status:"paused",version}`. Resume by submitting
-  next turn; finish is terminal.
+- `POST /sessions/{id}/pause` `{request_id}` → `{id,status:"paused",version}`. Resume by retrying
+  the preserved utterance with its original request ID or submitting the next turn; finish is terminal.
 
 `VehicleContext`:
 `{observed_at:ISO8601, passenger_state:"alone"|"occupied"|"unknown", source:"pleos", destination_eta_seconds?:number, arrived?:boolean, trip_duration_seconds?:number, trip_distance_m?:number, place_label?:string}`.

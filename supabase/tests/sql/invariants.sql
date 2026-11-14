@@ -49,11 +49,11 @@ begin
  tid:=(v->'turn'->>'id')::uuid;
  z:=public.doran_command(car,'sessions.turn',jsonb_build_object('session_id',sid,'request_id',request,'text','오늘 발표를 준비했다.'));
  perform pg_temp.assert_true((z->>'duplicate')::boolean,'replayed utterance is deduplicated');
- perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',tid));
+ perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',tid,'generation',(select generation from private.turns where id=tid)));
  z:=public.doran_command(car,'sessions.turn',jsonb_build_object('session_id',sid,'request_id',request,'text','오늘 발표를 준비했다.'));
  perform pg_temp.assert_true(not (z->>'duplicate')::boolean and z->'turn'->>'id'=tid::text,'failed turn retries same source without duplicate');
  perform pg_temp.assert_true((select count(*)=1 from public.messages where session_id=sid),'retry stores user message exactly once');
- v:=public.doran_worker('turns.complete',jsonb_build_object('turn_id',tid,'text','어떤 부분을 준비하셨나요?'));
+ v:=public.doran_worker('turns.complete',jsonb_build_object('turn_id',tid,'generation',(select generation from private.turns where id=tid),'text','어떤 부분을 준비하셨나요?'));
  perform pg_temp.assert_true((v->>'accepted')::boolean,'current model response commits');
  v:=public.doran_command(car,'sessions.finish',jsonb_build_object('session_id',sid,'pending_turns',jsonb_build_array(jsonb_build_object('request_id',gen_random_uuid(),'text','회의는 내일이다.'))));
  rid:=(v->'record'->>'id')::uuid;
@@ -106,9 +106,9 @@ begin
  v:=public.doran_command(car,'sessions.create',jsonb_build_object('request_id',gen_random_uuid())); sid:=(v->'session'->>'id')::uuid;
  v:=public.doran_command(car,'sessions.turn',jsonb_build_object('session_id',sid,'request_id',gen_random_uuid(),'text','아까의 이야기를 이어가자.'));tid:=(v->'turn'->>'id')::uuid;
  r:=public.doran_command(a,'records.update',jsonb_build_object('record_id',rid,'version',r->>'version','excluded',true));
- v:=public.doran_worker('turns.validate',jsonb_build_object('turn_id',tid));
+ v:=public.doran_worker('turns.validate',jsonb_build_object('turn_id',tid,'generation',(select generation from private.turns where id=tid)));
  perform pg_temp.assert_true(not (v->>'valid')::boolean,'exclusion invalidates in-flight conversation');
- v:=public.doran_worker('turns.complete',jsonb_build_object('turn_id',tid,'text','이전 내용을 말하는 응답'));
+ v:=public.doran_worker('turns.complete',jsonb_build_object('turn_id',tid,'generation',(select generation from private.turns where id=tid),'text','이전 내용을 말하는 응답'));
  perform pg_temp.assert_true(not (v->>'accepted')::boolean,'stale conversation cannot commit');
  perform pg_temp.assert_true((select count(*)=0 from public.memories where record_id=rid),'exclusion removes derived memory');
  v:=public.doran_worker('jobs.claim','{"limit":5}');

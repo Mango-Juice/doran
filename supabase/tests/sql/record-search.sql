@@ -29,7 +29,7 @@ begin
  perform pg_temp.assert_true(jsonb_array_length(v)=0,'record search never crosses owners');
  v:=public.doran_command(car,'sessions.create',jsonb_build_object('request_id',gen_random_uuid()));s:=(v->'session'->>'id')::uuid;
  v:=public.doran_command(car,'sessions.turn',jsonb_build_object('session_id',s,'request_id',request,'text','발표 준비를 했다.'));
- perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',v->'turn'->>'id'));
+ perform public.doran_worker('turns.fail',jsonb_build_object('turn_id',v->'turn'->>'id','generation',v->'turn'->'generation'));
  ctx:=jsonb_build_object('source','pleos','observed_at',now(),'passenger_state','alone','passenger_source','user_assertion','arrived',true,'trip_duration_seconds',900,'trip_duration_source','pleos_navi_arrived');
  v:=public.doran_command(car,'sessions.finish',jsonb_build_object('session_id',s,'vehicle_context',ctx));
  perform pg_temp.assert_true(v->'record'->>'text'='발표 준비를 했다.','arrival context does not fabricate a user utterance');

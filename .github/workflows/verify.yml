@@ -18,6 +18,15 @@ jobs:
       - run: deno task verify
         working-directory: supabase
       - run: python3 scripts/verify-publication.py --json
+  sql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Prepare pinned disposable database image
+        run: docker pull public.ecr.aws/supabase/postgres:17.6.1.158
+      - name: Verify database invariants and concurrent retries
+        run: bash supabase/tests/sql/run-local.sh
   car:
     runs-on: ubuntu-24.04
     steps:
