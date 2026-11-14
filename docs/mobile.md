@@ -6,7 +6,7 @@
 
 초기화 전에도 준비 화면을 표시합니다. 10초가 지나면 안내와 재확인을 제공하되, 대기 중인 초기화 Future를 재사용합니다. 초기화가 실제로 실패하고 기존 클라이언트 정리까지 끝난 경우에만 새 시도를 시작합니다. 화면이 사라지거나 새 관찰을 시작한 뒤 도착한 이전 응답은 반영하지 않습니다. Dart 진단 빌드는 진입·프레임·보안 저장소 읽기·서버 클라이언트 초기화의 고정 단계명과 시각만 남기며 키·계정·세션·오류 원문은 기록하지 않습니다. Swift 단계는 `DEBUG` 컴파일 조건을 켠 구성에서만 제공하며 이번 실행의 실측에는 포함하지 않았습니다.
 
-Flutter 3.50.0부터 deprecated된 `flutter/material.dart` 대신 공식 `material_ui` 패키지를 직접 사용합니다. 밝은 중성 바탕, 짙은 글자, 갈색 강조색을 사용하고 앱 아이콘은 대화에서 기록으로 이어지는 말풍선·세 줄로 구성했습니다. Unslop의 간격·색·타이포그래피 원칙을 참고했습니다 (Damir Sokolovsky, CC BY 4.0, https://heydamir.design/unslop).
+Flutter 3.50.0부터 deprecated된 `flutter/material.dart` 대신 공식 `material_ui` 패키지를 직접 사용합니다. 밝은 안개색 바탕, 먹색 글자, 잉크 청색 강조색과 SUIT 한국어 글꼴을 사용합니다. 앱 아이콘은 말풍선에서 기록의 세 줄로 이어지며 차량과 같은 형태입니다. Unslop의 간격·색·타이포그래피 원칙을 참고했습니다 (Damir Sokolovsky, CC BY 4.0, https://heydamir.design/unslop).
 
 Google 로그인 버튼은 공식 표준 G 원본, 흰색 바탕, Google Sans Medium과 플랫폼별 간격을 적용합니다. 원본·해시·OFL 고지는 `apps/mobile/assets/google/README.md`에 기록했습니다.
 

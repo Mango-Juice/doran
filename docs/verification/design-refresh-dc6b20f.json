@@ -1,0 +1,831 @@
+{
+  "schema_version": 1,
+  "observed_date_kst": "2026-11-14",
+  "product_source_commit": "dc6b20f7b5e9334e0d8f0f361bf3bd05446f9ef9",
+  "scope": "UI refresh native artifacts, CI and incremental publication checks. Build/static/synthetic observations are separate from later product runtime and human voice validation.",
+  "ci": {
+    "conclusion": "success",
+    "headSha": "dc6b20f7b5e9334e0d8f0f361bf3bd05446f9ef9",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "server",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "car",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "sql",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "mobile",
+        "status": "completed"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/Mango-Juice/doran/actions/runs/43579299299",
+    "durations_seconds": {
+      "server": 12,
+      "sql": 40,
+      "car": 414,
+      "mobile": 551
+    },
+    "triggered_new_run": false
+  },
+  "source_publication": {
+    "root_worktree_candidates": 272,
+    "root_reported_findings": [],
+    "full_source_scan_repeated_by_quality": false,
+    "scope": "Root reported the source-candidate scan before this receipt; CI server also passed its publication step."
+  },
+  "incremental_git_history": {
+    "base_commit": "40447b3772b540ff357b6e3369a6169807b21452",
+    "target_commit": "dc6b20f7b5e9334e0d8f0f361bf3bd05446f9ef9",
+    "new_commits": [
+      "563361a12a2a681079b9c9eaa21b61be60261792",
+      "716196a39bcd7215acc59a0099eb5660cdedb05e",
+      "dc6b20f7b5e9334e0d8f0f361bf3bd05446f9ef9"
+    ],
+    "new_commit_count": 3,
+    "baseline_reachable_blob_count": 358,
+    "new_unique_blobs_scanned": 70,
+    "new_path_or_mode_entries_checked": 20,
+    "binary_inventory": [
+      {
+        "git_blob": "033d0aade4b63a2a327c517234fd7471eef1b1b6",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png"
+        ],
+        "size_bytes": 3118,
+        "sha256": "f57c769974442fb050d829b096ed44ad0d2149ade64b0fd935496ac4378c1f28"
+      },
+      {
+        "git_blob": "08d53bb6af84a932b68ef1350f3cbe907e34bb77",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png"
+        ],
+        "size_bytes": 1899,
+        "sha256": "7004f6612afa7e9678f1233a142518981971ab4abe976867ec67508c786dd6de"
+      },
+      {
+        "git_blob": "12964d7128ad7fd1e92f5f23c4407712b97a069b",
+        "paths": [
+          "apps/mobile/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png"
+        ],
+        "size_bytes": 2917,
+        "sha256": "d920af707ff17167b53f095ec5db38c112f1b044794a2327aad443857198f942"
+      },
+      {
+        "git_blob": "3e11fa0ca570dc54ea7f54327632ec6899d826a8",
+        "paths": [
+          "apps/mobile/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png"
+        ],
+        "size_bytes": 2068,
+        "sha256": "2022afb0cc7c0f6c69acf7c16a423a8b785fdd19e02a88d1a6b2b5885d478746"
+      },
+      {
+        "git_blob": "4b4a40758d57f7652eb8621750cd0ae02468a420",
+        "paths": [
+          "docs/images/redesign-today.png"
+        ],
+        "size_bytes": 121005,
+        "sha256": "7558db2f6a4c8c7502f264d75fee631be37898bd9767e824cdd5d95fc1550b18"
+      },
+      {
+        "git_blob": "4da7f7f579e4794deecf29eed002c17490d7c7f4",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png"
+        ],
+        "size_bytes": 1406,
+        "sha256": "e28f1609df56838013e7061628742a9789ec2180a0588dccfc7de0a3edf0a8ac"
+      },
+      {
+        "git_blob": "625ccc4d07c339aa2a7efab24c2de2630c0497ba",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png",
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png"
+        ],
+        "size_bytes": 2648,
+        "sha256": "b38e6b951a4aebe971d3ae69804a171eae7cd3d74acae9eb3b8473815dfd249a"
+      },
+      {
+        "git_blob": "6dd81c2affdd5233611c2f1fda7e06c286809c35",
+        "paths": [
+          "docs/images/redesign-comparison.png"
+        ],
+        "size_bytes": 126811,
+        "sha256": "bebc7803beb64908998c7b67bac78d66951cefabf96065d52960ae2d07041ad2"
+      },
+      {
+        "git_blob": "7b4900e178cb15a2836d3609f4987ea90324045b",
+        "paths": [
+          "apps/mobile/android/app/src/main/res/mipmap-hdpi/ic_launcher.png"
+        ],
+        "size_bytes": 1692,
+        "sha256": "4c1aae1e544097fa3176aa93584b617794589587c2ed9baf7d02f4bed516e093"
+      },
+      {
+        "git_blob": "8082a4844fe9e8f385175859638e1b733b521d1b",
+        "paths": [
+          "apps/car/app/src/main/res/font/suit_variable.ttf",
+          "apps/mobile/assets/fonts/SUIT-Variable.ttf"
+        ],
+        "size_bytes": 1585020,
+        "sha256": "12e1fea375d27869a686d7432c1e6a38154d394994f5d82ace24f36a7db68333"
+      },
+      {
+        "git_blob": "835187e901b96d19c3b6b83db119aae53bc1b38b",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png",
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png"
+        ],
+        "size_bytes": 994,
+        "sha256": "e9509924598cf665f19b439b86345b2384b7dc68dee7957e9a5e5ff487cbfe18"
+      },
+      {
+        "git_blob": "851054b37c08cb4a4f12ba7c870daa6f433ee2bd",
+        "paths": [
+          "apps/mobile/android/app/src/main/res/mipmap-mdpi/ic_launcher.png"
+        ],
+        "size_bytes": 1193,
+        "sha256": "b517d0e64378f170475b41aaed80a925e8b5682a599634d19c3ab5bb92a14b3c"
+      },
+      {
+        "git_blob": "951d1951b8951778ae853a87bc56f14600aed890",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png"
+        ],
+        "size_bytes": 3813,
+        "sha256": "66dc4959064f7992a8693adc63250e925c1c040ca86fda2ab9f6e95b7e362cfc"
+      },
+      {
+        "git_blob": "95d9e1be330768ab8b0143cc17d996da70bc663f",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png"
+        ],
+        "size_bytes": 562,
+        "sha256": "a2ecc8769e345a40be9ade59edbc5bfd79932ddb198e9164f93041a3d4f0e62d"
+      },
+      {
+        "git_blob": "9ab715b21ac9626bc59e172af468313855d8b4b9",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png"
+        ],
+        "size_bytes": 2703,
+        "sha256": "5208e4ee239144093aa34c61bc35fe56d75b911dd71f68f3d92429152f910014"
+      },
+      {
+        "git_blob": "a9fe5d4205d7eeb745f2cc5b9d98ecdc5fe95ce2",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png"
+        ],
+        "size_bytes": 5379,
+        "sha256": "0ff059c7ac051e1faa6b08c2349d592240a6efc6a70ca98ca1e5e2cb51dc05bc"
+      },
+      {
+        "git_blob": "ac3872a290f621adcb57955524b173e32ed0a4d2",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png"
+        ],
+        "size_bytes": 3270,
+        "sha256": "181f0c30887eab1f9204847d5143527c36601686dd5585682e5b5a7a2be793a9"
+      },
+      {
+        "git_blob": "bcba71515f7861ff365005ad8fa241d9060f8753",
+        "paths": [
+          "apps/mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+        ],
+        "size_bytes": 4098,
+        "sha256": "432e74851a2cecda8310d461e6fed3b2a7031db0d33000191a9860bc9c99f963"
+      },
+      {
+        "git_blob": "bf7c91ebe35b9b7d22317e7f9d5e8d92882447cd",
+        "paths": [
+          "docs/images/redesign-login.png"
+        ],
+        "size_bytes": 86909,
+        "sha256": "11e8a28277fe624ac141c3283cbea145107dd68bcc4fe4d82a83f32821509336"
+      },
+      {
+        "git_blob": "c197a4ef8ecc0144f3d52f7bf5e49943670b8983",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png"
+        ],
+        "size_bytes": 1610,
+        "sha256": "ee6cd23d3d79c0a7ac1726b64976d0998cbd8fe9c7c15d1f93878cd9c496b69c"
+      },
+      {
+        "git_blob": "c3638e4eb9032f026fe4e346eafb1f7aed959d5c",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png"
+        ],
+        "size_bytes": 748,
+        "sha256": "62635ccc84cc49692eb43aeeeaac737c81f93a6844fc3070123c925f8c558898"
+      },
+      {
+        "git_blob": "cd414da30b2f636849f710feb9c93053186c45d7",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png"
+        ],
+        "size_bytes": 7811,
+        "sha256": "0f8fce3c3c02a05e6174345bf60aaf40371a79b611b47f796d8793aef71b4a43"
+      },
+      {
+        "git_blob": "d3ee8c2e2c58fe118d7c60833a1fd3e296831c1a",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png"
+        ],
+        "size_bytes": 22478,
+        "sha256": "ee5ab04c8a04ae34fc5f605ee577077435e5dca18b699ee687380fdf3cd463d7"
+      },
+      {
+        "git_blob": "d515a46e2c8927cbc0534848aa09c8455c65dee9",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png"
+        ],
+        "size_bytes": 1367,
+        "sha256": "9b9aa5ad126d0730aa74eb155ad16abb736288263670ec70b30c4bf7486724d9"
+      },
+      {
+        "git_blob": "f7dd7a9100229cc2fb5a59c386b5d1d217d45710",
+        "paths": [
+          "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png"
+        ],
+        "size_bytes": 1737,
+        "sha256": "36fc3d2884a7ebf3141e490d92b876e67738faafd582b78010d67257e16887f9"
+      }
+    ],
+    "larger_than_8mib": [],
+    "apk_blobs_requiring_separate_inspection": [],
+    "findings": [],
+    "scanner_sha256": "4097b146fec3c30bb04c225da09cd8964348489734ec6a7c04a7a98851390b80",
+    "asset_scope": {
+      "png_unique_blobs": 24,
+      "png_metadata": [
+        {
+          "git_blob": "033d0aade4b63a2a327c517234fd7471eef1b1b6",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png"
+          ],
+          "sha256": "f57c769974442fb050d829b096ed44ad0d2149ade64b0fd935496ac4378c1f28",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "08d53bb6af84a932b68ef1350f3cbe907e34bb77",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png"
+          ],
+          "sha256": "7004f6612afa7e9678f1233a142518981971ab4abe976867ec67508c786dd6de",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "12964d7128ad7fd1e92f5f23c4407712b97a069b",
+          "paths": [
+            "apps/mobile/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png"
+          ],
+          "sha256": "d920af707ff17167b53f095ec5db38c112f1b044794a2327aad443857198f942",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "3e11fa0ca570dc54ea7f54327632ec6899d826a8",
+          "paths": [
+            "apps/mobile/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png"
+          ],
+          "sha256": "2022afb0cc7c0f6c69acf7c16a423a8b785fdd19e02a88d1a6b2b5885d478746",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "4b4a40758d57f7652eb8621750cd0ae02468a420",
+          "paths": [
+            "docs/images/redesign-today.png"
+          ],
+          "sha256": "7558db2f6a4c8c7502f264d75fee631be37898bd9767e824cdd5d95fc1550b18",
+          "metadata_chunks": [],
+          "review_scope": "root visual review of synthetic screenshot"
+        },
+        {
+          "git_blob": "4da7f7f579e4794deecf29eed002c17490d7c7f4",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png"
+          ],
+          "sha256": "e28f1609df56838013e7061628742a9789ec2180a0588dccfc7de0a3edf0a8ac",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "625ccc4d07c339aa2a7efab24c2de2630c0497ba",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png",
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png"
+          ],
+          "sha256": "b38e6b951a4aebe971d3ae69804a171eae7cd3d74acae9eb3b8473815dfd249a",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "6dd81c2affdd5233611c2f1fda7e06c286809c35",
+          "paths": [
+            "docs/images/redesign-comparison.png"
+          ],
+          "sha256": "bebc7803beb64908998c7b67bac78d66951cefabf96065d52960ae2d07041ad2",
+          "metadata_chunks": [],
+          "review_scope": "root visual review of synthetic screenshot"
+        },
+        {
+          "git_blob": "7b4900e178cb15a2836d3609f4987ea90324045b",
+          "paths": [
+            "apps/mobile/android/app/src/main/res/mipmap-hdpi/ic_launcher.png"
+          ],
+          "sha256": "4c1aae1e544097fa3176aa93584b617794589587c2ed9baf7d02f4bed516e093",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "835187e901b96d19c3b6b83db119aae53bc1b38b",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png",
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png"
+          ],
+          "sha256": "e9509924598cf665f19b439b86345b2384b7dc68dee7957e9a5e5ff487cbfe18",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "851054b37c08cb4a4f12ba7c870daa6f433ee2bd",
+          "paths": [
+            "apps/mobile/android/app/src/main/res/mipmap-mdpi/ic_launcher.png"
+          ],
+          "sha256": "b517d0e64378f170475b41aaed80a925e8b5682a599634d19c3ab5bb92a14b3c",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "951d1951b8951778ae853a87bc56f14600aed890",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png"
+          ],
+          "sha256": "66dc4959064f7992a8693adc63250e925c1c040ca86fda2ab9f6e95b7e362cfc",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "95d9e1be330768ab8b0143cc17d996da70bc663f",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png"
+          ],
+          "sha256": "a2ecc8769e345a40be9ade59edbc5bfd79932ddb198e9164f93041a3d4f0e62d",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "9ab715b21ac9626bc59e172af468313855d8b4b9",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png"
+          ],
+          "sha256": "5208e4ee239144093aa34c61bc35fe56d75b911dd71f68f3d92429152f910014",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "a9fe5d4205d7eeb745f2cc5b9d98ecdc5fe95ce2",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png"
+          ],
+          "sha256": "0ff059c7ac051e1faa6b08c2349d592240a6efc6a70ca98ca1e5e2cb51dc05bc",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "ac3872a290f621adcb57955524b173e32ed0a4d2",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png"
+          ],
+          "sha256": "181f0c30887eab1f9204847d5143527c36601686dd5585682e5b5a7a2be793a9",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "bcba71515f7861ff365005ad8fa241d9060f8753",
+          "paths": [
+            "apps/mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+          ],
+          "sha256": "432e74851a2cecda8310d461e6fed3b2a7031db0d33000191a9860bc9c99f963",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "bf7c91ebe35b9b7d22317e7f9d5e8d92882447cd",
+          "paths": [
+            "docs/images/redesign-login.png"
+          ],
+          "sha256": "11e8a28277fe624ac141c3283cbea145107dd68bcc4fe4d82a83f32821509336",
+          "metadata_chunks": [],
+          "review_scope": "root visual review of synthetic screenshot"
+        },
+        {
+          "git_blob": "c197a4ef8ecc0144f3d52f7bf5e49943670b8983",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png"
+          ],
+          "sha256": "ee6cd23d3d79c0a7ac1726b64976d0998cbd8fe9c7c15d1f93878cd9c496b69c",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "c3638e4eb9032f026fe4e346eafb1f7aed959d5c",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png"
+          ],
+          "sha256": "62635ccc84cc49692eb43aeeeaac737c81f93a6844fc3070123c925f8c558898",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "cd414da30b2f636849f710feb9c93053186c45d7",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png"
+          ],
+          "sha256": "0f8fce3c3c02a05e6174345bf60aaf40371a79b611b47f796d8793aef71b4a43",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "d3ee8c2e2c58fe118d7c60833a1fd3e296831c1a",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png"
+          ],
+          "sha256": "ee5ab04c8a04ae34fc5f605ee577077435e5dca18b699ee687380fdf3cd463d7",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "d515a46e2c8927cbc0534848aa09c8455c65dee9",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png"
+          ],
+          "sha256": "9b9aa5ad126d0730aa74eb155ad16abb736288263670ec70b30c4bf7486724d9",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        },
+        {
+          "git_blob": "f7dd7a9100229cc2fb5a59c386b5d1d217d45710",
+          "paths": [
+            "apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png"
+          ],
+          "sha256": "36fc3d2884a7ebf3141e490d92b876e67738faafd582b78010d67257e16887f9",
+          "metadata_chunks": [],
+          "review_scope": "deterministic flat brand-mark generator; root reviewed asset scope"
+        }
+      ],
+      "non_png_binary": [
+        {
+          "git_blob": "8082a4844fe9e8f385175859638e1b733b521d1b",
+          "paths": [
+            "apps/car/app/src/main/res/font/suit_variable.ttf",
+            "apps/mobile/assets/fonts/SUIT-Variable.ttf"
+          ],
+          "size_bytes": 1585020,
+          "sha256": "12e1fea375d27869a686d7432c1e6a38154d394994f5d82ace24f36a7db68333"
+        }
+      ],
+      "new_root_visual_screenshots": 3,
+      "independent_image_visual_review_repeated": false
+    }
+  },
+  "commit_metadata": {
+    "new_commits": 3,
+    "author_and_committer_entries": 6,
+    "message_and_identity_segments_checked": 6,
+    "unique_email_types": [
+      "GitHub numeric-ID-plus-handle noreply"
+    ],
+    "display_names_match_public_handles": true,
+    "raw_identity_values_published": false,
+    "findings": []
+  },
+  "mobile": {
+    "private_build_receipt_sha256": "f9b667ae3bed826a07e992334f9d87bd1991189a51de3a78cf5559156fe1b6ee",
+    "build_receipt_status": "builds_and_local_checks_passed_not_installed",
+    "source_inputs": 103,
+    "source_inputs_unchanged": true,
+    "local_checks": {
+      "flutter_analyze": "passed",
+      "flutter_tests": 69,
+      "synthetic_capture_test": "passed"
+    },
+    "android": {
+      "sha256": "8941180031bc52b3e4b1d3a14a60ca0fed487ab027c6118dca02a72e706dfca7",
+      "bytes": 56196435,
+      "build_exit": 0,
+      "build_seconds_logged": 96.8,
+      "bundled_font_and_google_assets": {
+        "assets/fonts/SUIT-Variable.ttf": {
+          "matches_source": true,
+          "sha256": "12e1fea375d27869a686d7432c1e6a38154d394994f5d82ace24f36a7db68333",
+          "bytes": 1585020
+        },
+        "assets/fonts/SUIT-OFL.txt": {
+          "matches_source": true,
+          "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+          "bytes": 4380
+        },
+        "assets/google/g-logo.png": {
+          "matches_source": true,
+          "sha256": "d1ce9c2af0b10a7333abc99bc706f9a6a199e5b65bf3e3009624f076b8638e6a",
+          "bytes": 33661
+        },
+        "assets/google/GoogleSans.ttf": {
+          "matches_source": true,
+          "sha256": "d0a87d835a944b8b40d0e82a5651bb59ab97b936a2aeed5946eb57e7b2a3a90a",
+          "bytes": 4974940
+        },
+        "assets/google/OFL.txt": {
+          "matches_source": true,
+          "sha256": "2b75ef20f13d83a7514aee452c4782c20cdc9ff2dee17600f44d37a06d4fb958",
+          "bytes": 4488
+        },
+        "assets/google/TRADEMARKS.md": {
+          "matches_source": true,
+          "sha256": "215bc8c1ce46d1b81531f33ebb5af201e7a5da76b8f3ae4c705336fd70fc89e1",
+          "bytes": 1470
+        }
+      },
+      "qa_named_assets": [],
+      "qa_fixture_markers_in_compiled_artifacts": [],
+      "signature": {
+        "verified": true,
+        "v2_verified": true,
+        "signer_sha256": "741fde2383a6223313d75f24ecc9d1eab466329a5037a11bc0d1c97d368da286",
+        "same_signer_as_prior_release": true
+      }
+    },
+    "ios_simulator": {
+      "build_exit": 0,
+      "xcode_build_seconds": 45.6,
+      "codesign_deep_strict_verified": true,
+      "bundle_manifest_sha256": "6282c576521f63949f819f687538a0eb60188dcfd4d3285c8f733aa6d230e06d",
+      "manifest_serialization": "json.dumps(file_hash_map, sort_keys=True) encoded UTF-8",
+      "file_count": 88,
+      "copied_files_match": true,
+      "source_font_and_google_assets_match": true,
+      "immutable_copy_write_bits_removed": true
+    },
+    "publication": {
+      "passed": true,
+      "candidate_files": 272,
+      "apks": [
+        {
+          "file": "doran-mobile-1.0.0-dc6b20f-89411800.apk",
+          "sha256": "8941180031bc52b3e4b1d3a14a60ca0fed487ab027c6118dca02a72e706dfca7",
+          "size_bytes": 56196435,
+          "manifest_checked": true
+        }
+      ],
+      "findings": [],
+      "limitations": [
+        "이미지·영상의 개인정보는 별도 눈으로 검토해야 합니다",
+        "무시된 파일과 기존 Git 커밋 이력은 검사하지 않습니다",
+        "서명 유효성·실행·서버 접근 권한은 별도 검증 대상입니다"
+      ]
+    },
+    "publication_performed_once_by": "mobile build owner",
+    "quality_repeated_apk_scan": false,
+    "quality_independently_matched_immutable_apk_sha256": true,
+    "private_publication_receipt_sha256": "c982dc97497a3bebbf6682259844db846a73a017dc4e13ca188d295e0a46a7eb"
+  },
+  "car": {
+    "private_build_receipt_sha256": "7894871de2a3d30619b0602fbba894dd602755eff2003bc28fec70af5fbdcd2a",
+    "build_owner_evidence": {
+      "at_utc": "2026-11-14T09:17:45.397881+00:00",
+      "source_commit": "dc6b20f7b5e9334e0d8f0f361bf3bd05446f9ef9",
+      "tracked_car_input_files": 74,
+      "inputs_unchanged_after_build": true,
+      "git_canonical_matches_commit": true,
+      "release_sha256": "116b5d385866c49b3e3e76f1a8dbba0d5f27bc2d41f06d5cd6713899abe6fcae",
+      "release_bytes": 18062509,
+      "immutable_mode": "0o444",
+      "debug_sha256": "5f86c6f61fa9b183ff1c2ae21abc12a5abda89be67f21d726f79f90181d10955",
+      "signer_certificate_sha256": "741fde2383a6223313d75f24ecc9d1eab466329a5037a11bc0d1c97d368da286",
+      "apk_signature_verified": true,
+      "v2_verified": true,
+      "assets_match_source": {
+        "assets/licenses.txt": {
+          "sha256": "0f589765fde9cc28d1b37240f79a604e2a95905afbae15f4e671fac6dc758972",
+          "bytes": 14089
+        },
+        "assets/fonts/SUIT-OFL.txt": {
+          "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+          "bytes": 4380
+        },
+        "SUIT_font": {
+          "apk_member": "res/vP.ttf",
+          "sha256": "12e1fea375d27869a686d7432c1e6a38154d394994f5d82ace24f36a7db68333",
+          "bytes": 1585020
+        }
+      },
+      "checks": [
+        "ktlintCheck",
+        "lintRelease",
+        "assembleRelease",
+        "assembleDebug"
+      ],
+      "build_success": true,
+      "build_duration_seconds": 106,
+      "voice_or_runtime_tested_by_this_receipt": false
+    },
+    "signature_certificate_matches_previous_release_receipt": true,
+    "publication": {
+      "source_commit": "dc6b20f7b5e9334e0d8f0f361bf3bd05446f9ef9",
+      "scanner_sha256": "4097b146fec3c30bb04c225da09cd8964348489734ec6a7c04a7a98851390b80",
+      "apk": {
+        "file": "doran-car-1.0.0-dc6b20f-116b5d38.apk",
+        "sha256": "116b5d385866c49b3e3e76f1a8dbba0d5f27bc2d41f06d5cd6713899abe6fcae",
+        "size_bytes": 18062509,
+        "reviewed_vendor_build_paths": [
+          {
+            "member": "lib/arm64-v8a/libuacore.so",
+            "sha256": "f41614cd7d30f4ec4e482fb6686722b559861c5b759a30fb46fb25fd73f2ef41"
+          },
+          {
+            "member": "lib/armeabi-v7a/libjnidispatch.so",
+            "sha256": "e262e528436960b51259a62d2a44deb914d00804b25a0a295c089b739ffe8445"
+          },
+          {
+            "member": "lib/armeabi-v7a/libuacore.so",
+            "sha256": "532e42c7c0f9366893629dc0da24bdf6e4f5ad13d96606205c2545150532cac3"
+          },
+          {
+            "member": "lib/armeabi/libjnidispatch.so",
+            "sha256": "05968c54b7bdc25c3e9a272389d70295692cee749a993633025397f9d01b2c56"
+          },
+          {
+            "member": "lib/x86/libjnidispatch.so",
+            "sha256": "1ff39ffce0dfc1ccc2f10a08777ece9096ae73276853a46ef307d48a78173de5"
+          },
+          {
+            "member": "lib/x86_64/libjnidispatch.so",
+            "sha256": "081d3f045743b818d4d3f1868b8655f34760828ead6e2b712659d5bceadafe04"
+          },
+          {
+            "member": "lib/x86_64/libuacore.so",
+            "sha256": "887e4327dcb08e6402e539b799eaf375baadb8b47587ccae984e17fc0615d2a0"
+          }
+        ],
+        "manifest_checked": true
+      },
+      "findings": [],
+      "release_boundary": {
+        "package": "app.doran.car",
+        "version_name": "1.0.0",
+        "version_code": "1",
+        "components": [
+          "app.doran.car.MainActivity",
+          "androidx.room.MultiInstanceInvalidationService"
+        ],
+        "test_instrumentation_entries": 0,
+        "qa_manifest_findings": [],
+        "vendor_sha_count": 7,
+        "vendor_sha_set_matches": true,
+        "dex_markers_checked": [
+          "QaConversationActivity",
+          "SyntheticConversationApi",
+          "SyntheticSpeech",
+          "SocketReplayTest",
+          "ConversationLifecycleTest",
+          "SdkVerificationActivity",
+          "SDKSmokeTest",
+          "TtsPathComparisonTest",
+          "AudioFocusInterruptionTest",
+          "NavigationProbeTest",
+          "OutboxPersistenceTest",
+          "FeedbackTimingProbeTest",
+          "DesignPreviewActivity"
+        ],
+        "dex_marker_findings": [],
+        "qa_or_pcm_assets": []
+      },
+      "scope": "One independent car APK publication scan. Build-owner signature, source-input and font/license byte checks are recorded separately. No runtime or human-audio test."
+    },
+    "publication_performed_once_by": "quality",
+    "private_publication_receipt_sha256": "7e4931c10d3556396bf2fbe3aafa0d10eae18d7b89b63f54bcb3c695ade7e532"
+  },
+  "font_origin": {
+    "document": "docs/fonts.md",
+    "family": "SUIT Variable",
+    "upstream_release": "v2.0.5",
+    "font_sha256": "12e1fea375d27869a686d7432c1e6a38154d394994f5d82ace24f36a7db68333",
+    "ofl_sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+    "bundled_source_bytes_match_on_both_platforms": true
+  },
+  "runtime": {
+    "status": "Final mobile and car update observations completed within the stated UI-only scope.",
+    "historical_scope": "Earlier product login/records/voice observations remain tied to their original APKs. Synthetic UI previews do not establish final release runtime.",
+    "mobile": {
+      "private_receipt_sha256": "5ea01a76cc94a7c14496aa816ca1bb08d9823b106d74347c329b3b715eab1a11",
+      "android": {
+        "observed_at_kst": "2026-11-14 18:19–18:20",
+        "time_precision": "minute",
+        "update_install_preserved_existing_app_data": true,
+        "installed_apk_sha256": "8941180031bc52b3e4b1d3a14a60ca0fed487ab027c6118dca02a72e706dfca7",
+        "installed_matches_release": true,
+        "existing_authenticated_today_visible": true,
+        "original_records_visible": 3,
+        "daily_diary_visible": true,
+        "date_header_open_and_cancel_preserved_selected_date": true,
+        "record_and_diary_editor_keyboard_and_fixed_save_action_visible": true,
+        "text_entered_or_save_submitted": false,
+        "returned_without_saving": true,
+        "current_portrait_viewport_no_overflow_observed": true,
+        "activity_cold_start_ms": 4385,
+        "cold_start_is_flutter_first_frame": false,
+        "normal_shutdown_exit_code": 0
+      },
+      "ios_simulator": {
+        "observed_at_kst": "2026-11-14 18:23–18:24",
+        "time_precision": "minute",
+        "normal_update_install_exit_code": 0,
+        "uninstall_reset_or_relogin": false,
+        "installed_file_count": 88,
+        "installed_file_hashes_match_release": true,
+        "bundle_manifest_sha256": "6282c576521f63949f819f687538a0eb60188dcfd4d3285c8f733aa6d230e06d",
+        "existing_authenticated_today_visible": true,
+        "original_records_visible": 3,
+        "daily_diary_visible": true,
+        "date_selection_accessibility_control_visible": true,
+        "diary_editor_keyboard_and_fixed_save_action_visible": true,
+        "text_entered_or_save_submitted": false,
+        "returned_without_saving": true,
+        "current_portrait_viewport_no_overflow_observed": true,
+        "normal_shutdown_exit_code": 0
+      },
+      "mobile_runtime_processes_remaining_after_shutdown": 0,
+      "private_screenshots_published": false,
+      "limitations": [
+        "Existing-auth UI/upgrade validation,not newGoogleOAuthlogin on this redesign build",
+        "No content/date/exclusion changes or save/delete submitted; not a new backend mutation regression",
+        "No new voice/listening verification; host volume/output unchanged andAndroidaudionone",
+        "No dynamic accessibility font/landscape change in actualdevice run; current portrait layouts only",
+        "Original content screenshots are private ignored QA artifacts,not public design examples"
+      ]
+    },
+    "car": {
+      "private_receipt_sha256": "613c841e8ee0af7702eef7dbf4cde813bbe979790c8689a7d3bcd6ba18200004",
+      "installed_release_sha256": "116b5d385866c49b3e3e76f1a8dbba0d5f27bc2d41f06d5cd6713899abe6fcae",
+      "guest_apk_hash_verified": true,
+      "update_install_success": true,
+      "data_reset_or_uninstall_performed": false,
+      "launch_started_at_utc": "2026-11-14T09:29:10.678633+00:00",
+      "root_cua_final_release_idle_verified": true,
+      "visual_observation_recorded_at_utc": "2026-11-14T09:29:57.922924+00:00",
+      "observed_ui": "Unified three-line speech-bubble mark, Korean SUIT font, blue conversation-start action, solo choice unchecked, phone connected and Park 0.",
+      "park_speed_zero": true,
+      "ux_flags": 0,
+      "conversation_button_pressed": false,
+      "microphone_or_actual_audio_tested": false,
+      "final_debug_apk_sha256": "5f86c6f61fa9b183ff1c2ae21abc12a5abda89be67f21d726f79f90181d10955",
+      "final_debug_runtime_executed": false,
+      "prior_synthetic_preview": {
+        "debug_apk_sha256": "5b3f73fc2319fd85c002b0a5c0b5869f0b1d3f8a661f523a7cc318bfbccb93ce",
+        "private_receipt_sha256": "5af3f90bbd32bf7c03fd3007779415d38816a97e693067a9955d477b5dc7118b",
+        "scope": "Full idle/listening and real 628px OEM split were observed before the final mark was unified. This was synthetic debug content and is not final release runtime."
+      },
+      "public_idle_image": {
+        "path": "docs/images/redesign-car-release-idle.png",
+        "sha256": "63ccff04f095597186bacc99be5b6e09f86ea9967ce88b0d48cf4abd8f64f59c",
+        "original_bytes_match": true,
+        "visual_privacy_review_by": "root",
+        "observed_personal_body_pairing_code_or_account_detail": false,
+        "png_text_or_exif_chunks": []
+      },
+      "shutdown": {
+        "observed_at_utc": "2026-11-14T09:30:00.264796+00:00",
+        "emulator_exit_code": 0,
+        "heartbeat_exit_code": 0,
+        "qemu_scrcpy_adb_empty": true
+      },
+      "host_volume_and_avd_config_unchanged": true,
+      "limitations": [
+        "This is an update of an existing paired emulator, not a clean installation or new pairing on the redesign release.",
+        "The actual final release observation is connected idle only. Final listening, split-screen voice, microphone, audible output and long-turn stability were not exercised.",
+        "The earlier full/split synthetic preview used debug 5b3f73fc before the final mark change. Final debug 5f86c6f6 was built but not run."
+      ]
+    }
+  },
+  "limitations": [
+    "The 358 baseline reachable Git blobs were covered by previous records; only 70 new unique blobs and 20 new path or mode entries were scanned here.",
+    "The 24 new unique PNG blobs have no text or EXIF chunks. Root visually reviewed three synthetic UI screenshots; the remaining icons are deterministic flat shapes from the inspected generator, not photos or user data. Quality did not repeat that visual review.",
+    "Publication byte/filename rules and named QA-marker checks are targeted checks, not guarantees against every private value or debug path.",
+    "Mobile APK publication was executed once by its build owner and reviewed here; car APK publication was executed once by quality. Signature and bundled-font/license byte evidence are separate build-owner results.",
+    "Native builds and signatures do not establish live login, voice, listening quality or twenty consecutive turns. Final submission video/version packaging remains separate."
+  ]
+}
