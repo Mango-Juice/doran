@@ -1,0 +1,74 @@
+{
+  "observed_date_kst": "2026-11-14",
+  "scope": "Environment inspection after user storage cleanup; existing installed apps, no rebuild/reinstall/reset.",
+  "free_disk_gib_approx": 49,
+  "tools": {
+    "flutter": "3.50.0",
+    "flutter_revision": "ab2912035e160d9cad6306df307576da6128ebdb",
+    "dart": "3.14.0",
+    "deno": "2.5.6",
+    "java": "21.0.13",
+    "xcode": "27.0 / 27A5252f",
+    "adb": "37.0.1",
+    "emulator": "37.2.13.0",
+    "android_studio_present": true,
+    "scrcpy_and_ffmpeg_present": true,
+    "android_platforms_34_35_36_37_present": true
+  },
+  "preservation": {
+    "pleos_and_mobile_system_vendor_kernel_images_present": true,
+    "both_avd_userdata_present": true,
+    "ios_27_runtime_and_existing_device_present": true,
+    "signing_key_and_properties_present": true,
+    "api_environment_file_present": true,
+    "secret_values_read_or_published": false,
+    "mobile_obfuscation_symbol_files": 3,
+    "original_records_observed_in_both_mobile_apps": 3
+  },
+  "restored_artifacts": {
+    "android_apk": {
+      "sha256": "d4dba0f67580b4c3b7c4b695983e9477630e862b862cb2842cea05f60d452298",
+      "bytes": 55317408,
+      "method": "Copied existing installed base APK after exact original hash comparison; local copy rechecked."
+    },
+    "ios_runner": {
+      "files_compared": 86,
+      "all_original_file_hashes_match": true,
+      "manifest_sha256": "b9a8a7d552b4d292bfab310b5b17f6d423b19d8d6d50f8f0fa1c9b4e8f3cb6fd",
+      "codesign_deep_strict_exit": 0,
+      "method": "Copied only installed app bundle; no user data or Keychain copied."
+    }
+  },
+  "android_cache_followup": {
+    "november_1_and_2_online_refresh_empty": true,
+    "returned_to_original_november_14_records": true,
+    "previous_disk_block_resolved": true,
+    "historical_M3_reverse_sync_verified": false
+  },
+  "car": {
+    "apk_sha256": "27142633b080307c7e4edb61119a5e6a7a158f00cc0e5c0aa148759bbbaffc2c",
+    "installed_apk_matches": true,
+    "paired_idle_observed_by_root": true,
+    "park_speed_zero": true,
+    "solo_unchecked": true,
+    "audio_disabled_for_startup_inspection": true,
+    "speech_started": false,
+    "shutdown_exit_code": 0,
+    "private_receipt_sha256": "77dd59da329f069eb0f4ffab235f92a2d4f237f98927f0d1e9e4d34fba96fc2a"
+  },
+  "host_output": {
+    "observed_volume_percent": 0,
+    "muted": true,
+    "changed_during_inspection": false
+  },
+  "private_mobile_receipt_sha256": "04bce37ab9915a60f2dfabae1b451e9ebcf0be088a76f559fc0803b2c6d79473",
+  "limitations": [
+    "No new full build was run. Cache removal may require dependency downloads on a later build.",
+    "Storage availability and silent startup do not establish a fix for noise or latency.",
+    "Historical M3 had already been removed, so reverse synchronization requires a new separate fixture."
+  ],
+  "final_environment": {
+    "qemu_scrcpy_adb_booted_ios_count": 0,
+    "observed_at_utc": "2026-11-14T08:58:05.620409Z"
+  }
+}
