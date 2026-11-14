@@ -51,8 +51,8 @@
     },
     {
       "path": "demo/doran-demo.mp4",
-      "bytes": 1971048,
-      "sha256": "f1fb89a275e34119804c04b3bfcffa5dcf7a0b87f152b805041c5f4874ecbff0",
+      "bytes": 1990326,
+      "sha256": "3dcbc0f2649d0c79cef9ef43b7f0a16bde5f6ee05ec7b077cf22d437f466ab70",
       "distribution": "release_asset",
       "duration_seconds": 185.0,
       "width": 1920,

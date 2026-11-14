@@ -57,6 +57,10 @@ def mobile_background(scene, index, folder, font, bold):
         title, subtitle = '내가 쓴 일기와\n새 초안을 비교합니다.', '직접 고친 문장은 그대로 남습니다.'
     else:
         title, subtitle = '기록은 남기고,\n참고 범위를 고릅니다.', '이후 대화에서 제외할 수 있습니다.'
+    title = scene.get('editorial_title', title)
+    subtitle = scene.get('editorial_subtitle', subtitle)
+    if not isinstance(title, str) or not isinstance(subtitle, str) or len(title.splitlines()) > 2 or '\n' in subtitle:
+        raise ValueError('Editorial copy needs a two-line title and one-line subtitle')
     image = Image.new('RGBA', (1920,1080), '#F5F7F8')
     draw = ImageDraw.Draw(image)
     draw.text((140,110), '도란', font=ImageFont.truetype(str(font),34), fill='#315C78')
@@ -92,7 +96,13 @@ def render_scene(scene, index, output, font, bold, mask):
         # Keep the complete phone viewport stable, including app controls.
         filters += ',scale=450:1000'
         complex_filter=(f'[1:v]{filters},format=rgba[phone];[phone][2:v]alphamerge[rounded];'
-                        '[0:v][rounded]overlay=1215:40:shortest=1,setsar=1[v]')
+                        '[0:v][rounded]overlay=1215:40:shortest=1,setsar=1[composed]')
+        if scene.get('cut_notice'):
+            notice = output.with_suffix('.cut-notice.txt')
+            notice.write_text(scene['cut_notice'])
+            complex_filter += ';[composed]' + text_filter(font, notice, 22, 142, 640, '65737B', ":enable='lt(t,2)'") + '[v]'
+        else:
+            complex_filter += ';[composed]null[v]'
         command=['ffmpeg','-v','warning','-n','-filter_complex_threads','1','-loop','1','-i',str(background),
                  '-i',str(scene['source']),'-loop','1','-i',str(mask),'-filter_complex',complex_filter,'-map','[v]']
     base.run(command+['-t',str(scene['duration']),*base.encode_args(),str(output)])
@@ -106,8 +116,11 @@ def bookend(source_frame, output, font, headline, end=False):
     shade=Image.new('RGBA',image.size,(32,41,47,230 if end else 225))
     image=Image.alpha_composite(image,shade)
     draw=ImageDraw.Draw(image)
-    draw.text((100,390),'도란',font=ImageFont.truetype(str(font),46),fill='#9CC7DE')
-    draw.text((100,480),headline,font=ImageFont.truetype(str(font),42),fill='#F5F7F8')
+    if end:
+        # Remove the editorial copy under the ending title, leaving the actual phone visible.
+        draw.rectangle((0,0,1120,1080),fill='#20292F')
+    draw.text((100,390),'도란',font=ImageFont.truetype(str(font),60),fill='#9CC7DE')
+    draw.text((100,480),headline,font=ImageFont.truetype(str(font),55),fill='#F5F7F8')
     backdrop=output.with_suffix('.png');image.convert('RGB').save(backdrop)
     base.run(['ffmpeg','-v','error','-n','-loop','1','-i',str(backdrop),'-t','2',*base.encode_args(),str(output)])
 
@@ -120,6 +133,7 @@ def main():
     original_font,scenes=base.inspect(config,args.config.resolve().parent)
     out=args.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
     font=fixed_font(original_font,500,out/'SUIT-medium.ttf');bold=fixed_font(original_font,600,out/'SUIT-semibold.ttf')
+    title_font=fixed_font(original_font,700,out/'SUIT-title-bold.ttf')
     mask=Image.new('L',(450,1000));ImageDraw.Draw(mask).rounded_rectangle((0,0,449,999),radius=33,fill=255)
     mask_path=out/'phone-mask.png';mask.save(mask_path)
     parts=[];evidence=[]
@@ -131,8 +145,8 @@ def main():
                              synthetic_input=scene['synthetic_input'],captions=scene['captions']))
     for file,source,at in [('opening',parts[0],0),('closing',parts[-1],scenes[-1]['duration']-.1)]:
         base.run(['ffmpeg','-v','error','-n','-ss',str(at),'-i',str(source),'-frames:v','1','-update','1',str(out/f'{file}-frame.png')])
-    bookend(out/'opening-frame.png',out/'00-intro.mp4',font,'이동 중 나눈 이야기를, 다시 꺼내 읽는 하루로.')
-    bookend(out/'closing-frame.png',out/'99-end.mp4',font,'말로 정리한 하루를, 나중에 다시 읽습니다.',True)
+    bookend(out/'opening-frame.png',out/'00-intro.mp4',title_font,'이동 중 나눈 이야기를, 다시 꺼내 읽는 하루로.')
+    bookend(out/'closing-frame.png',out/'99-end.mp4',title_font,'말로 정리한 하루를, 나중에 다시 읽습니다.',True)
     listing=out/'concat.txt';listing.write_text(''.join(f"file '{p.name}'\n" for p in [out/'00-intro.mp4',*parts,out/'99-end.mp4']))
     final=out/'doran-demo-v2.mp4'
     base.run(['ffmpeg','-v','error','-n','-f','concat','-safe','1','-i',str(listing),'-map','0:v:0','-an','-c:v','copy','-movflags','+faststart',str(final)])

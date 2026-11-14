@@ -1,3 +1,3 @@
-# Observed with Python 3.13.2 using importlib.metadata on 2026-11-14.
+# Python 3.13 compatible pins; protobuf includes the 5.29.6 security fixes.
 grpcio==1.71.0
-protobuf==5.29.4
+protobuf==5.29.6

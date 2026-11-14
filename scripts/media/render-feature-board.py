@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Render the Doran feature board from reviewed actual app captures.
-Original graphics, composited real captures, and a time-driven motion system.
+"""Render an illustrated everyday use example in the Doran visual language.
+This is not an actual app capture or verification record.
 No device access or host playback. See README for commercial design references.
 """
-import argparse,base64,io,json,math,subprocess,sys
+import base64,io,math
 from pathlib import Path
 from functools import lru_cache
 import numpy as np
@@ -31,17 +31,6 @@ def bg(w,h,dark=False):
  a=np.array([245,247,248] if not dark else [32,41,47]);b=np.array([239,244,247] if not dark else [29,45,55])
  rgb=a[None,None,:]+z[:,:,None]*(b-a)[None,None,:]
  return Image.fromarray(np.uint8(rgb)).convert('RGBA')
-
-parser=argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--captures-reviewed',action='store_true',help='Confirm example captures contain no private data')
-parser.add_argument('--car',type=Path,default=ROOT/'artifacts/private/autonomous-demo/car-b/car-b-correction.png')
-parser.add_argument('--today',type=Path,default=ROOT/'artifacts/private/autonomous-demo/mobile/b-today.png')
-parser.add_argument('--compare',type=Path,default=ROOT/'artifacts/private/autonomous-demo/mobile/b-comparison.png')
-args=parser.parse_args()
-if not args.captures_reviewed:parser.error('Review capture privacy and pass --captures-reviewed')
-car=Image.open(args.car).convert('RGBA')
-today=Image.open(args.today).convert('RGBA')
-compare=Image.open(args.compare).convert('RGBA')
 
 def rounded(im,r):
  out=im.copy();m=Image.new('L',im.size);ImageDraw.Draw(m).rounded_rectangle((0,0,im.width-1,im.height-1),r,fill=255);out.putalpha(m);return out
@@ -73,10 +62,6 @@ def crop_card(source,box,width):
  im=source.crop(box);im=im.resize((width,round(im.height*width/im.width)),Image.Resampling.LANCZOS)
  return rounded(im,22)
 
-# Actual Korean record excerpts; source text is unchanged.
-records=crop_card(today,(60,1310,1020,2140),900)
-journal=crop_card(compare,(65,1190,1015,1760),620)
-
 def curve(canvas,pts,color=SKY,width=5,progress=1):
  d=ImageDraw.Draw(canvas);a,b,c,e=map(np.array,pts);q=[]
  for t in np.linspace(0,max(.001,min(1,progress)),160):
@@ -90,35 +75,73 @@ def pill(canvas,x,y,s,dark=False):
  d.rounded_rectangle((x,y,x+bw,y+52),26,fill=INK if dark else WHITE)
  text(canvas,(x+20,y+12),s,26,600,WHITE if dark else BLUE)
 
+
+def mobile_example():
+ im=Image.new('RGBA',(900,1800),FOG);d=ImageDraw.Draw(im)
+ text(im,(50,35),'19:42',26,600);text(im,(730,35),'•••',26,600)
+ logo(im,50,105,52);text(im,(130,105),'도란',53,600)
+ text(im,(50,245),'11월 15일',68,600);text(im,(50,355),'그날 나눈 이야기를 한 편으로',31,400,MUTED)
+ d.rounded_rectangle((50,450,850,1110),45,fill=WHITE)
+ d.line((92,452,808,452),fill=SKY,width=7)
+ text(im,(90,510),'하루 일기',48,600)
+ text(im,(90,610),'오늘 회의에서 준비한 의견을 말했다.\n말하기 전에는 긴장했지만,\n끝나고 나니 후련했다.\n퇴근길에 도란과 이야기하며\n그 마음을 다시 돌아봤다.',36,400,leading=1.65)
+ d.rounded_rectangle((90,975,310,1060),24,outline='#D8E0E4',width=2);text(im,(145,1000),'다듬기',32,600,BLUE)
+ text(im,(50,1210),'개별 기록 1개',36,600);d.ellipse((52,1308,68,1324),fill=BLUE);text(im,(95,1300),'18:35',28,400,MUTED)
+ text(im,(95,1370),'회의에서 의견을 말한 날.\n긴장했던 마음과 후련함을 이야기했다.',32,400,leading=1.5)
+ d.rectangle((0,1610,900,1800),fill=WHITE)
+ for x,label in [(150,'오늘'),(450,'기록'),(750,'설정')]:
+  color=BLUE if label=='오늘' else MUTED
+  if label=='오늘':
+   d.rounded_rectangle((x-24,1650,x+24,1692),5,outline=color,width=4);d.line((x-24,1662,x+24,1662),fill=color,width=3)
+   for xx in [x-12,x+12]:d.line((xx,1644,xx,1658),fill=color,width=4)
+  elif label=='기록':
+   d.rectangle((x-26,1652,x+26,1692),outline=color,width=3);d.line((x,1652,x,1692),fill=color,width=3)
+  else:
+   for yy,dx in [(1654,-10),(1671,12),(1688,-4)]:
+    d.line((x-25,yy,x+25,yy),fill=color,width=3);d.ellipse((x+dx-5,yy-5,x+dx+5,yy+5),fill=color)
+  text(im,(x-26,1720),label,28,500,color)
+ return im
+
+def vehicle_example():
+ im=Image.new('RGBA',(1500,950),'#1C292D');d=ImageDraw.Draw(im)
+ logo(im,55,45,43,SKY);text(im,(120,48),'도란',32,600,WHITE);text(im,(1230,48),'휴대폰 연결됨',24,400,'#A8B8BF')
+ d.rounded_rectangle((760,130,1435,865),35,fill='#27363D')
+ text(im,(805,175),'도란의 답',26,500,SKY)
+ text(im,(805,235),'준비한 의견을 말하고 나니\n후련했군요.\n어떤 의견을 이야기했어요?',37,400,WHITE,leading=1.55)
+ logo(im,70,365,76,SKY);text(im,(70,485),'듣고 있어요',59,500,WHITE)
+ text(im,(70,575),'이야기를 마치면 도란이 답해요',26,400,'#BAC8CE')
+ d.rounded_rectangle((70,670,365,768),20,fill=SKY);text(im,(145,702),'잠시 멈춤',30,600,INK)
+ d.rounded_rectangle((395,670,690,768),20,outline='#6B808C',width=2);text(im,(455,702),'여기까지 기록',29,500,WHITE)
+ return im
+
+car=vehicle_example();today=mobile_example()
+
 def board():
  im=bg(2400,1600)
  logo(im,100,77,50);text(im,(176,77),'도란',52,600)
  text(im,(100,205),'이동하는 동안,\n오늘을 이야기해요.',112,600,leading=1.22)
  text(im,(106,498),'편하게 나눈 대화로 생각을 풀고,\n다시 꺼내 읽을 하루의 기록을 남겨요.',35,400,MUTED)
- curve(im,[(380,1090),(600,1440),(1400,1450),(1330,1070)],SKY,8)
- paste_shadow(im,device('car',1040),70,660,angle=3,shadow=18)
- text(im,(1400,150),'나눈 대화를 기록으로',38,600)
- paste_shadow(im,records,1400,230,shadow=14)
- text(im,(1400,1120),'하루의 이야기로 다시 읽어요',38,600)
- paste_shadow(im,journal,1400,1200,shadow=14)
- text(im,(102,1440),'말로 풀어보는 오늘의 생각',33,600)
- text(im,(102,1490),'이야기를 나누고, 나중에 다시 꺼내 읽어요.',26,400,MUTED)
- text(im,(2210,1545),'예시 기록',24,400,MUTED)
+ curve(im,[(1190,1130),(1300,1230),(1470,1230),(1585,1110)],SKY,8)
+ paste_shadow(im,device('car',1030),140,675,angle=2,shadow=16)
+ paste_shadow(im,device('phone',520),1630,260,angle=-4,shadow=16)
+ text(im,(1450,150),'퇴근길의 이야기, 집에서 다시 읽어요.',36,600)
+ text(im,(100,1460),'“오늘 회의에서 준비한 의견을 말했어.\n긴장했는데 끝나고 나니까 후련하더라.”',31,400,MUTED,leading=1.45)
+ text(im,(2210,1526),'사용 예시',24,400,MUTED)
  return im.convert('RGB')
 
 def svg_for_board(image):
  from xml.sax.saxutils import escape
- parts=['<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1600" viewBox="0 0 2400 1600">','<title>도란 기능 소개</title>','<desc>실제 앱의 차량 화면과 한국어 기록 부분을 확대한 소개 보드.</desc>','<defs><radialGradient id="stage" cx="73%" cy="60%" r="70%"><stop stop-color="#EFF4F7"/><stop offset="1" stop-color="#F5F7F8"/></radialGradient><filter id="shadow" x="-15%" y="-15%" width="130%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="7" flood-color="#0E2331" flood-opacity=".09"/></filter></defs>','<rect width="2400" height="1600" fill="url(#stage)"/>','<path d="M380 1090 C600 1440 1400 1450 1330 1070" fill="none" stroke="#9CC7DE" stroke-width="8"/>']
+ parts=['<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1600" viewBox="0 0 2400 1600">','<title>도란 사용 예시</title>','<desc>실제 앱 디자인을 참고해 구성한 일상 사용 예시. 실행 화면 녹화나 검증 자료가 아닙니다.</desc>','<defs><radialGradient id="stage" cx="73%" cy="60%" r="70%"><stop stop-color="#EFF4F7"/><stop offset="1" stop-color="#F5F7F8"/></radialGradient><filter id="shadow" x="-15%" y="-15%" width="130%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="7" flood-color="#0E2331" flood-opacity=".09"/></filter></defs>','<rect width="2400" height="1600" fill="url(#stage)"/>','<path d="M1190 1130 C1300 1230 1470 1230 1585 1110" fill="none" stroke="#9CC7DE" stroke-width="8"/>']
  def txt(x,y,value,size,weight=500,color=INK):
   for i,line in enumerate(value.split('\n')):parts.append(f'<text x="{x}" y="{y+i*size*1.22}" dominant-baseline="text-before-edge" font-family="SUIT" font-weight="{weight}" font-size="{size}" fill="{color}">{escape(line)}</text>')
  def asset(im,x,y):
   buf=io.BytesIO();im.save(buf,'PNG');enc=base64.b64encode(buf.getvalue()).decode();parts.append(f'<image x="{x}" y="{y}" width="{im.width}" height="{im.height}" filter="url(#shadow)" href="data:image/png;base64,{enc}"/>')
  txt(100,77,'도란',52,600);txt(100,205,'이동하는 동안,\n오늘을 이야기해요.',112,600)
  txt(106,498,'편하게 나눈 대화로 생각을 풀고,\n다시 꺼내 읽을 하루의 기록을 남겨요.',35,400,MUTED)
- asset(device('car',1040).rotate(3,resample=Image.Resampling.BICUBIC,expand=True),70,660)
- txt(1400,150,'나눈 대화를 기록으로',38,600);asset(records,1400,230)
- txt(1400,1120,'하루의 이야기로 다시 읽어요',38,600);asset(journal,1400,1200)
- txt(102,1440,'말로 풀어보는 오늘의 생각',33,600);txt(102,1490,'이야기를 나누고, 나중에 다시 꺼내 읽어요.',26,400,MUTED);txt(2210,1545,'예시 기록',24,400,MUTED)
+ asset(device('car',1030).rotate(2,resample=Image.Resampling.BICUBIC,expand=True),140,675)
+ asset(device('phone',520).rotate(-4,resample=Image.Resampling.BICUBIC,expand=True),1630,260)
+ txt(1450,150,'퇴근길의 이야기, 집에서 다시 읽어요.',36,600)
+ txt(100,1460,'“오늘 회의에서 준비한 의견을 말했어.\n긴장했는데 끝나고 나니까 후련하더라.”',31,400,MUTED);txt(2210,1526,'사용 예시',24,400,MUTED)
  parts.append('</svg>');return '\n'.join(parts)
 
 def main():

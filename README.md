@@ -6,9 +6,9 @@
 
 [![도란 시연 영상](docs/images/demo-thumbnail.png)](https://github.com/Mango-Juice/doran/releases/download/v1.0.0-round1/doran-demo.mp4)
 
-[시연 영상 보기](https://github.com/Mango-Juice/doran/releases/download/v1.0.0-round1/doran-demo.mp4) · [기능 화면 크게 보기](docs/images/doran-features.png)
+[시연 영상 보기](https://github.com/Mango-Juice/doran/releases/download/v1.0.0-round1/doran-demo.mp4) · [사용 예시 보드](docs/images/doran-features.png)
 
-차량에서는 음성으로 대화하고, 휴대폰에서는 개별 기록과 하루 일기를 읽고 다듬습니다. 직접 고친 일기는 유지되며 새 AI 초안과 비교해 반영할 수 있습니다. 기록마다 개인화 사용을 끄거나 삭제할 수 있습니다.
+차량에서 나눈 대화는 개별 기록으로 남고, 같은 날의 기록은 하나의 하루 일기로 모입니다. 휴대폰에서 읽고 직접 다듬을 수 있으며, 이후 기록이 추가돼도 직접 쓴 글은 유지됩니다. 새 AI 초안과 비교해 반영하거나 기록별 개인화 사용을 끄고 삭제할 수 있습니다.
 
 ## 설치
 
