@@ -34,6 +34,8 @@
 
 이전 사람 발화 시험에서는 서버 응답과 기록·일기 생성까지 확인했지만 잡음·체감 지연이 남았습니다. 새 APK의 음질 개선은 아직 입증되지 않았으며, 실제 청취·20턴 연속 대화와 최종 녹화는 남아 있습니다.
 
+후속 Mac 에뮬레이터 시험에서는 공식 gRPC로 받은 SDK 원음과 짧은 실시간 TTS가 깨끗하게 들리는 것을 확인했습니다. 이는 APK의 TTS 교체가 아니라 호스트 출력 경로를 우회한 결과입니다. [준비된 출력·마이크 도구](docs/emulator-audio.md)를 보존했으며, 수정 후 긴 실행·실제 마이크 통합·최종 촬영은 아직 미검증입니다.
+
 [검증 기록](docs/verification.md)은 단위·계약 시험, 실제 클라우드 호출, SDK 실행, 사람 발화를 구분합니다. APK 파일명·영상 구성·버전 고정 절차는 [제출 안내](docs/submission.md)를 따릅니다. 미확인 동작은 완료로 표시하지 않습니다.
 
 실제 설치 앱 화면: [Google 계정 연결을 마친 차량](docs/images/car-google-connected-idle.png) · [모바일에서 차량 승인 대기](docs/images/android-pairing-await-confirmation.png) · [새 Android 오늘 탭](docs/images/android-d4db-empty-today.png) · [새 Android의 연결 차량](docs/images/android-d4db-linked-vehicle.png) · [iOS 로그인 후 오늘 탭](docs/images/ios-google-authenticated-20261114.png) · [iOS의 연결 차량](docs/images/ios-google-linked-20261114.png). 차량 캡처는 Pleos 에뮬레이터의 가상 차량 상태이며, 연결된 계정과 기기 상태는 서버에서도 확인했습니다. 위 캡처는 로그인·연결 단계에 촬영했습니다.
