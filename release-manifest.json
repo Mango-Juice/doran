@@ -1,0 +1,65 @@
+{
+  "schema_version": 2,
+  "release_version": "1.0.0",
+  "packaging_source_commit": "dc81ca96ddb8e52b91f81f6071b613b4abf3400b",
+  "submission_commit_location": "Final GitHub Release tag and submission email; not self-referenced inside this manifest.",
+  "team_name": "남생이",
+  "naming_status": "final",
+  "packaged_at": "2026-11-14T18:31:01.579252+00:00",
+  "artifacts": [
+    {
+      "path": "apk/남생이_도란_release.apk",
+      "bytes": 18062509,
+      "sha256": "116b5d385866c49b3e3e76f1a8dbba0d5f27bc2d41f06d5cd6713899abe6fcae",
+      "distribution": "git",
+      "build_source_commit": "dc6b20f7b5e9334e0d8f0f361bf3bd05446f9ef9",
+      "build_input_tree_sha256": "ba47bff9edd3e03b9c513680d66081068f4d10a696410e4981547a1dc6db0c4f",
+      "packaging_input_tree_sha256": "ba47bff9edd3e03b9c513680d66081068f4d10a696410e4981547a1dc6db0c4f",
+      "build_input_paths": [
+        "apps/car/app/src/main",
+        "apps/car/app/build.gradle.kts",
+        "apps/car/app/gradle.lockfile",
+        "apps/car/app/proguard-rules.pro",
+        "apps/car/build.gradle.kts",
+        "apps/car/settings.gradle.kts",
+        "apps/car/gradle.properties",
+        "apps/car/gradle",
+        "apps/car/gradlew",
+        "apps/car/gradlew.bat"
+      ],
+      "build_inputs_match_packaging_commit": true,
+      "source_comparison_scope": "Tracked build inputs only; excludes local configuration, signing secrets and external SDKs. Does not independently prove which inputs produced APK bytes."
+    },
+    {
+      "path": "apk/남생이_도란모바일_release.apk",
+      "bytes": 56196435,
+      "sha256": "00846feac3c44ff607db74520d656ed4047a20bee72c9845ee8549b86100ca40",
+      "distribution": "git",
+      "build_source_commit": "60141ae4a6920120d12e121e18160c97d86d7be6",
+      "build_input_tree_sha256": "c89b16fb318371b3ea3459a0352c03b572e0b9ac936edc30fc65e9d4a8ba78e8",
+      "packaging_input_tree_sha256": "c89b16fb318371b3ea3459a0352c03b572e0b9ac936edc30fc65e9d4a8ba78e8",
+      "build_input_paths": [
+        "apps/mobile/lib",
+        "apps/mobile/assets",
+        "apps/mobile/android",
+        "apps/mobile/ios",
+        "apps/mobile/pubspec.yaml",
+        "apps/mobile/pubspec.lock"
+      ],
+      "build_inputs_match_packaging_commit": true,
+      "source_comparison_scope": "Tracked build inputs only; excludes local configuration, signing secrets and external SDKs. Does not independently prove which inputs produced APK bytes."
+    },
+    {
+      "path": "demo/doran-demo.mp4",
+      "bytes": 1971048,
+      "sha256": "f1fb89a275e34119804c04b3bfcffa5dcf7a0b87f152b805041c5f4874ecbff0",
+      "distribution": "release_asset",
+      "duration_seconds": 185.0,
+      "width": 1920,
+      "height": 1080,
+      "video_codec": "h264",
+      "audio_tracks": 0,
+      "asset_name": "doran-demo.mp4"
+    }
+  ]
+}
