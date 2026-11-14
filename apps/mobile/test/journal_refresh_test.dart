@@ -1,3 +1,4 @@
+import 'dart:ui' show SemanticsAction;
 import 'dart:async';
 
 import 'package:doran_mobile/data/repository.dart';
@@ -119,7 +120,7 @@ void main() {
       });
       await tester.pumpWidget(journalApp(repo, 0));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(kstDate()));
+      await tester.tap(find.byKey(const ValueKey('journal-date-picker')));
       await tester.pumpAndSettle();
       final calendar = find.byType(CalendarDatePicker);
       final localization = MaterialLocalizations.of(tester.element(calendar));
@@ -143,7 +144,17 @@ void main() {
       pendingRecords.complete(jsonResponse({'items': [], 'next_cursor': null}));
       await tester.pumpAndSettle();
       expect(requests.last.path.endsWith('/days/$selectedDate'), isTrue);
-      expect(find.text(selectedDate), findsOneWidget);
+      final semantics = tester.ensureSemantics();
+      await tester.pump();
+      expect(find.bySemanticsLabel('$selectedDate 날짜 선택'), findsOneWidget);
+      expect(
+        tester
+            .getSemantics(find.bySemanticsLabel('$selectedDate 날짜 선택'))
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isTrue,
+      );
+      semantics.dispose();
       expect(find.text('$selectedDate에 읽던 내 일기'), findsOneWidget);
     },
   );

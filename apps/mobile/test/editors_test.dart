@@ -137,6 +137,7 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).first,
       );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('새 AI 일기 전체 반영'));
       await tester.pumpAndSettle();
       expect(find.text('새 AI 일기를 반영할까요?'), findsOneWidget);

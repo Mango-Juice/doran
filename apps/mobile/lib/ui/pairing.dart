@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+
 import '../data/repository.dart';
 
 class PairingPage extends StatefulWidget {
@@ -137,12 +139,11 @@ class _PairingPageState extends State<PairingPage> with WidgetsBindingObserver {
     body: ListView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
       children: [
-        Icon(
-          _paired ? Icons.check_circle_outline : Icons.directions_car_outlined,
-          size: 44,
-          color: Theme.of(context).colorScheme.primary,
+        _ConnectionProgress(
+          confirmed: _paired,
+          requested: _pairingId != null && !_expired,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 32),
         Text(
           _paired
               ? '차량과 연결했어요'
@@ -151,7 +152,9 @@ class _PairingPageState extends State<PairingPage> with WidgetsBindingObserver {
               : _pairingId == null
               ? '차량에 표시된 코드를 입력하세요'
               : '차량 화면에서 연결을 확인해 주세요',
-          style: Theme.of(context).textTheme.headlineSmall,
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 16),
         Text(
@@ -176,14 +179,25 @@ class _PairingPageState extends State<PairingPage> with WidgetsBindingObserver {
               FilteringTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(6),
             ],
+            textAlign: TextAlign.center,
             decoration: const InputDecoration(
               labelText: '6자리 연결 코드',
               hintText: '000000',
-              border: OutlineInputBorder(),
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 24,
+              ),
             ),
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(letterSpacing: 8),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              letterSpacing: MediaQuery.textScalerOf(context).scale(1) > 1.5
+                  ? 2
+                  : 6,
+              fontSize: MediaQuery.textScalerOf(context).scale(1) > 1.5
+                  ? 24
+                  : 32,
+              fontWeight: FontWeight.w500,
+            ),
             onChanged: (_) => setState(() {}),
             onSubmitted: (_) => _claim(),
           ),
@@ -221,4 +235,55 @@ class _PairingPageState extends State<PairingPage> with WidgetsBindingObserver {
       ],
     ),
   );
+}
+
+class _ConnectionProgress extends StatelessWidget {
+  const _ConnectionProgress({required this.confirmed, required this.requested});
+  final bool confirmed;
+  final bool requested;
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme;
+    return Semantics(
+      label: confirmed
+          ? '차량 연결 완료'
+          : requested
+          ? '차량 승인 단계'
+          : '연결 코드 입력 단계',
+      child: ExcludeSemantics(
+        child: Row(
+          children: [
+            Icon(Icons.smartphone_outlined, size: 32, color: color.primary),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Container(
+                height: 2,
+                color: requested ? color.primary : color.outlineVariant,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Icon(
+                confirmed ? Icons.check_circle_outline : Icons.link,
+                size: 24,
+                color: color.primary,
+              ),
+            ),
+            Expanded(
+              child: Container(
+                height: 2,
+                color: confirmed ? color.primary : color.outlineVariant,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Icon(
+              Icons.directions_car_outlined,
+              size: 32,
+              color: confirmed ? color.primary : color.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

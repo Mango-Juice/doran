@@ -126,3 +126,15 @@ adb -s emulator-5554 shell am instrument --user 10 -w -r \
 5. `saved_observed`는 상태 관측이며 해당 UI 프레임의 직접 캡처를 뜻하지 않는다. `completed`, JUnit 성공, 연결된 `files/synthetic-lifecycle/<qa_run_id>/report.json`의 `passed`·`cleanup_succeeded`를 모두 확인한다. 실제 시각 관측의 범위는 별도로 기록한다.
 
 분할 시작 전에는 STARTED 이상·보이는 창·READY·정차 제한·정확한 bounds가 필요하다. 창 포커스나 RESUMED를 강제하지 않아, 전면에서 보이는 분할 앱이라는 제품의 lifecycle 기준을 유지한다.
+
+## 디자인 상태 미리보기
+
+`DesignPreviewActivity`는 debug 소스에만 있는 화면 fixture다. 실제 ViewModel·API·DB·Speech SDK를 만들지 않으며 상단에 합성 화면임을 표시한다. `screen`은 `idle`, `listening`, `paused`, `error`, `pairing`, `saved`, boolean extra는 `driving`, `no_setup`을 지원한다. 앱 영역 크기와 주행 제한 표시는 실제 SDK 동작을 증명하지 않는다.
+
+상태 extra는 `onCreate`에서 읽으므로 시나리오를 바꿀 때는 debug 앱만 종료한 뒤 새로 실행한다. 동일 Activity를 재사용하는 `am start`의 결과를 새로운 fixture 관측으로 기록하지 않는다. release 패키지의 데이터·인증은 건드리지 않는다.
+
+```sh
+adb -s emulator-5554 shell am force-stop app.doran.car.debug
+adb -s emulator-5554 shell am start -n app.doran.car.debug/app.doran.car.qa.DesignPreviewActivity \
+  --es screen listening --ez driving false --ez no_setup false
+```

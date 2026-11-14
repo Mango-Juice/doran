@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../data/repository.dart';
 import '../domain/models.dart';
 import 'pairing.dart';
@@ -200,9 +201,19 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 40),
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          Text('설정', style: Theme.of(context).textTheme.headlineMedium),
+          Text(
+            '대화와 기록 설정',
+            style: Theme.of(
+              context,
+            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w500),
+          ),
           const SizedBox(height: 8),
-          Text('나에게 맞는 대화와 기록', style: Theme.of(context).textTheme.bodyLarge),
+          Text(
+            '참고할 정보와 대화 방식을 직접 정해요',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 24),
           if (_loading)
             const LinearProgressIndicator(semanticsLabel: '설정을 불러오는 중'),
@@ -216,14 +227,14 @@ class _SettingsPageState extends State<SettingsPage> {
           if (settings != null) ...[
             _heading('대화와 개인정보'),
             SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
               title: const Text('대화와 기록 처리 동의'),
               subtitle: const Text('인식된 텍스트의 AI 처리와 클라우드 저장'),
               value: settings.consent,
               onChanged: editable ? _consent : null,
             ),
             SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
               title: const Text('차량 정보 활용'),
               subtitle: const Text('도착·이동·좌석 정보를 대화의 단서로 사용'),
               value: settings.vehicleContext,
@@ -232,7 +243,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   : null,
             ),
             SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
               title: const Text('과거 기록으로 개인화'),
               subtitle: const Text('제외하지 않은 기록에서 관심사와 대화 맥락을 참고'),
               value: settings.personalization,
@@ -375,6 +386,15 @@ class _SettingsPageState extends State<SettingsPage> {
             label: const Text('오픈소스 라이선스'),
           ),
           _heading('계정'),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Text(
+              '로그아웃은 기기의 사본만, 계정 삭제는 모든 기록을 지워요',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
           OutlinedButton(
             onPressed: !_busy
                 ? () async {
@@ -417,13 +437,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _notice(String text, {bool error = false}) => Semantics(
     liveRegion: true,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: error
+            ? Theme.of(context).colorScheme.errorContainer
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Text(
         text,
         style: TextStyle(
           color: error
-              ? Theme.of(context).colorScheme.error
+              ? Theme.of(context).colorScheme.onErrorContainer
               : Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
@@ -431,8 +458,15 @@ class _SettingsPageState extends State<SettingsPage> {
   );
 
   Widget _heading(String title) => Padding(
-    padding: const EdgeInsets.only(top: 28, bottom: 12),
-    child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+    padding: const EdgeInsets.only(top: 32, bottom: 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Divider(height: 1, color: Theme.of(context).colorScheme.outlineVariant),
+        const SizedBox(height: 24),
+        Text(title, style: Theme.of(context).textTheme.titleLarge),
+      ],
+    ),
   );
 
   Widget _choice({
@@ -455,11 +489,24 @@ class _SettingsPageState extends State<SettingsPage> {
           child: Column(
             children: choices.entries
                 .map(
-                  (entry) => RadioListTile<String>(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(entry.value),
-                    value: entry.key,
-                    enabled: enabled,
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Material(
+                      color: entry.key == value
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      child: RadioListTile<String>(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                        ),
+                        title: Text(entry.value),
+                        value: entry.key,
+                        enabled: enabled,
+                      ),
+                    ),
                   ),
                 )
                 .toList(),

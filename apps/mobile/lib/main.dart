@@ -106,6 +106,11 @@ void main() {
       'Google Sans',
     ], await rootBundle.loadString('assets/google/OFL.txt'));
   });
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks(const [
+      'SUIT',
+    ], await rootBundle.loadString('assets/fonts/SUIT-OFL.txt'));
+  });
   runApp(
     AppBootstrap(
       initialization: appInitialization,
@@ -259,7 +264,13 @@ class _JournalShellState extends ConsumerState<JournalShell>
   Widget build(BuildContext context) {
     final repository = ref.watch(repositoryProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('도란')),
+      appBar: AppBar(
+        toolbarHeight: 48,
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [DoranMark(size: 28), SizedBox(width: 8), Text('도란')],
+        ),
+      ),
       body: selected == 2
           ? SettingsPage(
               repository: repository,
@@ -291,8 +302,8 @@ class _JournalShellState extends ConsumerState<JournalShell>
         onDestinationSelected: (i) => setState(() => selected = i),
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.wb_sunny_outlined),
-            selectedIcon: Icon(Icons.wb_sunny),
+            icon: Icon(Icons.today_outlined),
+            selectedIcon: Icon(Icons.today),
             label: '오늘',
           ),
           NavigationDestination(

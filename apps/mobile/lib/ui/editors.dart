@@ -199,80 +199,91 @@ class _RecordEditorState extends State<RecordEditor> {
       ],
     ),
     body: SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(24),
+      child: Column(
         children: [
-          if (restored) const Notice('저장하지 못한 글을 불러왔어요. 확인한 뒤 저장해 주세요.'),
-          if (error != null) Notice(error!, icon: Icons.error_outline),
-          if (record.status != 'ready')
-            Notice(
-              record.status == 'failed'
-                  ? 'AI 정리를 마치지 못했어요. 대화 내용은 보관되어 있습니다.'
-                  : '대화는 저장되었고 AI가 기록을 정리하고 있어요.',
-            ),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.calendar_today_outlined),
-            label: Text(date),
-            onPressed: busy
-                ? null
-                : () async {
-                    final result = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.parse(date),
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime.now().add(const Duration(days: 366)),
-                    );
-                    if (result != null && mounted) {
-                      setState(
-                        () => date =
-                            '${result.year}-${result.month.toString().padLeft(2, '0')}-${result.day.toString().padLeft(2, '0')}',
-                      );
-                    }
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                if (restored) const Notice('저장하지 못한 글을 불러왔어요. 확인한 뒤 저장해 주세요.'),
+                if (error != null) Notice(error!, icon: Icons.error_outline),
+                if (record.status != 'ready')
+                  Notice(
+                    record.status == 'failed'
+                        ? 'AI 정리를 마치지 못했어요. 대화 내용은 보관되어 있습니다.'
+                        : '대화는 저장되었고 AI가 기록을 정리하고 있어요.',
+                  ),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.calendar_today_outlined),
+                  label: Text(date),
+                  onPressed: busy
+                      ? null
+                      : () async {
+                          final result = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.parse(date),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 366),
+                            ),
+                          );
+                          if (result != null && mounted) {
+                            setState(
+                              () => date =
+                                  '${result.year}-${result.month.toString().padLeft(2, '0')}-${result.day.toString().padLeft(2, '0')}',
+                            );
+                          }
+                        },
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: text,
+                  enabled: !busy,
+                  minLines: 7,
+                  maxLines: null,
+                  maxLength: 12000,
+                  decoration: const InputDecoration(
+                    labelText: '기록 내용',
+                    hintText: '기억하고 싶은 말로 다듬어 보세요',
+                    alignLabelWithHint: true,
+                  ),
+                  onChanged: (v) {
+                    userEdited = true;
+                    _persistDraft(v);
                   },
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: text,
-            enabled: !busy,
-            minLines: 10,
-            maxLines: null,
-            maxLength: 12000,
-            decoration: const InputDecoration(
-              labelText: '기록 내용',
-              alignLabelWithHint: true,
+                ),
+                const SizedBox(height: 16),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('개인화에서 제외'),
+                  subtitle: const Text('일기로는 보관하고, 이후 대화의 참고 자료로 사용하지 않아요'),
+                  value: excluded,
+                  onChanged: busy ? null : (v) => setState(() => excluded = v),
+                ),
+
+                if (record.status == 'failed')
+                  TextButton(
+                    onPressed: busy
+                        ? null
+                        : () async {
+                            try {
+                              await widget.repository.retryRecord(record.id);
+                              if (context.mounted) Navigator.pop(context, true);
+                            } catch (e) {
+                              if (mounted) {
+                                setState(() => error = friendlyError(e));
+                              }
+                            }
+                          },
+                    child: const Text('AI 정리 다시 시도'),
+                  ),
+              ],
             ),
-            onChanged: (v) {
-              userEdited = true;
-              _persistDraft(v);
-            },
           ),
-          const SizedBox(height: 16),
-          SwitchListTile.adaptive(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('개인화에서 제외'),
-            subtitle: const Text('일기로는 보관하고, 이후 대화의 참고 자료로 사용하지 않아요'),
-            value: excluded,
-            onChanged: busy ? null : (v) => setState(() => excluded = v),
-          ),
-          const SizedBox(height: 24),
-          FilledButton(
+          EditorActionBar(
+            label: busy ? '저장 중' : '변경 사항 저장',
             onPressed: busy ? null : _save,
-            child: Text(busy ? '저장 중' : '변경 사항 저장'),
           ),
-          if (record.status == 'failed')
-            TextButton(
-              onPressed: busy
-                  ? null
-                  : () async {
-                      try {
-                        await widget.repository.retryRecord(record.id);
-                        if (context.mounted) Navigator.pop(context, true);
-                      } catch (e) {
-                        if (mounted) setState(() => error = friendlyError(e));
-                      }
-                    },
-              child: const Text('AI 정리 다시 시도'),
-            ),
         ],
       ),
     ),
@@ -398,48 +409,82 @@ class _DayEditorState extends State<DayEditor> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(widget.compare ? '새 일기 비교' : '하루 일기 다듬기')),
     body: SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(24),
+      child: Column(
         children: [
-          Text(day.date, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
-          if (error != null) Notice(error!, icon: Icons.error_outline),
-          if (restored) const Notice('이 기기에 보관한 작성 중인 글을 불러왔어요'),
-          const Notice('직접 수정한 글은 새 기록이 추가되어도 자동으로 덮어쓰지 않아요'),
-          TextField(
-            controller: text,
-            enabled: !busy,
-            minLines: 10,
-            maxLines: null,
-            maxLength: 20000,
-            decoration: const InputDecoration(
-              labelText: '내 하루 일기',
-              alignLabelWithHint: true,
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                Text(day.date, style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 16),
+                if (error != null) Notice(error!, icon: Icons.error_outline),
+                if (restored) const Notice('이 기기에 보관한 작성 중인 글을 불러왔어요'),
+                const Notice('직접 수정한 글은 새 기록이 추가되어도 자동으로 덮어쓰지 않아요'),
+                TextField(
+                  controller: text,
+                  enabled: !busy,
+                  minLines: widget.compare ? 4 : 7,
+                  maxLines: null,
+                  maxLength: 20000,
+                  decoration: const InputDecoration(
+                    labelText: '내 하루 일기',
+                    hintText: '내 말투로 오늘을 남겨 보세요',
+                    alignLabelWithHint: true,
+                  ),
+                  onChanged: (v) {
+                    userEdited = true;
+                    _persistDraft(v);
+                  },
+                ),
+
+                if (widget.compare || day.hasNewGenerated) ...[
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffeaf0f3),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '새 AI 일기',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          '새 기록까지 반영한 초안',
+                          style: TextStyle(
+                            color: DoranColors.secondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SelectableText(
+                          day.generatedText.isEmpty
+                              ? '아직 새 일기가 없어요'
+                              : day.generatedText,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        const SizedBox(height: 24),
+                        OutlinedButton(
+                          onPressed: busy || day.generatedText.isEmpty
+                              ? null
+                              : _adopt,
+                          child: const Text('새 AI 일기 전체 반영'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
-            onChanged: (v) {
-              userEdited = true;
-              _persistDraft(v);
-            },
           ),
-          const SizedBox(height: 16),
-          FilledButton(
+          EditorActionBar(
+            label: busy ? '저장 중' : '내 글 저장',
             onPressed: busy ? null : _save,
-            child: Text(busy ? '저장 중' : '내 글 저장'),
           ),
-          if (widget.compare || day.hasNewGenerated) ...[
-            const Divider(),
-            Text('새 AI 일기', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            SelectableText(
-              day.generatedText.isEmpty ? '아직 새 일기가 없어요' : day.generatedText,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            OutlinedButton(
-              onPressed: busy || day.generatedText.isEmpty ? null : _adopt,
-              child: const Text('새 AI 일기 전체 반영'),
-            ),
-          ],
         ],
       ),
     ),

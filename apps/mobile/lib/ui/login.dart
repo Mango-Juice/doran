@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
+
 import 'privacy.dart';
+import 'theme.dart';
 
 class LoginPage extends StatefulWidget {
   /// Reports whether the system browser opened, not whether sign-in completed.
@@ -38,45 +40,66 @@ class _LoginPageState extends State<LoginPage> {
     body: SafeArea(
       child: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 520),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('도란', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 64),
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 2,
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                      bottomRight: Radius.circular(20),
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.notes_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 28,
-                  ),
+                Row(
+                  children: [
+                    const DoranMark(size: 44),
+                    const SizedBox(width: 12),
+                    Text('도란', style: Theme.of(context).textTheme.titleLarge),
+                  ],
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 48),
                 Text(
-                  '차 안에서 나눈 이야기,\n내 하루의 기록으로',
-                  style: Theme.of(context).textTheme.displaySmall,
+                  '말로 남긴 하루,\n읽으며 이어가기',
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    fontSize: 36,
+                    height: 1.3,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  '운전할 때는 편하게 이야기하고,\n여기서는 천천히 읽고 다듬어요.',
-                  style: TextStyle(fontSize: 17, height: 1.8),
+                const SizedBox(height: 24),
+                Text(
+                  '차에서는 이야기하고\n휴대폰에서는 읽고 다듬어요',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-                const SizedBox(height: 44),
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      bottom: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.mic_none_outlined,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          '나눈 대화는 하나의 기록으로,\n모인 기록은 하루 일기로 남아요',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
@@ -97,6 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       textStyle: const TextStyle(
                         fontFamily: 'GoogleSans',
+                        fontFamilyFallback: ['SUIT'],
                         fontSize: 14,
                         height: 20 / 14,
                         fontWeight: FontWeight.w500,
@@ -151,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 const SizedBox(height: 20),
                 const Text(
-                  '같은 계정으로 Android와 iPhone에서 기록을 이어볼 수 있어요. 차량은 로그인 후 연결합니다.',
+                  '로그인 후 차량을 연결할 수 있어요. Android와 iPhone에서 같은 기록을 이어봅니다.',
                   style: TextStyle(fontSize: 14, height: 1.6),
                 ),
                 const SizedBox(height: 12),
