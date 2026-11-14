@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "observed_date_kst": "2026-11-14",
+  "scope": "Actual Android Google account pairing and connected-idle UI only, using virtual vehicle state",
+  "source_commit": "2c9bdc2deb3e74ea6b91bfa0d63d7c1ee5a7cd6f",
+  "car_release_sha256": "1271d0d1d7b358dfea23d947c42dff48dacf238c8be64b7d23a6d1221c4f3fc2",
+  "mobile_release_sha256": "59a4282955e53e8a959ce60f69be94246464687f92e1d11e7f0acb1828baf4dd",
+  "car_clean_install": {
+    "succeeded": true,
+    "installed_sha256_matches": true,
+    "engineering_ready_at_utc": "2026-11-14T00:12:19.423300+00:00",
+    "install_step_did_not_launch_or_operate_app": true,
+    "subsequent_connected_ui_observed": true
+  },
+  "account_pairing": {
+    "mobile_claim_ui_observed_kst": "2026-11-14 09:17",
+    "car_confirmation_ui_observed_kst": "2026-11-14 09:18 KST",
+    "ui_time_precision": "minute",
+    "claimed_challenge_restored_after_car_reboot": true,
+    "same_challenge_code_restored": true,
+    "claim_and_confirm_completed_before_original_expiry": true,
+    "backend_confirmation_source": "root-provided read-only backend observation",
+    "backend_state": "paired",
+    "device_active": true,
+    "owner_is_google_account": true,
+    "confirmed_owner_matches_claim": true,
+    "sessions_and_records_at_observation": 0,
+    "code_tokens_and_account_device_identifiers_omitted": true
+  },
+  "virtual_vehicle_ui": {
+    "platform": "Pleos Connect 2.1.0 emulator",
+    "physical_display_px": [
+      1920,
+      1080
+    ],
+    "drive": {
+      "gear": "Drive",
+      "speed_kmh": 20,
+      "ux_do_required": true,
+      "ux_restriction_flags_decimal": 80,
+      "story_card_and_solo_checkbox_hidden": true,
+      "start_conversation_button_visible": true
+    },
+    "park_restored": {
+      "gear": "Park",
+      "speed_kmh": 0,
+      "ux_do_required": false,
+      "ux_restriction_flags_decimal": 0,
+      "paired_idle_ui_restored_observed_by_root_cua": true,
+      "root_observation_kst": "2026-11-14 09:22"
+    },
+    "split": {
+      "resize_method": "actual OEM HMI bar operated by root through CUA",
+      "app_size_px": [
+        628,
+        850
+      ],
+      "activity_state": "RESUMED",
+      "windowing_mode": "multi-window",
+      "title_start_button_solo_checkbox_and_complete_helper_visible": true,
+      "default_layout_restored_observed_by_root_cua": true,
+      "default_restore_observation_kst": "2026-11-14 09:24",
+      "post_restoration_pixel_bounds_measured": false
+    }
+  },
+  "images": [
+    {
+      "file": "../images/car-google-connected-idle.png",
+      "sha256": "7d738414a438b85b43baa51e086c21c15d043f3ae7057218bf29bbf53736d380",
+      "source_bytes_unchanged": true,
+      "account_code_or_token_visible": false,
+      "png_text_metadata_present": false
+    },
+    {
+      "file": "../images/android-pairing-await-confirmation.png",
+      "sha256": "37b4df914d1321baf5e88020cecc1c8292990b4191b2d5e6bc24c02de6e67e2d",
+      "source_bytes_unchanged": true,
+      "account_code_or_token_visible": false,
+      "png_text_metadata_present": false
+    }
+  ],
+  "limits": [
+    "No microphone session, conversation start or AI request in this verification",
+    "No records created, edited or deleted in this verification",
+    "Virtual vehicle state and emulator window UI only; not real driving",
+    "Connected-idle split view only; active spoken conversation in split view remains unverified",
+    "Actual microphone permission denial was not tested; the car uses STT_SERVICE and has no app RECORD_AUDIO runtime request",
+    "iOS Google login, human 20-turn flow, offline end-to-end recovery and final video remain incomplete"
+  ],
+  "local_evidence_hashes": [
+    {
+      "file": "1271d0d1-account-clean-install/engineering-result.json",
+      "sha256": "b2056852f430e07520f669072523ce0f3773f9f8bd01587f6947ee99d6ab42cc"
+    },
+    {
+      "file": "1271d0d1-pairing-resume/account-pairing-summary.json",
+      "sha256": "f32d8e4f815461765f2349cf6189976928ea4a29b732022ab4dc4d0437d3a1dd"
+    },
+    {
+      "file": "1271d0d1-pairing-resume/connected-idle-capture.json",
+      "sha256": "eb88804673f6d07d8d8fcb45f1bc5e08707490faae20f1f7b17f68d8951ae684"
+    },
+    {
+      "file": "1271d0d1-pairing-resume/connected-drive20-observation.json",
+      "sha256": "5f96cb36f19f48cb30fbdc291263b6101e4c11f5a2932227239679fa6c82d4ad"
+    },
+    {
+      "file": "1271d0d1-pairing-resume/connected-park-restored-observation.json",
+      "sha256": "69fd3a0eff8e66c6c9a59fa6e054b9d137fa968da013fbaa441276d748b7ad7c"
+    },
+    {
+      "file": "1271d0d1-pairing-resume/connected-split-capture.json",
+      "sha256": "ab1426fde58f6bdb65f05e3c841f53e57127f48097ceee75b92546d03bde5723"
+    }
+  ]
+}

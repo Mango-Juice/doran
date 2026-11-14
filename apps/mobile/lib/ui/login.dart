@@ -2,7 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'privacy.dart';
 
 class LoginPage extends StatefulWidget {
-  final Future<void> Function() onLogin;
+  /// Reports whether the system browser opened, not whether sign-in completed.
+  final Future<bool> Function() onLogin;
   final String? authError;
   const LoginPage({super.key, required this.onLogin, this.authError});
   @override
@@ -12,6 +13,26 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool busy = false;
   String? error;
+
+  Future<void> _login() async {
+    if (busy) return;
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    bool launched;
+    try {
+      launched = await widget.onLogin();
+    } catch (_) {
+      launched = false;
+    }
+    if (!mounted) return;
+    setState(() {
+      busy = false;
+      error = launched ? null : '로그인을 시작하지 못했어요. 연결을 확인하고 다시 시도해 주세요.';
+    });
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
@@ -81,26 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    onPressed: busy
-                        ? null
-                        : () async {
-                            setState(() {
-                              busy = true;
-                              error = null;
-                            });
-                            try {
-                              await widget.onLogin();
-                            } catch (_) {
-                              if (mounted) {
-                                setState(
-                                  () => error =
-                                      '로그인을 시작하지 못했어요. 연결을 확인하고 다시 시도해 주세요.',
-                                );
-                              }
-                            } finally {
-                              if (mounted) setState(() => busy = false);
-                            }
-                          },
+                    onPressed: busy ? null : _login,
                     child: Row(
                       children: [
                         Image.asset(

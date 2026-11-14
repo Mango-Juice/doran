@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "observed_date_kst": "2026-11-14",
+  "scope": "Android Google authentication and authenticated empty Today screen only",
+  "mobile": {
+    "package": "app.doran.mobile",
+    "installed_apk_sha256": "59a4282955e53e8a959ce60f69be94246464687f92e1d11e7f0acb1828baf4dd",
+    "installed_sha256_verified_by": "mobile runtime verification",
+    "runtime_checked_at_kst": "2026-11-14T09:09:52.418528+09:00",
+    "screen": "Today tab, no records yet, vehicle-connect action visible",
+    "ui_observed_by": "root through computer use; screenshot independently inspected by quality",
+    "image": "../images/android-google-empty-today.png",
+    "image_sha256": "800e2f7fd2a47c2b1e4e7e02618e4ef6b46b792c343ecdebf3fc3bbb0be62cae",
+    "image_review": {
+      "name_email_account_identifier_or_token_visible": false,
+      "png_text_metadata_present": false
+    },
+    "shutdown": "normal emulator shutdown; exit code 0",
+    "app_account_chrome_and_avd_userdata_preserved": true
+  },
+  "backend_read_only_observation": {
+    "observed_at_utc": "2026-11-14T00:09:10Z",
+    "source": "backend verification reported to root; no additional query for this summary",
+    "auth_provider": "google",
+    "is_anonymous": false,
+    "profile_count": 1,
+    "data_counts": {
+      "sessions": 0,
+      "messages": 0,
+      "records": 0,
+      "days": 0,
+      "memories": 0
+    },
+    "account_identifiers_omitted": true
+  },
+  "limits": [
+    "iOS Google login remains unverified",
+    "Vehicle pairing with this Google account remains unverified",
+    "No conversation, record creation, editing or deletion demonstrated by this observation",
+    "Human speech, 20 consecutive turns and final submission video remain incomplete"
+  ]
+}

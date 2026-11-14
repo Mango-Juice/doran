@@ -131,26 +131,22 @@ class DoranApp extends ConsumerWidget {
       home: session.when(
         data: (s) => s == null
             ? LoginPage(
-                onLogin: () => Supabase.instance.client.auth
-                    .signInWithOAuth(
-                      OAuthProvider.google,
-                      redirectTo: 'app.doran.mobile://auth-callback',
-                      authScreenLaunchMode: LaunchMode.externalApplication,
-                    )
-                    .then((_) {}),
+                onLogin: () => Supabase.instance.client.auth.signInWithOAuth(
+                  OAuthProvider.google,
+                  redirectTo: 'app.doran.mobile://auth-callback',
+                  authScreenLaunchMode: LaunchMode.externalApplication,
+                ),
               )
             : JournalShell(key: ValueKey(s.user.id)),
         loading: () =>
             const Scaffold(body: Center(child: CircularProgressIndicator())),
         error: (_, _) => LoginPage(
           authError: '로그인을 확인하지 못했어요. 다시 연결해 주세요.',
-          onLogin: () => Supabase.instance.client.auth
-              .signInWithOAuth(
-                OAuthProvider.google,
-                redirectTo: 'app.doran.mobile://auth-callback',
-                authScreenLaunchMode: LaunchMode.externalApplication,
-              )
-              .then((_) {}),
+          onLogin: () => Supabase.instance.client.auth.signInWithOAuth(
+            OAuthProvider.google,
+            redirectTo: 'app.doran.mobile://auth-callback',
+            authScreenLaunchMode: LaunchMode.externalApplication,
+          ),
         ),
       ),
     );
