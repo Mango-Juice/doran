@@ -4,11 +4,9 @@
 
 이동 중 누군가에게 이야기하고 싶거나, 머릿속 생각을 말로 정리하고 싶은 순간을 위해 만들었습니다. 따로 시간을 내어 글을 쓰는 부담을 줄이고, 평범한 하루도 나중에 다시 돌아볼 수 있도록 돕습니다.
 
-[도란 소개 영상 보기](https://github.com/Mango-Juice/doran/releases/download/v1.0.0-round1/doran-intro.mp4)
+[30초 소개 영상](docs/videos.md#30초-소개-영상) | [시연 영상](docs/videos.md#시연-영상)
 
 ![도란 사용 예시](docs/images/doran-features.png)
-
-[시연 영상 보기](https://github.com/Mango-Juice/doran/releases/download/v1.0.0-round1/doran-demo.mp4)
 
 차량에서 나눈 대화는 개별 기록으로 남고, 같은 날의 기록은 하나의 하루 일기로 모입니다. 휴대폰에서 읽고 직접 다듬을 수 있으며, 이후 기록이 추가돼도 직접 쓴 글은 유지됩니다. 새 AI 초안과 비교해 반영하거나 기록별 개인화 사용을 끄고 삭제할 수 있습니다.
 

@@ -6,8 +6,8 @@
 |---|---|
 | [남생이_도란_release.apk](../apk/남생이_도란_release.apk) | Pleos 차량용 release APK |
 | [남생이_도란모바일_release.apk](../apk/남생이_도란모바일_release.apk) | Android 모바일 release APK |
-| [소개 영상](https://github.com/Mango-Juice/doran/releases/download/v1.0.0-round1/doran-intro.mp4) | 도란의 용도와 이용 흐름 소개 |
-| [시연 영상](https://github.com/Mango-Juice/doran/releases/download/v1.0.0-round1/doran-demo.mp4) | 앱의 동작과 기록 관리 흐름 |
+| [소개 영상](videos.md#30초-소개-영상) | 도란의 용도와 이용 흐름 소개 |
+| [시연 영상](videos.md#시연-영상) | 앱의 동작과 기록 관리 흐름 |
 | [기능 화면](images/doran-features.png) | 차량·모바일 화면 구성 |
 | [파일 목록](../release-manifest.json) | 버전, APK 빌드 소스, 파일 크기와 SHA-256 |
 

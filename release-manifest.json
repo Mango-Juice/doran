@@ -73,8 +73,7 @@
       "path": "demo/doran-demo.srt",
       "bytes": 1941,
       "sha256": "5f863816f8593bc3644daa2bce76d4b2744fc97b6159096f20f2ff4424b8090e",
-      "distribution": "release_asset",
-      "asset_name": "doran-demo.srt"
+      "distribution": "git"
     },
     {
       "path": "demo/doran-intro.mp4",
