@@ -32,7 +32,7 @@
       "source_comparison_scope": "Packaging-time source snapshot matches verified_source_commit. APK was built before that commit; build_source_commit remains null. Excludes local configuration, signing secrets and external SDKs, and is not independent reproducible-build proof.",
       "verified_source_commit": "9fc5cd8b2d98e3bb0505d3d0b2ba104faafd4e3f",
       "verified_commit_input_tree_sha256": "b4ccbd9624df838169c624c436fb9469a5a6739da24b3db1586a8957633bc4bc",
-      "release_asset_name": "남생이_도란_release.apk"
+      "release_asset_name": "doran-car-release.apk"
     },
     {
       "path": "apk/남생이_도란모바일_release.apk",
@@ -55,7 +55,7 @@
       "source_comparison_scope": "Packaging-time source snapshot matches verified_source_commit. APK was built before that commit; build_source_commit remains null. Excludes local configuration, signing secrets and external SDKs, and is not independent reproducible-build proof.",
       "verified_source_commit": "9fc5cd8b2d98e3bb0505d3d0b2ba104faafd4e3f",
       "verified_commit_input_tree_sha256": "bcf462eb5aa5990a3dda5b7ed59e365a979b3dab7666377a05fa5d83578b1a17",
-      "release_asset_name": "남생이_도란모바일_release.apk"
+      "release_asset_name": "doran-mobile-release.apk"
     },
     {
       "path": "demo/doran-demo.mp4",
