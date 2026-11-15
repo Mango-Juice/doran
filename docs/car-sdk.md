@@ -28,7 +28,7 @@ Boolean 값을 반전하거나 가짜 미점유 값으로 대체하지 않는다
 
 ## 서버 전송 범위
 
-API v1의 `source`, `observed_at`, `passenger_state`와 유효한 `destination_eta_seconds`, `arrived`, `trip_duration_seconds`, `trip_distance_m`, `trip_duration_source`, `place_label`, `trip_baseline`만 직렬화한다. 정밀 좌표, 경로, 목적지 이름·주소, 임의의 위치 셀은 서버로 전송하지 않는다. FusedLocation 수집 값과 장소 클러스터는 기기에만 유지한다. 반복 방문 조건을 충족하고 사용자가 직접 의미를 알려준 장소만 `place_label`로 전달한다.
+API v1의 `source`, `observed_at`, `passenger_state`와 유효한 `destination_name`, `destination_eta_seconds`, `arrived`, `trip_duration_seconds`, `trip_distance_m`, `trip_duration_source`, `place_label`, `trip_baseline`만 직렬화한다. 목적지 이름은 AI, 차량 정보 활용, 목적지 이름 제공에 모두 동의한 경우에만 서버와 AI에 전달한다. 정밀 좌표, 경로, 목적지 주소, 임의의 위치 셀은 서버로 전송하지 않는다. FusedLocation 수집 값과 장소 클러스터는 기기에만 유지한다. 반복 방문 조건을 충족하고 사용자가 직접 의미를 알려준 장소만 `place_label`로 전달한다.
 
 ## 반복 방문과 사용자 장소 설명
 

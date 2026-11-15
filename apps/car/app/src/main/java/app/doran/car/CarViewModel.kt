@@ -377,7 +377,7 @@ class CarViewModel internal constructor(
         val consented = settings.optBoolean("vehicle_context_enabled")
         mutable.update { it.copy(vehicleConsent = consented, passengerDetected = vehicle.state.value.passengerState() == "occupied") }
         vehicle.syncMemoryRevision(settings.optLong("vehicle_memory_revision", 0))
-        if (foreground) vehicle.start(consented)
+        if (foreground) vehicle.start(consented, settings.optBoolean("consent_destination_name") && settings.optBoolean("consent_accepted"))
         if (!settings.optBoolean("consent_accepted") && isTalking()) pause("휴대폰에서 데이터 처리 안내를 확인해 주세요")
         maybeSuggestConversation()
     }
@@ -408,6 +408,7 @@ class CarViewModel internal constructor(
                     secure.put("active_session", session)
                     secure.remove("start_request")
                     mutable.update { it.copy(sessionId = session) }
+                    speakOpening(session, generation)
                 }
                 for (pending in outbox.all().filter { it.sessionId == session }) {
                     sendTurn(pending, generation, replaying = true)
@@ -457,6 +458,48 @@ class CarViewModel internal constructor(
                     showError(e)
                 }
             }
+        }
+    }
+
+    private suspend fun speakOpening(session: String, generation: Long) {
+        try {
+            coroutineScope {
+                mutable.update { it.copy(phase = Phase.THINKING, title = "이야기를 준비하고 있어요", reply = "", transcript = "") }
+                val sentences = Channel<String>(Channel.BUFFERED)
+                val playback = launch {
+                    for (sentence in sentences) {
+                        if (!foreground || !gate.accepts(generation)) throw CancellationException()
+                        mutable.update { it.copy(phase = Phase.SPEAKING, title = "도란이 이야기하고 있어요", detail = "언제든 잠시 멈출 수 있어요") }
+                        speech.speak(sentence)
+                    }
+                }
+                try {
+                    api.opening(session, DoranApi.mutation().put("context", currentContext())) { event ->
+                        withContext(Dispatchers.Main.immediate) {
+                            if (!foreground || !gate.accepts(generation)) throw CancellationException()
+                            when (event.name) {
+                                "delta" -> mutable.update { it.copy(reply = it.reply + event.body.optString("text")) }
+                                "sentence" -> sentences.send(event.body.getString("text"))
+                                "done" -> mutable.update { it.copy(reply = event.body.optString("assistant_text", it.reply)) }
+                            }
+                        }
+                    }
+                    sentences.close()
+                    playback.join()
+                } finally {
+                    sentences.close()
+                    playback.cancel()
+                }
+            }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: SpeechFailure) {
+            throw error
+        } catch (_: Exception) {
+            if (!foreground || !gate.accepts(generation)) throw CancellationException()
+            val greeting = "안녕하세요. 편하게 이야기해 주세요."
+            mutable.update { it.copy(phase = Phase.SPEAKING, title = "도란이 이야기하고 있어요", reply = greeting) }
+            speech.speak(greeting)
         }
     }
 
@@ -593,7 +636,11 @@ class CarViewModel internal constructor(
         mutable.update { it.copy(soloAsserted = value) }
     }
     private fun currentContext(): JSONObject {
-        val context = vehicle.state.value.toJson()
+        val context = vehicle.state.value.toJson(
+            destinationNameConsented = settings.optBoolean("consent_destination_name") &&
+                settings.optBoolean("vehicle_context_enabled") &&
+                settings.optBoolean("consent_accepted")
+        )
         val occupied = vehicle.state.value.passengerState() == "occupied"
         if (occupied) mutable.update { it.copy(soloAsserted = false) }
         return context.put(
@@ -665,7 +712,10 @@ class CarViewModel internal constructor(
     fun refreshVehiclePermissions() {
         if (foreground) {
             vehicle.stop()
-            vehicle.start(state.value.vehicleConsent)
+            vehicle.start(
+                state.value.vehicleConsent,
+                settings.optBoolean("consent_destination_name") && settings.optBoolean("consent_accepted")
+            )
         }
     }
     override fun onCleared() {

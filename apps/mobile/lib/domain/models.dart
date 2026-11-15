@@ -61,11 +61,12 @@ class DoranDay {
 }
 
 class DoranSettings {
-  final bool vehicleContext, personalization, consent;
+  final bool vehicleContext, personalization, consent, destinationName;
   final String suggestions, style;
   final int version;
   const DoranSettings({
     required this.vehicleContext,
+    this.destinationName = false,
     required this.personalization,
     required this.consent,
     required this.suggestions,
@@ -74,6 +75,10 @@ class DoranSettings {
   });
   factory DoranSettings.fromJson(Map<String, dynamic> j) => DoranSettings(
     vehicleContext: j['vehicle_context_enabled'] as bool? ?? false,
+    destinationName:
+        j['consent_destination_name'] == true &&
+        j['consent_accepted'] == true &&
+        j['vehicle_context_enabled'] == true,
     personalization: j['personalization_enabled'] as bool? ?? true,
     consent: j['consent_accepted'] as bool? ?? false,
     suggestions: j['conversation_suggestions'] as String? ?? 'off',

@@ -79,6 +79,26 @@ void main() {
     final settings = DoranSettings.fromJson({});
     expect(settings.consent, isFalse);
     expect(settings.vehicleContext, isFalse);
+    expect(settings.destinationName, isFalse);
     expect(settings.suggestions, 'off');
+  });
+  test('destination names require all three explicit consents', () {
+    for (final ai in [false, true]) {
+      for (final vehicle in [false, true]) {
+        for (final destination in [false, true]) {
+          final settings = DoranSettings.fromJson({
+            'consent_accepted': ai,
+            'vehicle_context_enabled': vehicle,
+            'consent_destination_name': destination,
+          });
+          expect(settings.destinationName, ai && vehicle && destination);
+        }
+      }
+    }
+    final legacy = DoranSettings.fromJson({
+      'consent_accepted': true,
+      'vehicle_context_enabled': true,
+    });
+    expect(legacy.destinationName, isFalse);
   });
 }

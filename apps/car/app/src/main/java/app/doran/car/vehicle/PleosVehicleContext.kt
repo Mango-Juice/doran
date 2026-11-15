@@ -57,6 +57,7 @@ data class VehicleContext(
     val consented: Boolean = false,
     val tripKey: String? = null,
     val location: VehicleSignal<VehicleCoordinate> = VehicleSignal(source = "pleos_fused_location"),
+    val destinationName: VehicleSignal<String> = VehicleSignal(source = "pleos_navi_destination"),
     val remainingSeconds: VehicleSignal<Int> = VehicleSignal(source = "pleos_navi_destination"),
     val currentDrivingSeconds: VehicleSignal<Long> = VehicleSignal(source = "pleos_vehicle_odometer"),
     val currentDrivingMeters: VehicleSignal<Double> = VehicleSignal(source = "pleos_vehicle_odometer"),
@@ -72,6 +73,7 @@ data class VehicleContext(
 
     fun withoutActiveRoute(): VehicleContext = copy(
         tripKey = null,
+        destinationName = VehicleSignal(source = "pleos_navi_destination", status = SignalStatus.UNAVAILABLE),
         remainingSeconds = VehicleSignal(source = "pleos_navi_destination", status = SignalStatus.UNAVAILABLE),
         placeLabel = VehicleSignal(source = "pleos_user_labeled_place", status = SignalStatus.UNAVAILABLE),
         tripBaseline = VehicleSignal(source = "local_confirmed_arrivals", status = SignalStatus.UNAVAILABLE)
@@ -82,7 +84,7 @@ data class VehicleContext(
     )
 
     /** API v1 context. Locations/addresses are never sent to the server. */
-    fun toJson(nowMillis: Long = System.currentTimeMillis()): JSONObject {
+    fun toJson(nowMillis: Long = System.currentTimeMillis(), destinationNameConsented: Boolean = false): JSONObject {
         val out = JSONObject().put("source", "pleos")
             .put("passenger_state", passengerState(nowMillis))
         val observationTimes = mutableListOf<Long>()
@@ -93,6 +95,7 @@ data class VehicleContext(
                 signal.measuredAtMillis?.let(observationTimes::add)
             }
         }
+        if (destinationNameConsented) add("destination_name", destinationName)
         add("place_label", placeLabel)
         add("destination_eta_seconds", remainingSeconds)
         add("trip_duration_seconds", currentDrivingSeconds)
@@ -126,6 +129,7 @@ class PleosVehicleContext(context: Context, private val secure: SecureStorage = 
     val state: StateFlow<VehicleContext> = mutableState.asStateFlow()
     private var generation = 0L
     private var active = false
+    private var destinationNameAllowed = false
     private val navigationLifecycle = NavigationLifecycleGuard()
     private val routeActive: Boolean get() = navigationLifecycle.isGuiding
     private var placeMemory = LocalPlaceMemory()
@@ -153,15 +157,27 @@ class PleosVehicleContext(context: Context, private val secure: SecureStorage = 
     private val seatListeners = mutableMapOf<SeatArea, SeatOccupancyListener>()
     private val occupiedSeats = mutableMapOf<SeatArea, Boolean?>()
 
-    fun start(consented: Boolean) {
+    fun start(consented: Boolean, destinationNameConsented: Boolean = false) {
         check(Looper.myLooper() == Looper.getMainLooper()) { "Call start on the main thread" }
+        destinationNameAllowed = consented && destinationNameConsented
+        if (!destinationNameAllowed) {
+            mutableState.value = mutableState.value.copy(destinationName = VehicleSignal(source = "pleos_navi_destination"))
+        }
         if (!consented) {
             stop()
             clearPrivateData()
             return
         }
         val owner = runCatching { secure.get("owner_id") }.getOrNull()
-        if (active && owner == placeOwner) return
+        if (active && owner == placeOwner) {
+            if (destinationNameAllowed &&
+                routeActive &&
+                mutableState.value.destinationName.freshValue(System.currentTimeMillis()) == null
+            ) {
+                runCatching { navi?.getDestinationInfo() }.onFailure { navigationUnavailable() }
+            }
+            return
+        }
         stop()
         loadPlaces(owner)
         active = true
@@ -240,6 +256,18 @@ class PleosVehicleContext(context: Context, private val secure: SecureStorage = 
         mutableState.value = mutableState.value.copy(location = VehicleSignal(source = "pleos_fused_location", status = status))
     }
 
+    private fun setDestinationName(rawName: String) {
+        val name = rawName.trim().takeIf { destinationNameAllowed && it.isNotEmpty() && it.length <= 200 }
+        mutableState.value = mutableState.value.copy(
+            destinationName = VehicleSignal(
+                name,
+                "pleos_navi_destination",
+                System.currentTimeMillis(),
+                if (name == null) SignalStatus.UNAVAILABLE else SignalStatus.AVAILABLE
+            )
+        )
+    }
+
     private fun initializeNavigation(token: Long) {
         try {
             val sdk = NaviHelper(context)
@@ -259,11 +287,15 @@ class PleosVehicleContext(context: Context, private val secure: SecureStorage = 
                             destinationObservedAt = System.currentTimeMillis()
                             refreshPlaceLabel()
                         }
+                        setDestinationName(destinationInfo.name)
                         setRemaining(destinationInfo.remainTime)
                     }
                 }
                 override fun onDrivingInfo(drivingInfo: DrivingInfo) = dispatch(token) {
-                    if (routeActive) setRemaining(drivingInfo.destination.duration)
+                    if (routeActive) {
+                        setDestinationName(drivingInfo.destination.name)
+                        setRemaining(drivingInfo.destination.duration)
+                    }
                 }
                 override fun onRouteStarted(routeStartInfo: RouteStartInfo) = dispatch(token) {
                     applyNavigationTransition(navigationLifecycle.onRouteStarted(), sdk)

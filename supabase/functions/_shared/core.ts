@@ -87,6 +87,12 @@ export function sanitizeContext(value: unknown, now = Date.now()): Json | null {
   if (typeof c.place_label === "string" && c.place_label.length <= 80) {
     result.place_label = c.place_label;
   }
+  if (
+    typeof c.destination_name === "string" && c.destination_name.trim().length > 0 &&
+    c.destination_name.length <= 200
+  ) {
+    result.destination_name = c.destination_name.trim();
+  }
   const b = c.trip_baseline;
   if (
     b && b.source === "local_confirmed_arrivals" && Number.isInteger(b.sample_count) &&
@@ -137,6 +143,7 @@ export function sentenceSplit(
 export function settingsView(profile: Json): Json {
   return {
     vehicle_context_enabled: profile.consent_vehicle ?? false,
+    consent_destination_name: profile.consent_destination_name ?? false,
     vehicle_memory_revision: profile.vehicle_memory_revision ?? 0,
     personalization_enabled: profile.personalization_enabled ?? true,
     conversation_suggestions: profile.suggestion_frequency ?? "off",

@@ -166,6 +166,19 @@ class _SettingsPageState extends State<SettingsPage> {
     if (ok && mounted) await _change({'consent_accepted': enabled});
   }
 
+  Future<void> _destinationConsent(bool enabled) async {
+    if (!enabled) {
+      await _change({'consent_destination_name': false});
+      return;
+    }
+    final ok = await _confirm(
+      '목적지 이름 제공에 동의하시나요?',
+      '내비게이션의 목적지 이름을 도란 서버와 OpenAI에 보내, 이전에 나눈 이야기와 연결한 질문을 만듭니다. 주소, 원시 좌표, 전체 이동 경로는 보내지 않습니다. 설정에서 언제든 끌 수 있어요.',
+      action: '동의하고 사용',
+    );
+    if (ok && mounted) await _change({'consent_destination_name': true});
+  }
+
   Future<void> _task(Future<void> Function() task, {bool reload = true}) async {
     if (_busy) return;
     setState(() {
@@ -236,10 +249,23 @@ class _SettingsPageState extends State<SettingsPage> {
             SwitchListTile.adaptive(
               contentPadding: const EdgeInsets.symmetric(vertical: 4),
               title: const Text('차량 정보 활용'),
-              subtitle: const Text('도착·이동·좌석 정보를 대화의 단서로 사용'),
+              subtitle: const Text('도착, 이동, 좌석 정보를 대화의 단서로 사용'),
               value: settings.vehicleContext,
               onChanged: editable
                   ? (value) => _change({'vehicle_context_enabled': value})
+                  : null,
+            ),
+            SwitchListTile.adaptive(
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
+              title: const Text('목적지 이름 제공'),
+              subtitle: Text(
+                settings.consent && settings.vehicleContext
+                    ? '목적지 이름을 서버와 AI에 보내 지난 이야기와 연결'
+                    : '대화와 기록 처리 동의, 차량 정보 활용을 먼저 켜 주세요',
+              ),
+              value: settings.destinationName,
+              onChanged: editable && settings.consent && settings.vehicleContext
+                  ? _destinationConsent
                   : null,
             ),
             SwitchListTile.adaptive(

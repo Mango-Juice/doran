@@ -319,3 +319,44 @@ for (const failure of ["oversized_context", "budget_rejected"]) {
     equal(failures, [{ turn_id: id, generation: 7 }]);
   });
 }
+
+Deno.test("opening creates no user text and streams one grounded assistant question", async () => {
+  let sent: Json[] = [];
+  const database = db((action, payload) => {
+    equal(action, "sessions.opening");
+    equal(payload.text, undefined);
+    return { turn: { id, generation: 1 }, session: { version: 1 }, owner_id: id };
+  });
+  database.worker = async (action, payload = {}) => {
+    if (action === "context.get") {
+      equal(payload.opening, true);
+      return {
+        context: {
+          source: "pleos",
+          observed_at: new Date().toISOString(),
+          passenger_state: "alone",
+          destination_name: "목적지",
+        },
+        settings: {},
+        messages: [],
+        memories: [],
+      };
+    }
+    if (action === "turns.validate") return { valid: true };
+    if (action === "turns.complete") return { accepted: true, session_version: 2 };
+    return {};
+  };
+  const h = createHandler(() => database, () => ({
+    stream: async (input, onDelta) => {
+      sent = input;
+      await onDelta("오늘은 어떠셨어요?");
+      return { input_tokens: 1, output_tokens: 1 };
+    },
+    summarize: async () => ({ result: {}, usage: { input_tokens: 0, output_tokens: 0 } }),
+  }));
+  const response = await h(request(`sessions/${id}/opening`, "POST", { request_id: id }));
+  const body = await response.text();
+  equal(response.status, 200);
+  equal(sent.some((message) => message.role === "user"), false);
+  equal(body.includes("event: done"), true);
+});

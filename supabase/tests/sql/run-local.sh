@@ -52,7 +52,7 @@ SQL
 for migration in "$DORAN_SQL_ROOT"/migrations/*.sql; do
   docker exec -i "$DORAN_TEST_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$migration"
 done
-for suite in "$DORAN_SQL_ROOT"/tests/sql/invariants.sql "$DORAN_SQL_ROOT"/tests/sql/advanced.sql "$DORAN_SQL_ROOT"/tests/sql/manual-context.sql "$DORAN_SQL_ROOT"/tests/sql/record-search.sql "$DORAN_SQL_ROOT"/tests/sql/turn-generations.sql; do
+for suite in "$DORAN_SQL_ROOT"/tests/sql/invariants.sql "$DORAN_SQL_ROOT"/tests/sql/advanced.sql "$DORAN_SQL_ROOT"/tests/sql/manual-context.sql "$DORAN_SQL_ROOT"/tests/sql/record-search.sql "$DORAN_SQL_ROOT"/tests/sql/turn-generations.sql "$DORAN_SQL_ROOT"/tests/sql/destination-opening.sql; do
   docker exec -i "$DORAN_TEST_CONTAINER" psql -U supabase_admin -d postgres -v ON_ERROR_STOP=1 < "$suite"
 done
 python3 "$DORAN_SQL_ROOT/tests/sql/concurrency.py" "$DORAN_TEST_CONTAINER"

@@ -127,6 +127,7 @@ export function createHandler(getDb: () => Database = database, getAI: () => AI 
           const payload: Json = { version: revision(body.version) };
           const fields: Record<string, string> = {
             vehicle_context_enabled: "consent_vehicle",
+            consent_destination_name: "consent_destination_name",
             personalization_enabled: "personalization_enabled",
             consent_accepted: "consent_ai",
           };
@@ -180,13 +181,14 @@ export function createHandler(getDb: () => Database = database, getAI: () => AI 
           });
           return json({ record_id: r.record.id, status: r.record.status });
         }
-        if (path[2] === "turns" && method === "POST") {
+        if (["turns", "opening"].includes(path[2]) && method === "POST") {
+          const opening = path[2] === "opening";
           const ai = getAI(); // Do not append a user turn if deployment has no AI credentials.
-          const utterance = text(body.text, 6000);
-          const turn = await cmd("sessions.turn", {
+          const utterance = opening ? "" : text(body.text, 6000);
+          const turn = await cmd(opening ? "sessions.opening" : "sessions.turn", {
             session_id: id(),
             request_id: requestId(),
-            text: utterance,
+            ...(opening ? {} : { text: utterance }),
             vehicle_context: sanitizeContext(body.context),
           });
           // Migration rollout: old SQL returns no generation, which is its initial attempt (1).
@@ -202,44 +204,51 @@ export function createHandler(getDb: () => Database = database, getAI: () => AI 
               turn.session.version,
             );
           }
-          const context = await db.worker("context.get", {
-            owner_id: turn.owner_id,
-            session_id: path[1],
-            query: utterance,
-          });
-          context.context = sanitizeContext(context.context);
-          const historyAllowed = context.context?.passenger_state === "alone" ||
-            explicitlyRequestsHistory(utterance);
-          const contextData = {
-            now: new Date().toISOString(),
-            now_kst: new Date(Date.now() + 9 * 3600000).toISOString().replace("Z", "+09:00"),
-            timezone: "Asia/Seoul",
-            settings: settingsView(context.settings ?? {}),
-            vehicle: context.context,
-            memories: historyAllowed ? context.memories : [],
-            records: historyAllowed ? context.records ?? [] : [],
-            history_allowed: historyAllowed,
-          };
-          const input: Json[] = [
-            { role: "developer", content: JSON.stringify(contextData) },
-            ...(context.messages ?? []).slice(-24).map((m: Json) => ({
-              role: m.role,
-              content: m.content ?? m.text,
-            })),
-          ];
-          if (new TextEncoder().encode(JSON.stringify(input)).length > 96000) {
-            await db.worker("turns.fail", { turn_id: turn.turn.id, generation });
-            throw new ApiError("INVALID_TEXT");
-          }
-          const reservation = crypto.randomUUID();
-          const reserve = estimatedCost(input, 768);
           try {
+            const context = await db.worker("context.get", {
+              owner_id: turn.owner_id,
+              session_id: path[1],
+              query: utterance,
+              opening,
+            });
+            context.context = sanitizeContext(context.context);
+            const historyAllowed = context.context?.passenger_state === "alone" ||
+              explicitlyRequestsHistory(utterance);
+            const contextData = {
+              now: new Date().toISOString(),
+              now_kst: new Date(Date.now() + 9 * 3600000).toISOString().replace("Z", "+09:00"),
+              timezone: "Asia/Seoul",
+              settings: settingsView(context.settings ?? {}),
+              vehicle: context.context,
+              memories: historyAllowed ? context.memories : [],
+              records: historyAllowed ? context.records ?? [] : [],
+              history_allowed: historyAllowed,
+            };
+            const input: Json[] = [
+              { role: "developer", content: JSON.stringify(contextData) },
+              ...(context.messages ?? []).slice(-24).map((m: Json) => ({
+                role: m.role,
+                content: m.content ?? m.text,
+              })),
+            ];
+            if (opening) {
+              input.push({
+                role: "developer",
+                content:
+                  "사용자가 대화 시작을 눌렀습니다. 지금의 목적지와 관련 있는 사용자의 이전 설명이 있으면 연결해서 짧은 첫 질문 하나를 건네세요. 관련 근거가 없으면 일반적인 질문을 하세요. 목적지 이름만으로 회사, 업종, 약속 목적이나 완료를 단정하지 마세요. 사용자 발화를 만들어내지 마세요.",
+              });
+            }
+            if (new TextEncoder().encode(JSON.stringify(input)).length > 96000) {
+              throw new ApiError("INVALID_TEXT");
+            }
+            const reservation = crypto.randomUUID();
+            const reserve = estimatedCost(input, 768);
             await db.worker("budget.reserve", { request_id: reservation, max_cost_usd: reserve });
+            return streamTurn(req, db, ai, input, turn.turn.id, generation, reservation, reserve);
           } catch (error) {
-            await db.worker("turns.fail", { turn_id: turn.turn.id, generation });
+            await db.worker("turns.fail", { turn_id: turn.turn.id, generation }).catch(() => {});
             throw error;
           }
-          return streamTurn(req, db, ai, input, turn.turn.id, generation, reservation, reserve);
         }
       }
       if (path[0] === "records") {

@@ -83,4 +83,13 @@ class VehicleContextTest {
         assertFalse(json.toString().contains("private place"))
         assertFalse(json.has("evidence"))
     }
+
+    @Test fun `destination name requires separate consent and fresh route signal`() {
+        val context = VehicleContext(consented = true, destinationName = sample("meeting place"))
+        assertFalse(context.toJson(now).has("destination_name"))
+        assertEquals("meeting place", context.toJson(now, true).getString("destination_name"))
+        assertFalse(context.copy(consented = false).toJson(now, true).has("destination_name"))
+        assertFalse(context.copy(destinationName = sample("meeting place", now - 60_001)).toJson(now, true).has("destination_name"))
+        assertFalse(context.withoutActiveRoute().toJson(now, true).has("destination_name"))
+    }
 }

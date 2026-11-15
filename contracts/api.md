@@ -31,6 +31,13 @@ mock AI or authentication bypass.
 
 - `POST /sessions` `{request_id,context?:VehicleContext}` →
   `{id,version,status:"active",record_date}`. Paired vehicle only.
+- `POST /sessions/{id}/opening` `{request_id,context?:VehicleContext}` → SSE with the same events as turns.
+  Paired vehicle only. Creates at most one opening per session and persists only an assistant
+  message, never a synthetic user utterance. Destination name is used to retrieve related records
+  only after consent filtering; proactive personal history also requires the session's alone state.
+  A completed opening replays its result. Pending attempts return `TURN_IN_PROGRESS`; failed or
+  cancelled attempts use the existing generation guard. Once a user message exists, a new opening
+  cannot be generated. Clients request an opening for a new session, not every resume.
 - `POST /sessions/{id}/turns` `{request_id,text,context?:VehicleContext}` → SSE
   (`Accept: text/event-stream`). `text` must contain a final recognized user utterance. One active
   turn per session. Retrying the same request ID and text never duplicates user messages.
@@ -52,9 +59,11 @@ mock AI or authentication bypass.
   the preserved utterance with its original request ID or submitting the next turn; finish is terminal.
 
 `VehicleContext`:
-`{observed_at:ISO8601, passenger_state:"alone"|"occupied"|"unknown", source:"pleos", destination_eta_seconds?:number, arrived?:boolean, trip_duration_seconds?:number, trip_distance_m?:number, place_label?:string}`.
+`{observed_at:ISO8601, passenger_state:"alone"|"occupied"|"unknown", source:"pleos", destination_name?:string, destination_eta_seconds?:number, arrived?:boolean, trip_duration_seconds?:number, trip_distance_m?:number, place_label?:string}`.
 Optional capability fields omitted when unavailable. No raw coordinates or continuous routes in
-cloud API. Stale context (>120s) is not used. Historical personal topics are not proactively
+cloud API. `destination_name` is a nonempty name of at most200 characters, accepted only when
+AI consent, vehicle context consent and `consent_destination_name` are all enabled. Addresses
+are not accepted. Stale context (>120s) is not used. Historical personal topics are not proactively
 mentioned when passenger state is occupied/unknown. Device receives settings via `GET /settings`
 before collecting optional vehicle context.
 
@@ -91,11 +100,13 @@ save/adoption. Version0 means no saved day.
 ## Preferences, memory and account
 
 - `GET /settings` →
-  `{vehicle_context_enabled:false,personalization_enabled:true,conversation_suggestions:"off"|"daily"|"trip",conversation_style:"balanced"|"listen"|"questions",consent_accepted:false,version:1}`.
+  `{vehicle_context_enabled:false,consent_destination_name:false,personalization_enabled:true,conversation_suggestions:"off"|"daily"|"trip",conversation_style:"balanced"|"listen"|"questions",consent_accepted:false,version:1}`.
   Paired car can read own owner's settings; owner can write.
 - `PATCH /settings` `{request_id,version,...changedFields}` → full settings. Base text/cloud consent
   must be accepted before sessions. Consent revoke stops new turns. Vehicle context consent revoke
-  invalidates stored vehicle-derived memories.
+  invalidates stored vehicle-derived memories. Destination-name consent defaults to false for
+  existing and new users. Revoking any required consent removes retained destination names from
+  session and vehicle-event context; destination disclosure remains independently opt-in.
 - `GET /memories` → `{items:[{id,fact,kind,record_id,created_at}]}`.
 - `DELETE /memories/{id}` `{request_id}` → `{deleted:true}`; source record can be excluded to
   prevent subsequent recreation.

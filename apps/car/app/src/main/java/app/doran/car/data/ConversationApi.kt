@@ -6,6 +6,8 @@ import org.json.JSONObject
 interface ConversationApi {
     suspend fun request(path: String, body: JSONObject? = null, method: String = if (body == null) "GET" else "POST"): JSONObject
     suspend fun turn(sessionId: String, body: JSONObject, onEvent: suspend (ServerEvent) -> Unit)
+    suspend fun opening(sessionId: String, body: JSONObject, onEvent: suspend (ServerEvent) -> Unit): Unit =
+        throw UnsupportedOperationException("Opening is not supported")
     fun cancelTurn()
     fun close()
 }

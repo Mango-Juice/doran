@@ -88,61 +88,68 @@ class DoranApi internal constructor(
         throw ApiFailure("authentication_failed", "차량 인증을 다시 확인해 주세요", true)
     }
 
-    override suspend fun turn(sessionId: String, body: JSONObject, onEvent: suspend (ServerEvent) -> Unit) = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url("$base/functions/v1/doran-api/v1/sessions/$sessionId/turns")
-            .header("apikey", key).header("Authorization", "Bearer ${token()}").header("Accept", "text/event-stream")
-            .post(body.toString().toRequestBody(JSON)).build()
-        val call = client.newCall(request)
-        turnCall = call
-        val cancellation = CoroutineScope(currentCoroutineContext()).launch(start = CoroutineStart.UNDISPATCHED) {
-            try {
-                awaitCancellation()
-            } finally {
-                call.cancel()
+    override suspend fun turn(sessionId: String, body: JSONObject, onEvent: suspend (ServerEvent) -> Unit) =
+        streamResponse(sessionId, "turns", body, onEvent)
+
+    override suspend fun opening(sessionId: String, body: JSONObject, onEvent: suspend (ServerEvent) -> Unit) =
+        streamResponse(sessionId, "opening", body, onEvent)
+
+    private suspend fun streamResponse(sessionId: String, action: String, body: JSONObject, onEvent: suspend (ServerEvent) -> Unit) =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder().url("$base/functions/v1/doran-api/v1/sessions/$sessionId/$action")
+                .header("apikey", key).header("Authorization", "Bearer ${token()}").header("Accept", "text/event-stream")
+                .post(body.toString().toRequestBody(JSON)).build()
+            val call = client.newCall(request)
+            turnCall = call
+            val cancellation = CoroutineScope(currentCoroutineContext()).launch(start = CoroutineStart.UNDISPATCHED) {
+                try {
+                    awaitCancellation()
+                } finally {
+                    call.cancel()
+                }
             }
-        }
-        try {
-            call.await().use { response ->
-                if (!response.isSuccessful) throw failure(response.code, JSONObject(response.body?.string().orEmpty().ifBlank { "{}" }))
-                val source = response.body?.source() ?: throw IOException("empty response")
-                var event = "message"
-                val data = StringBuilder()
-                var completed = false
-                while (!source.exhausted()) {
-                    val line = source.readUtf8Line() ?: break
-                    when {
-                        line.isEmpty() -> {
-                            if (data.isNotEmpty()) {
-                                val value = JSONObject(data.toString())
-                                if (event ==
-                                    "error"
-                                ) {
-                                    throw ApiFailure(
-                                        value.optString("code"),
-                                        value.optString("message", "응답을 완료하지 못했어요"),
-                                        value.optBoolean("retryable")
-                                    )
+            try {
+                call.await().use { response ->
+                    if (!response.isSuccessful) throw failure(response.code, JSONObject(response.body?.string().orEmpty().ifBlank { "{}" }))
+                    val source = response.body?.source() ?: throw IOException("empty response")
+                    var event = "message"
+                    val data = StringBuilder()
+                    var completed = false
+                    while (!source.exhausted()) {
+                        val line = source.readUtf8Line() ?: break
+                        when {
+                            line.isEmpty() -> {
+                                if (data.isNotEmpty()) {
+                                    val value = JSONObject(data.toString())
+                                    if (event ==
+                                        "error"
+                                    ) {
+                                        throw ApiFailure(
+                                            value.optString("code"),
+                                            value.optString("message", "응답을 완료하지 못했어요"),
+                                            value.optBoolean("retryable")
+                                        )
+                                    }
+                                    if (event == "done") completed = true
+                                    onEvent(ServerEvent(event, value))
                                 }
-                                if (event == "done") completed = true
-                                onEvent(ServerEvent(event, value))
+                                event = "message"
+                                data.clear()
                             }
-                            event = "message"
-                            data.clear()
-                        }
-                        line.startsWith("event:") -> event = line.substringAfter(':').trim()
-                        line.startsWith("data:") -> {
-                            if (data.isNotEmpty()) data.append('\n')
-                            data.append(line.substringAfter(':').trimStart())
+                            line.startsWith("event:") -> event = line.substringAfter(':').trim()
+                            line.startsWith("data:") -> {
+                                if (data.isNotEmpty()) data.append('\n')
+                                data.append(line.substringAfter(':').trimStart())
+                            }
                         }
                     }
+                    if (!completed) throw ApiFailure("stream_interrupted", "연결이 잠시 끊겼어요. 말씀하신 내용은 기기에 보관했어요", true)
                 }
-                if (!completed) throw ApiFailure("stream_interrupted", "연결이 잠시 끊겼어요. 말씀하신 내용은 기기에 보관했어요", true)
+            } finally {
+                cancellation.cancel()
+                if (turnCall === call) turnCall = null
             }
-        } finally {
-            cancellation.cancel()
-            if (turnCall === call) turnCall = null
         }
-    }
 
     override fun cancelTurn() {
         turnCall?.cancel()
