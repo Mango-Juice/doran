@@ -1,20 +1,21 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "release_version": "1.0.0",
-  "packaging_source_commit": "dc81ca96ddb8e52b91f81f6071b613b4abf3400b",
+  "packaging_source_commit": "9fc5cd8b2d98e3bb0505d3d0b2ba104faafd4e3f",
   "submission_commit_location": "Final GitHub Release tag and submission email; not self-referenced inside this manifest.",
   "team_name": "남생이",
   "naming_status": "final",
-  "packaged_at": "2026-11-14T18:31:01.579252+00:00",
+  "packaged_at": "2026-11-15T08:08:46.174112+00:00",
   "artifacts": [
     {
       "path": "apk/남생이_도란_release.apk",
       "bytes": 18062509,
-      "sha256": "116b5d385866c49b3e3e76f1a8dbba0d5f27bc2d41f06d5cd6713899abe6fcae",
+      "sha256": "57d74e10f8b44c80c293c5377e0a6bb4f087701949158aad7cc776705e049fd0",
       "distribution": "git",
-      "build_source_commit": "dc6b20f7b5e9334e0d8f0f361bf3bd05446f9ef9",
-      "build_input_tree_sha256": "ba47bff9edd3e03b9c513680d66081068f4d10a696410e4981547a1dc6db0c4f",
-      "packaging_input_tree_sha256": "ba47bff9edd3e03b9c513680d66081068f4d10a696410e4981547a1dc6db0c4f",
+      "build_source_commit": null,
+      "source_base_commit": "ae3fb37c919f13bc734e0a908be8c38083925ca1",
+      "source_state": "uncommitted_at_build",
+      "working_tree_input_sha256": "f215662e3ba2b288d43215cb0b7398067968ca5a1c5714128ad2c415e8aafb4d",
       "build_input_paths": [
         "apps/car/app/src/main",
         "apps/car/app/build.gradle.kts",
@@ -28,16 +29,20 @@
         "apps/car/gradlew.bat"
       ],
       "build_inputs_match_packaging_commit": true,
-      "source_comparison_scope": "Tracked build inputs only; excludes local configuration, signing secrets and external SDKs. Does not independently prove which inputs produced APK bytes."
+      "source_comparison_scope": "Packaging-time source snapshot matches verified_source_commit. APK was built before that commit; build_source_commit remains null. Excludes local configuration, signing secrets and external SDKs, and is not independent reproducible-build proof.",
+      "verified_source_commit": "9fc5cd8b2d98e3bb0505d3d0b2ba104faafd4e3f",
+      "verified_commit_input_tree_sha256": "b4ccbd9624df838169c624c436fb9469a5a6739da24b3db1586a8957633bc4bc",
+      "release_asset_name": "남생이_도란_release.apk"
     },
     {
       "path": "apk/남생이_도란모바일_release.apk",
       "bytes": 56196435,
-      "sha256": "00846feac3c44ff607db74520d656ed4047a20bee72c9845ee8549b86100ca40",
+      "sha256": "62333cc59dd25dce9657bcf5b1534cef14a235947eaf07c0c9819a4040c9ad2b",
       "distribution": "git",
-      "build_source_commit": "60141ae4a6920120d12e121e18160c97d86d7be6",
-      "build_input_tree_sha256": "c89b16fb318371b3ea3459a0352c03b572e0b9ac936edc30fc65e9d4a8ba78e8",
-      "packaging_input_tree_sha256": "c89b16fb318371b3ea3459a0352c03b572e0b9ac936edc30fc65e9d4a8ba78e8",
+      "build_source_commit": null,
+      "source_base_commit": "ae3fb37c919f13bc734e0a908be8c38083925ca1",
+      "source_state": "uncommitted_at_build",
+      "working_tree_input_sha256": "1e1bc5f3887701197a890cdf83b12cdaad432c31ce9c3052a0c53b8a90f26d47",
       "build_input_paths": [
         "apps/mobile/lib",
         "apps/mobile/assets",
@@ -47,19 +52,41 @@
         "apps/mobile/pubspec.lock"
       ],
       "build_inputs_match_packaging_commit": true,
-      "source_comparison_scope": "Tracked build inputs only; excludes local configuration, signing secrets and external SDKs. Does not independently prove which inputs produced APK bytes."
+      "source_comparison_scope": "Packaging-time source snapshot matches verified_source_commit. APK was built before that commit; build_source_commit remains null. Excludes local configuration, signing secrets and external SDKs, and is not independent reproducible-build proof.",
+      "verified_source_commit": "9fc5cd8b2d98e3bb0505d3d0b2ba104faafd4e3f",
+      "verified_commit_input_tree_sha256": "bcf462eb5aa5990a3dda5b7ed59e365a979b3dab7666377a05fa5d83578b1a17",
+      "release_asset_name": "남생이_도란모바일_release.apk"
     },
     {
       "path": "demo/doran-demo.mp4",
-      "bytes": 1990326,
-      "sha256": "3dcbc0f2649d0c79cef9ef43b7f0a16bde5f6ee05ec7b077cf22d437f466ab70",
+      "bytes": 4345794,
+      "sha256": "5e19ba13c12e6d38aeaaafadfab56d3c77baf318c2a54ae42f13414c8ef91c57",
       "distribution": "release_asset",
-      "duration_seconds": 185.0,
+      "duration_seconds": 166.2,
       "width": 1920,
       "height": 1080,
       "video_codec": "h264",
-      "audio_tracks": 0,
+      "audio_tracks": 1,
       "asset_name": "doran-demo.mp4"
+    },
+    {
+      "path": "demo/doran-demo.srt",
+      "bytes": 1941,
+      "sha256": "5f863816f8593bc3644daa2bce76d4b2744fc97b6159096f20f2ff4424b8090e",
+      "distribution": "release_asset",
+      "asset_name": "doran-demo.srt"
+    },
+    {
+      "path": "demo/doran-intro.mp4",
+      "bytes": 4311397,
+      "sha256": "ea0f4e565a2c90a6bd081b499dff2233cee55a7d31e086df8cfcbb4a4b2e3977",
+      "distribution": "release_asset",
+      "asset_name": "doran-intro.mp4",
+      "duration_seconds": 30.0,
+      "width": 1920,
+      "height": 1080,
+      "video_codec": "h264",
+      "audio_tracks": 1
     }
   ]
 }
